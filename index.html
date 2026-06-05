@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinDash — IWA · Citi · Grup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --font-main:'DM Sans',sans-serif;
+  --font-mono:'DM Mono',monospace;
+  --nav-w:210px;
+  --hdr-h:50px;
+  --bg:#f7f7f5;
+  --bg2:#ffffff;
+  --bg3:#f0efe9;
+  --border:#e4e3dc;
+  --border2:#d0cfc8;
+  --text:#1a1a18;
+  --text2:#6b6a64;
+  --text3:#9e9d97;
+  --accent:#1a1a18;
+  --green:#1a7a4a;
+  --green-bg:#e8f5ee;
+  --red:#c0392b;
+  --red-bg:#fdecea;
+  --blue:#1a5fa8;
+  --blue-bg:#e8f0fb;
+  --amber:#8a5800;
+  --amber-bg:#fdf3e0;
+  --info-bg:#e8f0fb;
+  --info-text:#1a5fa8;
+  --radius:8px;
+  --radius-lg:12px;
+}
+body{font-family:var(--font-main);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* HEADER */
+.hdr{height:var(--hdr-h);display:flex;align-items:center;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;z-index:10}
+.hdr-logo{width:var(--nav-w);padding:0 18px;display:flex;align-items:center;gap:10px;border-right:1px solid var(--border);height:100%;flex-shrink:0}
+.logo-mark{width:26px;height:26px;background:var(--text);border-radius:6px;display:flex;align-items:center;justify-content:center}
+.logo-mark i{font-size:14px;color:#fff}
+.logo-name{font-size:13px;font-weight:500;letter-spacing:-.01em}
+.logo-sub{font-size:10px;color:var(--text3);margin-top:1px}
+.hdr-mid{flex:1;display:flex;align-items:center;padding:0 18px;gap:16px}
+.hdr-donem-label{font-size:11px;color:var(--text3)}
+.hdr-donem-sel{font-size:13px;padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:var(--font-main);cursor:pointer}
+.hdr-right{padding:0 18px;display:flex;align-items:center;gap:10px}
+.hdr-badge{font-size:10px;padding:3px 9px;border-radius:20px;background:var(--green-bg);color:var(--green);font-weight:500;display:flex;align-items:center;gap:4px}
+.hdr-kur-badge{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--bg3);color:var(--text2);font-family:var(--font-mono);cursor:pointer;border:1px solid var(--border)}
+.hdr-kur-badge:hover{background:var(--border)}
+
+/* BODY */
+.body{display:flex;flex:1;overflow:hidden}
+
+/* NAV */
+.nav{width:var(--nav-w);flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;padding:10px 0 20px}
+.nav-section{font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;padding:14px 18px 5px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 18px;font-size:13px;color:var(--text2);cursor:pointer;border-left:2px solid transparent;user-select:none}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--bg3);color:var(--text);border-left-color:var(--text);font-weight:500}
+.nav-item i{font-size:15px;flex-shrink:0;opacity:.7}
+.nav-item.active i{opacity:1}
+.nav-item .nav-badge{margin-left:auto;font-size:9px;padding:1px 5px;border-radius:10px;background:var(--blue-bg);color:var(--blue);font-weight:500}
+.nav-divider{height:1px;background:var(--border);margin:6px 0}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;background:var(--bg)}
+.page{padding:22px 24px;display:none;animation:fadeIn .18s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* PAGE HEADER */
+.page-hdr{margin-bottom:18px}
+.page-hdr h2{font-size:20px;font-weight:500;letter-spacing:-.02em;color:var(--text)}
+.page-hdr p{font-size:12px;color:var(--text3);margin-top:3px}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:14px}
+.card-title{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.metric{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px 15px}
+.metric .lbl{font-size:11px;color:var(--text3);margin-bottom:4px}
+.metric .val{font-size:18px;font-weight:500;font-family:var(--font-mono);letter-spacing:-.02em}
+.metric .sub{font-size:10px;color:var(--text3);margin-top:3px}
+.metric .delta{font-size:10px;font-weight:500;padding:2px 6px;border-radius:4px;margin-top:4px;display:inline-flex;align-items:center;gap:2px}
+.d-pos{background:var(--green-bg);color:var(--green)}
+.d-neg{background:var(--red-bg);color:var(--red)}
+.d-neu{background:var(--bg3);color:var(--text3)}
+
+/* TABS */
+.sub-tabs{display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid var(--border)}
+.sub-tab{padding:8px 16px;font-size:12px;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.sub-tab:hover{color:var(--text)}
+.sub-tab.active{color:var(--text);font-weight:500;border-bottom-color:var(--text)}
+.sub-panel{display:none}
+.sub-panel.active{display:block}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-lg)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--bg3);padding:8px 11px;text-align:left;font-weight:500;font-size:11px;color:var(--text3);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:7px 11px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg3)}
+tfoot tr td{background:var(--bg3);font-weight:500}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:500}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.badge-blue{background:var(--blue-bg);color:var(--blue)}
+.badge-amber{background:var(--amber-bg);color:var(--amber)}
+.badge-gray{background:var(--bg3);color:var(--text2)}
+
+/* BUTTONS */
+.btn{padding:7px 13px;font-size:12px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg2);color:var(--text);cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:var(--font-main);white-space:nowrap}
+.btn:hover{background:var(--bg3)}
+.btn-primary{background:var(--text);color:#fff;border-color:var(--text)}
+.btn-primary:hover{background:#333}
+.btn-success{background:var(--green-bg);color:var(--green);border-color:var(--green)}
+.btn-sm{padding:4px 9px;font-size:11px}
+
+/* TOOLBAR */
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.toolbar input{font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg2);color:var(--text);font-family:var(--font-main);flex:1;min-width:140px}
+
+/* CHIPS */
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{padding:4px 11px;font-size:11px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:var(--bg2);color:var(--text2)}
+.chip:hover{background:var(--bg3);color:var(--text)}
+.chip.active{background:var(--text);color:#fff;border-color:var(--text)}
+
+/* SERMAYE BOX */
+.sermaye-box{background:var(--text);color:#fff;border-radius:var(--radius-lg);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+.sermaye-box .lbl{font-size:11px;opacity:.6;margin-bottom:4px}
+.sermaye-box .val{font-size:26px;font-weight:300;font-family:var(--font-mono);letter-spacing:-.03em}
+.sermaye-box .sub{font-size:11px;opacity:.5;margin-top:3px}
+.s-delta{font-size:13px;font-weight:500;padding:6px 14px;border-radius:var(--radius);background:rgba(255,255,255,.15)}
+
+/* LOCKED TAG */
+.lock-tag{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:4px;background:var(--green-bg);color:var(--green)}
+
+/* CHARTS */
+.charts2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px 15px}
+.chart-lbl{font-size:11px;font-weight:500;color:var(--text3);margin-bottom:6px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:5px;font-size:10px;color:var(--text3)}
+.legend span{display:flex;align-items:center;gap:3px}
+.ld{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:50px 20px;color:var(--text3)}
+.empty i{font-size:36px;display:block;margin-bottom:12px;opacity:.3}
+.empty p{font-size:13px}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:11px;color:var(--text3)}
+.form-group input,.form-group select,.form-group textarea{font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg2);color:var(--text);font-family:var(--font-main)}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--text)}
+.fg-full{grid-column:1/-1}
+
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(2px)}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;width:min(560px,96vw);max-height:88vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.18)}
+.modal h3{font-size:15px;font-weight:500;margin-bottom:16px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+
+/* INFO BAR */
+.info-bar{background:var(--blue-bg);border-radius:var(--radius);padding:10px 14px;font-size:12px;color:var(--blue);display:flex;align-items:center;gap:8px;margin-bottom:14px}
+
+/* KUR TABLE aktif row */
+.kur-aktif td{background:var(--blue-bg)!important;color:var(--blue)}
+
+/* BILANCO KART ACCENT */
+.ka{border-left:3px solid var(--green);border-radius:0 var(--radius-lg) var(--radius-lg) 0}
+.kp{border-left:3px solid var(--red);border-radius:0 var(--radius-lg) var(--radius-lg) 0}
+.ks{border-left:3px solid var(--text3);border-radius:0 var(--radius-lg) var(--radius-lg) 0}
+
+/* EDIT INPUT */
+.edit-inp{font-size:12px;padding:4px 7px;border:1px solid var(--blue);border-radius:4px;width:100px;font-family:var(--font-mono)}
+
+@media(max-width:700px){
+  .nav{display:none}
+  .charts2{grid-template-columns:1fr}
+  .metrics{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="lockScreen" style="position:fixed;inset:0;background:#1a1a18;display:flex;align-items:center;justify-content:center;z-index:99999;flex-direction:column;gap:14px">
+  <div style="text-align:center;margin-bottom:6px">
+    <div style="width:44px;height:44px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a1a18" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+    </div>
+    <div style="color:#fff;font-size:19px;font-weight:500;font-family:sans-serif">FinDash</div>
+    <div style="color:rgba(255,255,255,.35);font-size:12px;margin-top:4px;font-family:sans-serif">IWA · Citi · Grup</div>
+  </div>
+  <input type="password" id="lockInput" placeholder="Şifre giriniz"
+    onkeydown="if(event.key==='Enter')checkPass()"
+    style="padding:11px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:#fff;font-size:14px;width:260px;outline:none;font-family:sans-serif;text-align:center"
+    autofocus>
+  <button onclick="checkPass()"
+    style="padding:11px 0;background:#fff;color:#1a1a18;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:sans-serif;width:260px">
+    Giriş yap
+  </button>
+  <div id="lockErr" style="color:#ff6b6b;font-size:12px;font-family:sans-serif;min-height:16px;text-align:center"></div>
+</div>
+
+<script>
+function checkPass(){
+  if(document.getElementById('lockInput').value==='Za334286**'){
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('mainApp').style.display='flex';
+    document.getElementById('mainApp').style.flexDirection='column';
+    document.getElementById('mainApp').style.height='100vh';
+  } else {
+    document.getElementById('lockErr').textContent='Hatalı şifre, tekrar deneyin.';
+    document.getElementById('lockInput').value='';
+    document.getElementById('lockInput').focus();
+  }
+}
+</script>
+
+<div class="app" id="mainApp" style="display:none">
+
+<!-- ═══ HEADER ═══ -->
+<header class="hdr">
+  <div class="hdr-logo">
+    <div class="logo-mark"><i class="ti ti-chart-treemap"></i></div>
+    <div>
+      <div class="logo-name">FinDash</div>
+      <div class="logo-sub">IWA · Citi · Grup</div>
+    </div>
+  </div>
+  <div class="hdr-mid">
+    <span class="hdr-donem-label">Aktif dönem:</span>
+    <select class="hdr-donem-sel" id="globalDonem" onchange="onGlobalDonem()"></select>
+  </div>
+  <div class="hdr-right">
+    <span class="hdr-kur-badge" onclick="navTo('p_kur')" title="Kur yönetimine git">
+      <i class="ti ti-currency-lira" style="font-size:11px"></i>
+      <span id="hdrKurVal">—</span> TL/USD
+    </span>
+    <span class="hdr-badge"><i class="ti ti-lock" style="font-size:10px"></i> USD mühürlü</span>
+  </div>
+</header>
+
+<div class="body">
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav">
+  <div class="nav-section">Ana Bilanço</div>
+  <div class="nav-item active" onclick="navTo('p_bilanco',this)"><i class="ti ti-report-money"></i> 1-1 Özet bilanço</div>
+  <div class="nav-item" onclick="navTo('p_likit',this)"><i class="ti ti-wallet"></i> 1-2 Likit varlıklar</div>
+  <div class="nav-item" onclick="navTo('p_alacaklar',this)"><i class="ti ti-receipt"></i> 1-3 Alacaklar</div>
+  <div class="nav-item" onclick="navTo('p_borclar',this)"><i class="ti ti-credit-card"></i> 1-4 Borçlar</div>
+  <div class="nav-item" onclick="navTo('p_demirbaslar',this)"><i class="ti ti-building-warehouse"></i> 1-5 Demirbaşlar</div>
+  <div class="nav-item" onclick="navTo('p_stok',this)"><i class="ti ti-package"></i> 1-6 Stok sayımı</div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">Yurtdışı</div>
+  <div class="nav-item" onclick="navTo('p_yurtdisi',this)"><i class="ti ti-world"></i> 2 Finansal detay</div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">Yurtiçi</div>
+  <div class="nav-item" onclick="navTo('p_yurtici',this)"><i class="ti ti-building-bank"></i> 3 Yurtiçi bankalar</div>
+  <div class="nav-item" onclick="navTo('p_kasa',this)"><i class="ti ti-cash"></i> 4 Nakit kasa</div>
+  <div class="nav-divider"></div>
+  <div class="nav-section">Ayarlar</div>
+  <div class="nav-item" onclick="navTo('p_kur',this)"><i class="ti ti-currency-lira"></i> Kur yönetimi</div>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+
+<!-- ── 1-1 BİLANÇO ── -->
+<div class="page active" id="p_bilanco">
+  <div class="page-hdr">
+    <h2>Özet bilanço</h2>
+    <p>Net sermaye = Likit + Alacaklar − Borçlar + Demirbaşlar + Ticari mallar</p>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="font-size:11px;color:var(--text3)">Dönem türü:</span>
+      <div class="chips" id="bilTurChips">
+        <button class="chip active" onclick="setBilTur('ay',this)">Aylık</button>
+        <button class="chip" onclick="setBilTur('3ay',this)">3 Aylık</button>
+        <button class="chip" onclick="setBilTur('6ay',this)">6 Aylık</button>
+        <button class="chip" onclick="setBilTur('yil',this)">Yıllık</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="font-size:11px;color:var(--text3)">Karşılaştır:</span>
+      <div class="chips">
+        <button class="chip active" id="kc_oa" onclick="setKarsi('oa')">Önceki ay</button>
+        <button class="chip" id="kc_oy" onclick="setKarsi('oy')">Geçen yıl</button>
+        <button class="chip" id="kc_yok" onclick="setKarsi('yok')">Yok</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="margin-left:auto" onclick="openVeriGir()"><i class="ti ti-pencil"></i> Veri gir</button>
+  </div>
+  <div id="bilanco_content"></div>
+</div>
+
+<!-- ── 1-2 LİKİT ── -->
+<div class="page" id="p_likit">
+  <div class="page-hdr"><h2>Likit varlıklar</h2><p>Yurtdışı bankalar · Yurtiçi bankalar · Nakit kasa — USD</p></div>
+  <div class="sub-tabs">
+    <div class="sub-tab active" onclick="subTab('lk','hulasa',this)">Hülasa</div>
+    <div class="sub-tab" onclick="subTab('lk','yurtdisi',this)">Yurtdışı bankalar</div>
+    <div class="sub-tab" onclick="subTab('lk','yurtici',this)">Yurtiçi bankalar</div>
+    <div class="sub-tab" onclick="subTab('lk','kasa',this)">Nakit kasa</div>
+  </div>
+  <div class="sub-panel active" id="lk_hulasa">
+    <div class="metrics">
+      <div class="metric"><div class="lbl">Yurtdışı bankalar</div><div class="val">$186,420</div><div class="delta d-pos">+$12,300</div></div>
+      <div class="metric"><div class="lbl">Yurtiçi bankalar</div><div class="val">$14,890</div><div class="delta d-neg">−$2,100</div></div>
+      <div class="metric"><div class="lbl">Nakit kasa</div><div class="val">$24,598</div><div class="delta d-pos">+$800</div></div>
+      <div class="metric ka"><div class="lbl">Toplam likit</div><div class="val">$225,908</div></div>
+    </div>
+    <div class="card"><div class="card-title">Dönemsel hareket</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Kaynak</th><th style="text-align:right">Devralınan</th><th style="text-align:right">Gelen</th><th style="text-align:right">Harcanan</th><th style="text-align:right">Devrolan</th><th style="text-align:right">Δ</th></tr></thead>
+        <tbody>
+          <tr><td>Yurtdışı bankalar</td><td style="text-align:right;font-family:var(--font-mono)">$174,120</td><td style="text-align:right;font-family:var(--font-mono)">$45,000</td><td style="text-align:right;font-family:var(--font-mono)">$32,700</td><td style="text-align:right;font-family:var(--font-mono)">$186,420</td><td style="text-align:right"><span class="badge badge-green">+$12,300</span></td></tr>
+          <tr><td>Yurtiçi bankalar</td><td style="text-align:right;font-family:var(--font-mono)">$16,990</td><td style="text-align:right;font-family:var(--font-mono)">$8,200</td><td style="text-align:right;font-family:var(--font-mono)">$10,300</td><td style="text-align:right;font-family:var(--font-mono)">$14,890</td><td style="text-align:right"><span class="badge badge-red">−$2,100</span></td></tr>
+          <tr><td>Nakit kasa</td><td style="text-align:right;font-family:var(--font-mono)">$23,798</td><td style="text-align:right;font-family:var(--font-mono)">$5,600</td><td style="text-align:right;font-family:var(--font-mono)">$4,800</td><td style="text-align:right;font-family:var(--font-mono)">$24,598</td><td style="text-align:right"><span class="badge badge-green">+$800</span></td></tr>
+        </tbody>
+        <tfoot><tr><td>Toplam</td><td style="text-align:right;font-family:var(--font-mono)">$214,908</td><td style="text-align:right;font-family:var(--font-mono)">$58,800</td><td style="text-align:right;font-family:var(--font-mono)">$47,800</td><td style="text-align:right;font-family:var(--font-mono)">$225,908</td><td style="text-align:right"><span class="badge badge-green">+$11,000</span></td></tr></tfoot>
+      </table></div>
+    </div>
+  </div>
+  <div class="sub-panel" id="lk_yurtdisi"><div class="empty"><i class="ti ti-world"></i><p>Sekme 2 — Yurtdışı finansal detaydan beslenir</p></div></div>
+  <div class="sub-panel" id="lk_yurtici"><div class="empty"><i class="ti ti-building-bank"></i><p>Sekme 3 — Yurtiçi bankalardan beslenir</p></div></div>
+  <div class="sub-panel" id="lk_kasa"><div class="empty"><i class="ti ti-cash"></i><p>Sekme 4 — Nakit kasadan beslenir</p></div></div>
+</div>
+
+<!-- ── 1-3 ALACAKLAR ── -->
+<div class="page" id="p_alacaklar">
+  <div class="page-hdr"><h2>Alacaklar</h2><p>Pazaryeri · Avans · Diğer alacaklar — toplam $234,613</p></div>
+  <div class="sub-tabs">
+    <div class="sub-tab active" onclick="subTab('al','pazar',this)">Pazaryeri</div>
+    <div class="sub-tab" onclick="subTab('al','avans',this)">Avans alacakları</div>
+    <div class="sub-tab" onclick="subTab('al','diger',this)">Diğer</div>
+  </div>
+  <div class="sub-panel active" id="al_pazar">
+    <div class="metrics">
+      <div class="metric"><div class="lbl">Shopify (Yurtiçi)</div><div class="val">$43,627</div></div>
+      <div class="metric"><div class="lbl">Wayfair</div><div class="val">$82,976</div></div>
+      <div class="metric"><div class="lbl">Amazon</div><div class="val">$12,300</div></div>
+      <div class="metric"><div class="lbl">Diğer pazaryerleri</div><div class="val">$8,216</div></div>
+      <div class="metric ka"><div class="lbl">Pazaryeri toplam</div><div class="val">$147,119</div></div>
+    </div>
+    <div class="card"><div class="card-title">Pazaryeri depozit bakiyeleri — Mayıs 2026</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Pazaryeri</th><th>Şirket</th><th style="text-align:right">Bakiye (USD)</th><th>Durum</th></tr></thead>
+        <tbody>
+          <tr><td>Shopify — PayTR</td><td>IWA TR</td><td style="text-align:right;font-family:var(--font-mono)">$11,596</td><td><span class="badge badge-green">aktif</span></td></tr>
+          <tr><td>Shopify — PayTR</td><td>CFW TR</td><td style="text-align:right;font-family:var(--font-mono)">$12,575</td><td><span class="badge badge-green">aktif</span></td></tr>
+          <tr><td>Shopify — PayTR</td><td>Vornom</td><td style="text-align:right;font-family:var(--font-mono)">$19,456</td><td><span class="badge badge-green">aktif</span></td></tr>
+          <tr><td>Wayfair</td><td>Shukran</td><td style="text-align:right;font-family:var(--font-mono)">$42,373</td><td><span class="badge badge-green">aktif</span></td></tr>
+          <tr><td>Wayfair</td><td>MDN</td><td style="text-align:right;font-family:var(--font-mono)">$34,237</td><td><span class="badge badge-green">aktif</span></td></tr>
+          <tr><td>Wayfair</td><td>UK</td><td style="text-align:right;font-family:var(--font-mono)">$6,366</td><td><span class="badge badge-green">aktif</span></td></tr>
+          <tr><td>Amazon</td><td>Citi</td><td style="text-align:right;font-family:var(--font-mono)">$12,300</td><td><span class="badge badge-green">aktif</span></td></tr>
+          <tr><td>Kaufland</td><td>—</td><td style="text-align:right;font-family:var(--font-mono)">$7,712</td><td><span class="badge badge-green">aktif</span></td></tr>
+          <tr><td>eBay Canmax</td><td>—</td><td style="text-align:right;font-family:var(--font-mono)">$286</td><td><span class="badge badge-green">aktif</span></td></tr>
+          <tr><td>Take Alot</td><td>—</td><td style="text-align:right;font-family:var(--font-mono)">$218</td><td><span class="badge badge-green">aktif</span></td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="2">Toplam</td><td style="text-align:right;font-family:var(--font-mono)">$147,119</td><td></td></tr></tfoot>
+      </table></div>
+    </div>
+  </div>
+  <div class="sub-panel" id="al_avans"><div class="empty"><i class="ti ti-coin"></i><p>Sekme 4 nakit kasadan otomatik beslenecek</p></div></div>
+  <div class="sub-panel" id="al_diger"><div class="empty"><i class="ti ti-file-invoice"></i><p>Serbest giriş — vade tarihi ve döviz seçimi</p></div></div>
+</div>
+
+<!-- ── 1-4 BORÇLAR ── -->
+<div class="page" id="p_borclar">
+  <div class="page-hdr"><h2>Borçlar</h2><p>Yurtiçi · Yurtdışı · Nakit borçlar</p></div>
+  <div class="metrics">
+    <div class="metric"><div class="lbl">Yurtiçi şirket borçları</div><div class="val">$128,340</div></div>
+    <div class="metric"><div class="lbl">Yurtdışı şirket borçları</div><div class="val">$48,920</div></div>
+    <div class="metric"><div class="lbl">Nakit borçlar</div><div class="val">$14,960</div></div>
+    <div class="metric kp"><div class="lbl">Toplam borç</div><div class="val">$192,220</div><div class="delta d-neg">+$17,152 ay/ay</div></div>
+  </div>
+  <div class="card"><div class="card-title">Borç kırılımı — Mayıs 2026</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Tür</th><th>Açıklama</th><th style="text-align:right">Tutar</th><th>Döviz</th><th>Durum</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-blue">Yurtiçi</span></td><td>IWA — tedarikçi borçları</td><td style="text-align:right;font-family:var(--font-mono)">$78,900</td><td>TRY</td><td><span class="badge badge-amber">bekliyor</span></td></tr>
+        <tr><td><span class="badge badge-blue">Yurtiçi</span></td><td>Citi — tedarikçi borçları</td><td style="text-align:right;font-family:var(--font-mono)">$49,440</td><td>TRY</td><td><span class="badge badge-amber">bekliyor</span></td></tr>
+        <tr><td><span class="badge badge-gray">Yurtdışı</span></td><td>MDN LLC</td><td style="text-align:right;font-family:var(--font-mono)">$28,500</td><td>USD</td><td><span class="badge badge-amber">bekliyor</span></td></tr>
+        <tr><td><span class="badge badge-gray">Yurtdışı</span></td><td>Shukran LLC</td><td style="text-align:right;font-family:var(--font-mono)">$20,420</td><td>USD</td><td><span class="badge badge-amber">bekliyor</span></td></tr>
+        <tr><td><span class="badge badge-red">Nakit</span></td><td>Serkan Gürkan</td><td style="text-align:right;font-family:var(--font-mono)">$14,960</td><td>TRY</td><td><span class="badge badge-amber">bekliyor</span></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ── 1-5 DEMİRBAŞLAR ── -->
+<div class="page" id="p_demirbaslar">
+  <div class="page-hdr"><h2>Demirbaşlar</h2><p>Mühürlü USD değerleri · Ocak 2025 açılışı · Dönemsel giriş/çıkış</p></div>
+  <div class="metrics">
+    <div class="metric"><div class="lbl">Kardelen Ofis</div><div class="val">$38,016</div><div class="sub"><span class="lock-tag"><i class="ti ti-lock" style="font-size:9px"></i>mühürlü</span></div></div>
+    <div class="metric"><div class="lbl">Fabrika + Depo</div><div class="val">$339,647</div><div class="sub"><span class="lock-tag"><i class="ti ti-lock" style="font-size:9px"></i>+$1,656 Mayıs</span></div></div>
+    <div class="metric"><div class="lbl">Citi Global</div><div class="val">$97,700</div><div class="sub"><span class="lock-tag"><i class="ti ti-lock" style="font-size:9px"></i>+$8,259 Mayıs</span></div></div>
+    <div class="metric"><div class="lbl">Home Office</div><div class="val">$4,423</div><div class="sub"><span class="lock-tag"><i class="ti ti-lock" style="font-size:9px"></i>mühürlü</span></div></div>
+    <div class="metric ka"><div class="lbl">Toplam demirbaş</div><div class="val">$479,786</div></div>
+  </div>
+  <div class="card"><div class="card-title">İşletme kırılımı — Mayıs 2026</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>İşletme</th><th style="text-align:right">Açılış</th><th style="text-align:right">Bu ay giriş</th><th style="text-align:right">Bu ay çıkış</th><th style="text-align:right">Dönem sonu</th><th style="text-align:right">Pay</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Kardelen Ofis</strong></td><td style="text-align:right;font-family:var(--font-mono)">$38,016</td><td style="text-align:right">—</td><td style="text-align:right">—</td><td style="text-align:right;font-family:var(--font-mono)">$38,016</td><td style="text-align:right">7.9%</td></tr>
+        <tr><td><strong>Fabrika + Depo</strong></td><td style="text-align:right;font-family:var(--font-mono)">$337,991</td><td style="text-align:right"><span class="badge badge-green">+$1,656</span></td><td style="text-align:right">—</td><td style="text-align:right;font-family:var(--font-mono)">$339,647</td><td style="text-align:right">70.8%</td></tr>
+        <tr><td><strong>Citi Global</strong></td><td style="text-align:right;font-family:var(--font-mono)">$89,441</td><td style="text-align:right"><span class="badge badge-green">+$8,259</span></td><td style="text-align:right">—</td><td style="text-align:right;font-family:var(--font-mono)">$97,700</td><td style="text-align:right">20.4%</td></tr>
+        <tr><td><strong>Home Office</strong></td><td style="text-align:right;font-family:var(--font-mono)">$4,423</td><td style="text-align:right">—</td><td style="text-align:right">—</td><td style="text-align:right;font-family:var(--font-mono)">$4,423</td><td style="text-align:right">0.9%</td></tr>
+      </tbody>
+      <tfoot><tr><td>Toplam</td><td style="text-align:right;font-family:var(--font-mono)">$469,871</td><td style="text-align:right"><span class="badge badge-green">+$9,915</span></td><td style="text-align:right">—</td><td style="text-align:right;font-family:var(--font-mono)">$479,786</td><td style="text-align:right">100%</td></tr></tfoot>
+    </table></div>
+  </div>
+</div>
+
+<!-- ── 1-6 STOK ── -->
+<div class="page" id="p_stok">
+  <div class="page-hdr"><h2>Stok & hammadde sayımı</h2><p>Dönemsel sayım · Ay sonu TCMB kuru ile USD · Birim bazlı</p></div>
+  <div class="metrics">
+    <div class="metric"><div class="lbl">Fabrika — Ürün Deposu</div><div class="val">$4,312</div><div class="sub">Mayıs 2026 · kur 38.50</div></div>
+    <div class="metric"><div class="lbl">Fabrika — Ahşap Deposu</div><div class="val">$3,714</div><div class="sub">Mayıs 2026 · kur 38.50</div></div>
+    <div class="metric"><div class="lbl">Diğer birimler</div><div class="val">—</div><div class="sub">Sayım bekleniyor</div></div>
+    <div class="metric ka"><div class="lbl">Toplam stok</div><div class="val">$8,026</div></div>
+  </div>
+  <div class="card"><div class="card-title">Aktif sayımlar — Mayıs 2026</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Birim</th><th>Tür</th><th style="text-align:right">Kalem</th><th style="text-align:right">Toplam adet</th><th style="text-align:right">USD değer</th><th>Kur</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Fabrika — Ürün Deposu</strong></td><td><span class="badge badge-blue">Ticari mal</span></td><td style="text-align:right">3</td><td style="text-align:right">448</td><td style="text-align:right;font-family:var(--font-mono)">$4,312</td><td style="font-family:var(--font-mono)">38.50</td></tr>
+        <tr><td><strong>Fabrika — Ahşap Deposu</strong></td><td><span class="badge badge-amber">Hammadde</span></td><td style="text-align:right">3</td><td style="text-align:right">565</td><td style="text-align:right;font-family:var(--font-mono)">$3,714</td><td style="font-family:var(--font-mono)">38.50</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ── SEKME 2 YURTDişI ── -->
+<div class="page" id="p_yurtdisi">
+  <div class="page-hdr"><h2>Yurtdışı finansal detay</h2><p>MDN LLC · Shukran LLC · IWA Yurtdışı · Jersey Woodworks · UPP Jersey</p></div>
+  <div class="sub-tabs">
+    <div class="sub-tab active" onclick="subTab('yd','hulasa',this)">2-1 Hülasa</div>
+    <div class="sub-tab" onclick="subTab('yd','mdn',this)">2-2 MDN</div>
+    <div class="sub-tab" onclick="subTab('yd','shukran',this)">2-3 Shukran</div>
+    <div class="sub-tab" onclick="subTab('yd','iwa',this)">2-4 IWA Yurtdışı</div>
+    <div class="sub-tab" onclick="subTab('yd','jersey',this)">2-5 Jersey Woodworks</div>
+    <div class="sub-tab" onclick="subTab('yd','upp',this)">2-6 UPP Jersey</div>
+  </div>
+  <div class="sub-panel active" id="yd_hulasa">
+    <div class="metrics">
+      <div class="metric"><div class="lbl">Mercury</div><div class="val">$48,200</div></div>
+      <div class="metric"><div class="lbl">Wise</div><div class="val">$72,100</div></div>
+      <div class="metric"><div class="lbl">WorldFirst</div><div class="val">$41,300</div></div>
+      <div class="metric"><div class="lbl">Payoneer</div><div class="val">$24,820</div></div>
+      <div class="metric ka"><div class="lbl">Yurtdışı toplam</div><div class="val">$186,420</div></div>
+    </div>
+    <div class="info-bar"><i class="ti ti-info-circle"></i> Claude API entegrasyonu — Yeni Dönem Ekle butonu burada olacak (sekme 2 detayı ayrı geliştirme aşamasında)</div>
+  </div>
+  <div class="sub-panel" id="yd_mdn"><div class="empty"><i class="ti ti-building"></i><p>MDN LLC detay sayfası</p></div></div>
+  <div class="sub-panel" id="yd_shukran"><div class="empty"><i class="ti ti-building"></i><p>Shukran LLC detay sayfası</p></div></div>
+  <div class="sub-panel" id="yd_iwa"><div class="empty"><i class="ti ti-building"></i><p>IWA Yurtdışı detay sayfası</p></div></div>
+  <div class="sub-panel" id="yd_jersey"><div class="empty"><i class="ti ti-building"></i><p>Jersey Woodworks detay sayfası</p></div></div>
+  <div class="sub-panel" id="yd_upp"><div class="empty"><i class="ti ti-building"></i><p>UPP Jersey detay sayfası</p></div></div>
+</div>
+
+<!-- ── SEKME 3 YURTİÇİ ── -->
+<div class="page" id="p_yurtici">
+  <div class="page-hdr"><h2>Yurtiçi bankalar</h2><p>IWA · Citi Global · Diğer — Mayıs 2026 kapanış bakiyeleri</p></div>
+  <div class="sub-tabs">
+    <div class="sub-tab active" onclick="subTab('yi','hulasa',this)">3-1 Hülasa</div>
+    <div class="sub-tab" onclick="subTab('yi','iwa',this)">3-2 IWA</div>
+    <div class="sub-tab" onclick="subTab('yi','citi',this)">3-3 Citi</div>
+    <div class="sub-tab" onclick="subTab('yi','diger',this)">3-4 Diğer</div>
+  </div>
+  <div class="sub-panel active" id="yi_hulasa">
+    <div class="metrics">
+      <div class="metric"><div class="lbl">IWA toplam</div><div class="val">$28,140</div></div>
+      <div class="metric"><div class="lbl">Citi toplam</div><div class="val">$5,433</div></div>
+      <div class="metric"><div class="lbl">Diğer</div><div class="val">$776</div></div>
+      <div class="metric ka"><div class="lbl">Yurtiçi toplam</div><div class="val">$34,349</div></div>
+    </div>
+  </div>
+  <div class="sub-panel" id="yi_iwa">
+    <div class="card"><div class="card-title">IWA — Mayıs 2026 kapanış</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Banka</th><th>IBAN</th><th>Döviz</th><th style="text-align:right">Bakiye</th><th style="text-align:right">USD karş.</th></tr></thead>
+        <tbody>
+          <tr><td>Akbank</td><td style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">TR86...8614</td><td>TRY</td><td style="text-align:right;font-family:var(--font-mono)">₺102,682</td><td style="text-align:right;font-family:var(--font-mono)">$2,667</td></tr>
+          <tr><td>Akbank</td><td style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">TR71...9069</td><td>USD</td><td style="text-align:right;font-family:var(--font-mono)">$14,938</td><td style="text-align:right;font-family:var(--font-mono)">$14,938</td></tr>
+          <tr><td>Garanti</td><td style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">TR70...9446</td><td>TRY</td><td style="text-align:right;font-family:var(--font-mono)">₺191,788</td><td style="text-align:right;font-family:var(--font-mono)">$4,982</td></tr>
+          <tr><td>Garanti</td><td style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">TR63...8128</td><td>USD</td><td style="text-align:right;font-family:var(--font-mono)">$1,800</td><td style="text-align:right;font-family:var(--font-mono)">$1,800</td></tr>
+          <tr><td>Vakıfbank</td><td style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">TR37...1821</td><td>TRY</td><td style="text-align:right;font-family:var(--font-mono)">₺139,635</td><td style="text-align:right;font-family:var(--font-mono)">$3,628</td></tr>
+          <tr><td>Vakıfbank</td><td style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">TR19...8085</td><td>USD</td><td style="text-align:right;font-family:var(--font-mono)">$125</td><td style="text-align:right;font-family:var(--font-mono)">$125</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">IWA Toplam</td><td style="text-align:right;font-family:var(--font-mono)">$28,140</td></tr></tfoot>
+      </table></div>
+    </div>
+  </div>
+  <div class="sub-panel" id="yi_citi">
+    <div class="card"><div class="card-title">Citi Global — Mayıs 2026 kapanış</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Banka</th><th>IBAN</th><th>Döviz</th><th style="text-align:right">Bakiye</th><th style="text-align:right">USD karş.</th></tr></thead>
+        <tbody>
+          <tr><td>Akbank</td><td style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">TR89...9627</td><td>TRY</td><td style="text-align:right;font-family:var(--font-mono)">₺79,636</td><td style="text-align:right;font-family:var(--font-mono)">$2,069</td></tr>
+          <tr><td>Garanti</td><td style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">TR37...8585</td><td>TRY</td><td style="text-align:right;font-family:var(--font-mono)">₺129,474</td><td style="text-align:right;font-family:var(--font-mono)">$3,364</td></tr>
+          <tr><td>Garanti</td><td style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">TR41...6002</td><td>USD</td><td style="text-align:right;font-family:var(--font-mono)">$0</td><td style="text-align:right;font-family:var(--font-mono)">$0</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">Citi Toplam</td><td style="text-align:right;font-family:var(--font-mono)">$5,433</td></tr></tfoot>
+      </table></div>
+    </div>
+  </div>
+  <div class="sub-panel" id="yi_diger">
+    <div class="card"><div class="card-title">Diğer</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Kişi / Şirket</th><th>Banka</th><th style="text-align:right">Bakiye (TRY)</th><th style="text-align:right">USD karş.</th></tr></thead>
+        <tbody>
+          <tr><td>Serkan Gürkan</td><td style="font-family:var(--font-mono);font-size:11px">Garanti TR40...9856</td><td style="text-align:right;font-family:var(--font-mono)">₺29,839</td><td style="text-align:right;font-family:var(--font-mono)">$776</td></tr>
+          <tr><td>Sebahattin Demirci</td><td style="font-family:var(--font-mono);font-size:11px">Denizbank TR52...0001</td><td style="text-align:right;font-family:var(--font-mono)">₺0</td><td style="text-align:right;font-family:var(--font-mono)">$0</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SEKME 4 KASA ── -->
+<div class="page" id="p_kasa">
+  <div class="page-hdr"><h2>Nakit kasa</h2><p>TL · USD · EUR · Altın — Mayıs 2026</p></div>
+  <div class="metrics">
+    <div class="metric"><div class="lbl">TL Kasa</div><div class="val">₺19,155</div><div class="sub">≈ $498</div></div>
+    <div class="metric"><div class="lbl">USD Kasa</div><div class="val">$24,100</div></div>
+    <div class="metric"><div class="lbl">EUR Kasa</div><div class="val">€0</div></div>
+    <div class="metric"><div class="lbl">Altın</div><div class="val">30 gr</div></div>
+    <div class="metric ka"><div class="lbl">Kasa toplam (USD)</div><div class="val">$24,598</div></div>
+  </div>
+  <div class="card"><div class="card-title">Devir özeti — Mayıs 2026</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Kasa</th><th style="text-align:right">Devralınan</th><th style="text-align:right">Kapanış</th><th style="text-align:right">Fark</th></tr></thead>
+      <tbody>
+        <tr><td>TL</td><td style="text-align:right;font-family:var(--font-mono)">₺401,123</td><td style="text-align:right;font-family:var(--font-mono)">₺19,155</td><td style="text-align:right"><span class="badge badge-red">−₺381,968</span></td></tr>
+        <tr><td>USD</td><td style="text-align:right;font-family:var(--font-mono)">$2,600</td><td style="text-align:right;font-family:var(--font-mono)">$24,100</td><td style="text-align:right"><span class="badge badge-green">+$21,500</span></td></tr>
+        <tr><td>EUR</td><td style="text-align:right">€0</td><td style="text-align:right">€0</td><td style="text-align:right">—</td></tr>
+        <tr><td>Altın</td><td style="text-align:right">30 gr</td><td style="text-align:right">30 gr</td><td style="text-align:right">—</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ── KUR YÖNETİMİ ── -->
+<div class="page" id="p_kur">
+  <div class="page-hdr"><h2>Kur yönetimi</h2><p>TCMB ay sonu efektif alış kurları — tüm modüller buradan beslenır</p></div>
+  <div class="info-bar"><i class="ti ti-info-circle"></i> Her ayın son iş gününde <strong>tcmb.gov.tr → Döviz Kurları → Efektif Alış</strong> sütunundaki USD/TRY değerini girin.</div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">Yeni kur girişi</div>
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+      <div class="form-group"><label>Yıl</label><select id="kYil" style="width:90px"><option value="2025">2025</option><option value="2026" selected>2026</option></select></div>
+      <div class="form-group"><label>Ay</label><select id="kAy" style="width:110px">
+        <option value="0">Ocak</option><option value="1">Şubat</option><option value="2">Mart</option>
+        <option value="3">Nisan</option><option value="4" selected>Mayıs</option><option value="5">Haziran</option>
+        <option value="6">Temmuz</option><option value="7">Ağustos</option><option value="8">Eylül</option>
+        <option value="9">Ekim</option><option value="10">Kasım</option><option value="11">Aralık</option>
+      </select></div>
+      <div class="form-group"><label>USD/TRY kuru</label><input type="number" id="kDeger" placeholder="38.5000" step="0.0001" min="1" style="width:140px;font-family:var(--font-mono)"></div>
+      <div class="form-group"><label>Kaynak</label><select id="kKaynak" style="width:160px">
+        <option>TCMB efektif alış</option><option>TCMB gösterge</option><option>Manuel</option>
+      </select></div>
+      <button class="btn btn-success" onclick="kurKaydet()"><i class="ti ti-check"></i> Kaydet</button>
+    </div>
+  </div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Dönem</th><th style="text-align:right">USD/TRY</th><th style="text-align:right">EUR/TRY (≈)</th><th>Kaynak</th><th>Tarih</th><th>Durum</th><th></th></tr></thead>
+    <tbody id="kurTbody"></tbody>
+  </table></div>
+</div>
+
+</main>
+</div>
+</div><!-- end app -->
+
+<script>
+const MONTHS=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const DONEMLER=[];
+for(let y=2025;y<=2026;y++){for(let m=0;m<12;m++){if(y===2026&&m>4)break;DONEMLER.push({y,m,lbl:MONTHS[m]+' '+y});}}
+
+// DÖNEM SEL
+const gSel=document.getElementById('globalDonem');
+DONEMLER.forEach((d,i)=>{const o=document.createElement('option');o.value=i;o.textContent=d.lbl;if(i===DONEMLER.length-1)o.selected=true;gSel.appendChild(o);});
+function getDi(){return parseInt(gSel.value);}
+function onGlobalDonem(){updateHdrKur();renderBilanco();}
+
+// KUR TABLOSU
+window.KUR_TABLOSU={
+  '2025-0':{kur:32.78,kaynak:'TCMB efektif alış',tarih:'2025-01-31'},
+  '2025-1':{kur:33.52,kaynak:'TCMB efektif alış',tarih:'2025-02-28'},
+  '2025-2':{kur:34.11,kaynak:'TCMB efektif alış',tarih:'2025-03-31'},
+  '2025-3':{kur:35.20,kaynak:'TCMB efektif alış',tarih:'2025-04-30'},
+  '2025-4':{kur:35.88,kaynak:'TCMB efektif alış',tarih:'2025-05-31'},
+  '2025-5':{kur:36.40,kaynak:'TCMB efektif alış',tarih:'2025-06-30'},
+  '2025-6':{kur:36.95,kaynak:'TCMB efektif alış',tarih:'2025-07-31'},
+  '2025-7':{kur:37.30,kaynak:'TCMB efektif alış',tarih:'2025-08-31'},
+  '2025-8':{kur:37.68,kaynak:'TCMB efektif alış',tarih:'2025-09-30'},
+  '2025-9':{kur:38.05,kaynak:'TCMB efektif alış',tarih:'2025-10-31'},
+  '2025-10':{kur:38.20,kaynak:'TCMB efektif alış',tarih:'2025-11-30'},
+  '2025-11':{kur:38.42,kaynak:'TCMB efektif alış',tarih:'2025-12-31'},
+  '2026-0':{kur:38.55,kaynak:'TCMB efektif alış',tarih:'2026-01-31'},
+  '2026-1':{kur:38.61,kaynak:'TCMB efektif alış',tarih:'2026-02-28'},
+  '2026-2':{kur:38.70,kaynak:'TCMB efektif alış',tarih:'2026-03-31'},
+  '2026-3':{kur:38.78,kaynak:'TCMB efektif alış',tarih:'2026-04-30'},
+  '2026-4':{kur:38.50,kaynak:'Manuel',tarih:'2026-05-31'},
+};
+window.getKur=function(y,m){const k=window.KUR_TABLOSU[y+'-'+m];return k?k.kur:38.5;};
+window.getAktifKur=function(){const d=DONEMLER[getDi()];return window.getKur(d.y,d.m);};
+
+function updateHdrKur(){
+  const d=DONEMLER[getDi()];
+  const k=window.KUR_TABLOSU[d.y+'-'+d.m];
+  document.getElementById('hdrKurVal').textContent=k?k.kur.toFixed(2):'?';
+}
+
+function kurKaydet(){
+  const y=parseInt(document.getElementById('kYil').value);
+  const m=parseInt(document.getElementById('kAy').value);
+  const kur=parseFloat(document.getElementById('kDeger').value);
+  const kaynak=document.getElementById('kKaynak').value;
+  if(!kur||kur<1){alert('Geçerli bir kur giriniz');return;}
+  const ay=new Date(y,m+1,0);
+  const tarih=`${y}-${String(m+1).padStart(2,'0')}-${String(ay.getDate()).padStart(2,'0')}`;
+  window.KUR_TABLOSU[y+'-'+m]={kur,kaynak,tarih};
+  document.getElementById('kDeger').value='';
+  renderKurTablo();
+  updateHdrKur();
+  renderBilanco();
+  // Drive'a kaydet
+  showLoading('Kur Drive\'a kaydediliyor...');
+  apiPost({action:'setKur',y,m,kur,kaynak,tarih}).then(r=>{
+    hideLoading();
+    if(r?.ok)console.log('✓ Kur Drive\'a kaydedildi');
+  });
+}
+
+function renderKurTablo(){
+  const tbody=document.getElementById('kurTbody');
+  const rows=[...DONEMLER].reverse().map(({y,m})=>{
+    const key=y+'-'+m;const d=window.KUR_TABLOSU[key];
+    const isAkt=y===DONEMLER[getDi()].y&&m===DONEMLER[getDi()].m;
+    return`<tr class="${isAkt?'kur-aktif':''}">
+      <td><strong>${MONTHS[m]} ${y}</strong></td>
+      <td style="text-align:right;font-family:var(--font-mono)">${d?d.kur.toFixed(4):'—'}</td>
+      <td style="text-align:right;font-family:var(--font-mono);color:var(--text3)">${d?'≈'+(d.kur*1.085).toFixed(4):'—'}</td>
+      <td>${d?`<span class="badge ${d.kaynak==='Manuel'?'badge-gray':'badge-green'}">${d.kaynak}</span>`:'—'}</td>
+      <td style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">${d?d.tarih:'—'}</td>
+      <td>${isAkt?'<span class="badge badge-blue">aktif</span>':d?'<span class="badge badge-green">girildi</span>':'<span class="badge badge-gray">bekliyor</span>'}</td>
+      <td>${d?`<button class="btn btn-sm" onclick="kurInlineEdit('${key}',${d.kur})"><i class="ti ti-pencil"></i></button>`:
+             `<button class="btn btn-sm" onclick="document.getElementById('kYil').value='${y}';document.getElementById('kAy').value='${m}';document.getElementById('kDeger').focus()"><i class="ti ti-plus"></i></button>`}</td>
+    </tr>`;
+  });
+  tbody.innerHTML=rows.join('');
+}
+
+function kurInlineEdit(key,mevcut){
+  const cells=document.querySelectorAll(`#kurTbody tr`);
+  cells.forEach(tr=>{
+    const td=tr.querySelectorAll('td')[1];
+    if(td&&td.textContent.trim()===mevcut.toFixed(4)){
+      const orig=td.innerHTML;
+      td.innerHTML=`<input class="edit-inp" type="number" value="${mevcut}" step="0.0001" id="ei_${key}">`;
+      const inp=document.getElementById('ei_'+key);
+      inp.focus();inp.select();
+      const save=()=>{const v=parseFloat(inp.value);if(v&&v>1){window.KUR_TABLOSU[key].kur=v;renderKurTablo();updateHdrKur();renderBilanco();}else td.innerHTML=orig;};
+      inp.onblur=save;inp.onkeydown=e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape')td.innerHTML=orig;};
+    }
+  });
+}
+
+// NAV
+function navTo(pageId,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(pageId)?.classList.add('active');
+  if(el)el.classList.add('active');
+  else{document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')?.includes(pageId))n.classList.add('active');});}
+  if(pageId==='p_bilanco')renderBilanco();
+  if(pageId==='p_kur')renderKurTablo();
+}
+
+// SUB TABS
+function subTab(prefix,name,el){
+  document.querySelectorAll(`[id^="${prefix}_"]`).forEach(p=>p.classList.remove('active'));
+  document.getElementById(`${prefix}_${name}`)?.classList.add('active');
+  el.closest('.sub-tabs')?.querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ═══ GOOGLE SHEETS API ═══════════════════════════════════════
+const API_URL = 'https://script.google.com/a/macros/iwaconcept.com.tr/s/AKfycbywI9bOlKjwAaMltAgkFep_EmHsSPNetUk9G1gO5UyOf7MzYYe16z1G8x3FTuS9H6AIKA/exec';
+
+async function apiGet(action){
+  try{
+    const r=await fetch(`${API_URL}?action=${action}`);
+    return await r.json();
+  }catch(e){console.error('API GET hatası:',e);return null;}
+}
+async function apiPost(body){
+  try{
+    const r=await fetch(API_URL,{method:'POST',body:JSON.stringify(body)});
+    return await r.json();
+  }catch(e){console.error('API POST hatası:',e);return null;}
+}
+
+// Yükleme göstergesi
+function showLoading(msg){
+  let el=document.getElementById('loadingBar');
+  if(!el){el=document.createElement('div');el.id='loadingBar';
+    el.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;background:var(--text);color:#fff;font-size:11px;padding:6px 16px;display:flex;align-items:center;gap:8px';
+    el.innerHTML='<i class="ti ti-loader" style="animation:spin 1s linear infinite"></i><span id="loadingMsg"></span>';
+    document.body.appendChild(el);
+    const st=document.createElement('style');st.textContent='@keyframes spin{to{transform:rotate(360deg)}}';document.head.appendChild(st);
+  }
+  document.getElementById('loadingMsg').textContent=msg;
+  el.style.display='flex';
+}
+function hideLoading(){const el=document.getElementById('loadingBar');if(el)el.style.display='none';}
+
+// BİLANÇO VERİLERİ — önce varsayılan, sonra Drive'dan yükle
+const VERILER={};
+DONEMLER.forEach((d,i)=>{
+  const m26=i===16,n26=i===15;
+  VERILER[i]={
+    likit:      m26?243298.29:n26?356894.80:310000+Math.sin(i)*12000,
+    alacaklar:  m26?234613.43:n26?305037.67:270000+Math.sin(i*1.2)*18000,
+    borclar:    m26?192219.82:n26?175068.11:158000+Math.sin(i*.7)*8000,
+    demirbaslar:m26?483663.70:483663.70,
+    ticariMallar:0,
+    olaganDisi: m26?16196.88:n26?31069.63:22000+Math.sin(i*1.8)*4000,
+    yatirimlar:0,
+  };
+});
+
+async function drivedenYukle(){
+  showLoading('Drive\'dan veriler yükleniyor...');
+  // Kurları yükle
+  const kurRes=await apiGet('getKurlar');
+  if(kurRes?.ok){
+    window.KUR_TABLOSU={...window.KUR_TABLOSU,...kurRes.kurlar};
+    updateHdrKur();
+  }
+  // Bilanço verilerini yükle
+  const bilRes=await apiGet('getBilanco');
+  if(bilRes?.ok){
+    Object.entries(bilRes.veriler).forEach(([idx,v])=>{
+      VERILER[parseInt(idx)]={...VERILER[parseInt(idx)],...v};
+    });
+  }
+  hideLoading();
+  renderBilanco();
+  renderKurTablo();
+  const status=kurRes?.ok?'✓ Drive bağlantısı kuruldu':'⚠ Drive bağlanamadı, yerel veri kullanılıyor';
+  document.getElementById('hdrKurVal').title=status;
+}
+
+let bilTur='ay',bilKarsi='oa';
+let charts={};
+
+function sermaye(v){return v.likit+v.alacaklar-v.borclar+v.demirbaslar+v.ticariMallar;}
+function fM(n){return'$'+new Intl.NumberFormat('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}).format(Math.round(n));}
+function fMD(n){return'$'+new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);}
+function pct(a,b){if(!b)return null;return(a-b)/Math.abs(b)*100;}
+function fP(p){if(p===null)return'—';return(p>=0?'+':'')+p.toFixed(1)+'%';}
+function dc(d){return d===null?'d-neu':d>0?'d-pos':'d-neg';}
+
+function getDonemList(di,t){
+  if(t==='ay')return[di];
+  if(t==='3ay')return[di-2,di-1,di].filter(i=>i>=0);
+  if(t==='6ay')return[di-5,di-4,di-3,di-2,di-1,di].filter(i=>i>=0);
+  if(t==='yil'){const d=DONEMLER[di];return DONEMLER.map((dd,i)=>dd.y===d.y&&i<=di?i:-1).filter(i=>i>=0);}
+  return[di];
+}
+function getKarsiList(dl){
+  if(bilKarsi==='yok')return null;
+  if(bilKarsi==='oa')return[dl[0]-1].filter(i=>i>=0);
+  if(bilKarsi==='oy')return dl.map(i=>i-12).filter(i=>i>=0);
+  return null;
+}
+function aggr(list){
+  if(!list||!list.length)return null;
+  const v=list.filter(i=>i>=0&&i<DONEMLER.length);if(!v.length)return null;
+  const avg=k=>v.reduce((s,i)=>s+VERILER[i][k],0)/v.length;
+  const sum=k=>v.reduce((s,i)=>s+VERILER[i][k],0);
+  return{likit:avg('likit'),alacaklar:avg('alacaklar'),borclar:avg('borclar'),
+    demirbaslar:VERILER[v[v.length-1]].demirbaslar,ticariMallar:avg('ticariMallar'),
+    olaganDisi:sum('olaganDisi'),yatirimlar:sum('yatirimlar'),
+    _lbl:v.map(i=>DONEMLER[i].lbl).join(' — ')};
+}
+
+function setBilTur(t,el){
+  bilTur=t;
+  document.querySelectorAll('#bilTurChips .chip').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');renderBilanco();
+}
+function setKarsi(k){
+  bilKarsi=k;
+  ['oa','oy','yok'].forEach(x=>document.getElementById('kc_'+x)?.classList.toggle('active',x===k));
+  renderBilanco();
+}
+
+function kHtml(lbl,val,prev,tip,ico,inv){
+  const d=prev!=null?val-prev:null,dp=pct(val,prev);
+  const cls=d===null?'d-neu':inv?(d<0?'d-pos':'d-neg'):(d>0?'d-pos':'d-neg');
+  return`<div class="metric ${tip==='a'?'ka':tip==='p'?'kp':'ks'}">
+    <div class="lbl"><i class="ti ${ico}" style="font-size:11px;opacity:.6;margin-right:3px"></i>${lbl}</div>
+    <div class="val" style="font-family:var(--font-mono)">${fM(val)}</div>
+    ${prev!=null?`<div style="font-size:10px;color:var(--text3)">Baz: ${fM(prev)}</div>`:''}
+    ${d!==null?`<div class="delta ${cls}">${d>=0?'+':''}${fM(d)} (${fP(dp)})</div>`:''}
+  </div>`;
+}
+
+function destroyC(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+
+function renderBilanco(){
+  const di=getDi();
+  const dl=getDonemList(di,bilTur),kl=getKarsiList(dl);
+  const v=aggr(dl),vp=kl?aggr(kl):null;
+  if(!v)return;
+  const s=sermaye(v),sp=vp?sermaye(vp):null;
+  const sd=sp!==null?s-sp:null,sdp=pct(s,sp);
+  const tlbl=bilTur==='ay'?'Aylık':bilTur==='3ay'?'3 Aylık':bilTur==='6ay'?'6 Aylık':'Yıllık';
+  const gN=Math.min(8,DONEMLER.length),gS=Math.max(0,di-gN+1);
+  const gl=[],gs=[],gl2=[],ga=[],gb=[],gd=[];
+  for(let i=gS;i<=di;i++){
+    const dd=DONEMLER[i];gl.push(MONTHS[dd.m].substring(0,3)+'\''+dd.y.toString().slice(2));
+    const vv=VERILER[i];gs.push(Math.round(sermaye(vv)));
+    gl2.push(Math.round(vv.likit));ga.push(Math.round(vv.alacaklar));
+    gb.push(Math.round(vv.borclar));gd.push(Math.round(vv.demirbaslar));
+  }
+  const gc='rgba(0,0,0,0.06)',tc='rgba(0,0,0,0.4)';
+  const bO={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fM(c.raw)}}},
+    scales:{x:{ticks:{color:tc,font:{size:10},autoSkip:false,maxRotation:30},grid:{color:gc}},
+            y:{ticks:{color:tc,font:{size:10},callback:v=>'$'+Math.round(v/1000)+'K'},grid:{color:gc}}}};
+
+  document.getElementById('bilanco_content').innerHTML=`
+    <div class="sermaye-box">
+      <div>
+        <div class="lbl">${tlbl} · ${v._lbl}</div>
+        <div class="val">${fMD(s)}</div>
+        ${sp!==null?`<div class="sub">Baz: ${fMD(sp)}</div>`:''}
+      </div>
+      ${sd!==null?`<div class="s-delta">${sd>=0?'+':''}${fM(sd)}<span style="font-size:11px;opacity:.7;margin-left:6px">${fP(sdp)}</span></div>`:''}
+    </div>
+    <div class="metrics">
+      ${kHtml('Kasa & likit',v.likit,vp?.likit,'a','ti-wallet',false)}
+      ${kHtml('Alacaklar',v.alacaklar,vp?.alacaklar,'a','ti-receipt',false)}
+      ${kHtml('Borçlar',v.borclar,vp?.borclar,'p','ti-credit-card',true)}
+      ${kHtml('Demirbaşlar',v.demirbaslar,vp?.demirbaslar,'a','ti-building-warehouse',false)}
+      ${kHtml('Ticari mallar',v.ticariMallar,vp?.ticariMallar,'a','ti-package',false)}
+      ${kHtml('Olağan dışı',v.olaganDisi,vp?.olaganDisi,'s','ti-coin',false)}
+    </div>
+    <div class="charts2">
+      <div class="chart-card">
+        <div class="chart-lbl">Net sermaye</div>
+        <div class="legend"><span><span class="ld" style="background:#1a1a18"></span>Sermaye</span></div>
+        <div style="position:relative;height:160px"><canvas id="bc1" role="img" aria-label="Sermaye trendi"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-lbl">Likit · Alacaklar · Borçlar</div>
+        <div class="legend"><span><span class="ld" style="background:#1a7a4a"></span>Likit</span><span><span class="ld" style="background:#1a5fa8"></span>Alacaklar</span><span><span class="ld" style="background:#c0392b"></span>Borçlar</span></div>
+        <div style="position:relative;height:160px"><canvas id="bc2" role="img" aria-label="Likit alacaklar borçlar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-lbl">Aktif dağılımı — ${DONEMLER[di].lbl}</div>
+        <div style="position:relative;height:160px"><canvas id="bc3" role="img" aria-label="Aktif dağılımı"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-lbl">Oranlar</div>
+        <table style="width:100%;font-size:11px">
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 0;color:var(--text3)">Likit / Sermaye</td><td style="text-align:right;font-family:var(--font-mono)">${(v.likit/s*100).toFixed(1)}%</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 0;color:var(--text3)">Borç / Aktif</td><td style="text-align:right;font-family:var(--font-mono)">${(v.borclar/(v.likit+v.alacaklar+v.demirbaslar+v.ticariMallar)*100).toFixed(1)}%</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 0;color:var(--text3)">Demirbaş / Sermaye</td><td style="text-align:right;font-family:var(--font-mono)">${(v.demirbaslar/s*100).toFixed(1)}%</td></tr>
+          ${sp?`<tr style="border-bottom:1px solid var(--border)"><td style="padding:5px 0;color:var(--text3)">Sermaye büyümesi</td><td style="text-align:right;font-family:var(--font-mono);color:${sd>=0?'var(--green)':'var(--red)'}">${fP(sdp)}</td></tr>`:''}
+          ${vp?`<tr><td style="padding:5px 0;color:var(--text3)">Likit değişimi</td><td style="text-align:right;font-family:var(--font-mono)">${fP(pct(v.likit,vp.likit))}</td></tr>`:''}
+        </table>
+      </div>
+    </div>
+  `;
+
+  ['bc1','bc2','bc3'].forEach(destroyC);
+  charts['bc1']=new Chart(document.getElementById('bc1'),{type:'line',
+    data:{labels:gl,datasets:[{data:gs,borderColor:'#1a1a18',backgroundColor:'rgba(26,26,24,0.05)',tension:.35,fill:true,pointRadius:3,pointBackgroundColor:'#1a1a18',borderWidth:1.5}]},options:bO});
+  charts['bc2']=new Chart(document.getElementById('bc2'),{type:'bar',
+    data:{labels:gl,datasets:[{label:'Likit',data:gl2,backgroundColor:'#1a7a4a'},{label:'Alacaklar',data:ga,backgroundColor:'#1a5fa8'},{label:'Borçlar',data:gb,backgroundColor:'#c0392b'}]},options:bO});
+  const at=v.likit+v.alacaklar+v.demirbaslar+(v.ticariMallar||0.001);
+  charts['bc3']=new Chart(document.getElementById('bc3'),{type:'doughnut',
+    data:{labels:['Likit','Alacaklar','Demirbaşlar','Ticari mallar'],
+      datasets:[{data:[Math.round(v.likit),Math.round(v.alacaklar),Math.round(v.demirbaslar),Math.round(v.ticariMallar)],backgroundColor:['#1a7a4a','#1a5fa8','#6b2fa0','#8a5800'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:tc,font:{size:10},boxWidth:8,padding:6}}}}});
+}
+
+function openVeriGir(){
+  const di=getDi();const v=VERILER[di];
+  const ov=document.createElement('div');
+  ov.className='modal-ov';
+  ov.innerHTML=`<div class="modal">
+    <h3><i class="ti ti-pencil" style="margin-right:8px;opacity:.6"></i>${DONEMLER[di].lbl} — veri girişi</h3>
+    <div class="form-grid">
+      <div class="form-group"><label>Kasa & likit ($)</label><input id="vg_l" type="number" step="0.01" value="${v.likit}"></div>
+      <div class="form-group"><label>Alacaklar ($)</label><input id="vg_a" type="number" step="0.01" value="${v.alacaklar}"></div>
+      <div class="form-group"><label>Borçlar ($)</label><input id="vg_b" type="number" step="0.01" value="${v.borclar}"></div>
+      <div class="form-group"><label>Demirbaşlar ($)</label><input id="vg_d" type="number" step="0.01" value="${v.demirbaslar}"></div>
+      <div class="form-group"><label>Ticari mallar ($)</label><input id="vg_t" type="number" step="0.01" value="${v.ticariMallar}"></div>
+      <div class="form-group"><label>Olağan dışı gelirler ($)</label><input id="vg_o" type="number" step="0.01" value="${v.olaganDisi}"></div>
+      <div class="form-group fg-full"><label>Yatırımlar ($)</label><input id="vg_y" type="number" step="0.01" value="${v.yatirimlar}"></div>
+    </div>
+    <div style="background:var(--bg3);border-radius:var(--radius);padding:9px 12px;margin-top:10px;font-size:11px;color:var(--text3)">
+      Sermaye = likit + alacaklar − borçlar + demirbaşlar + ticari mallar
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="this.closest('.modal-ov').remove()">İptal</button>
+      <button class="btn btn-primary" onclick="vgKaydet(${di})"><i class="ti ti-check"></i> Kaydet</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+}
+function vgKaydet(di){
+  const g=id=>parseFloat(document.getElementById(id)?.value)||0;
+  const yeni={likit:g('vg_l'),alacaklar:g('vg_a'),borclar:g('vg_b'),demirbaslar:g('vg_d'),ticariMallar:g('vg_t'),olaganDisi:g('vg_o'),yatirimlar:g('vg_y')};
+  VERILER[di]={...VERILER[di],...yeni};
+  document.querySelector('.modal-ov')?.remove();
+  renderBilanco();
+  // Drive'a kaydet
+  const d=DONEMLER[di];
+  showLoading('Drive\'a kaydediliyor...');
+  apiPost({action:'setBilanco',idx:di,yil:d.y,ay:d.m,...yeni}).then(r=>{
+    hideLoading();
+    if(r?.ok)console.log('✓ Bilanço Drive\'a kaydedildi');
+  });
+}
+
+// INIT — Drive'dan yükle
+updateHdrKur();
+drivedenYukle();
+</script>
+</body>
+</html>
