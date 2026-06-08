@@ -446,23 +446,16 @@ function renderOzet(){
 }
 
 function kasaKart(baslik,cls,sym,kapanis,usdKarsi,acilis,kasaTip,editId){
-  return `<div class="kasa-kart ${cls}">
-    <div class="ust">
-      <div>
-        <div class="doviz">${baslik}</div>
-      </div>
-      <div style="display:flex;gap:6px">
-        <button class="edit-btn" onclick="bakiyeGir('acilis','${editId}')">Açılış ✎</button>
-        <button class="edit-btn" onclick="bakiyeGir('kapanis','${editId}')">Kapanış ✎</button>
-      </div>
-    </div>
-    <div class="kapanis">${kapanis}</div>
-    <div class="usd-karsi">≈ ${usdKarsi}</div>
-    <div class="acilis-row">
-      <span class="acilis-lbl">Açılış</span>
-      <span class="acilis-val">${acilis}</span>
-    </div>
-  </div>`;
+  return '<div class="kasa-kart '+cls+'">'
+    +'<div class="ust"><div><div class="doviz">'+baslik+'</div></div>'
+    +'<div style="display:flex;gap:6px">'
+    +'<button class="edit-btn" onclick="bakiyeGir(\'acilis\',\''+editId+'\')">Açılış ✎</button>'
+    +'<button class="edit-btn" onclick="bakiyeGir(\'kapanis\',\''+editId+'\')">Kapanış ✎</button>'
+    +'</div></div>'
+    +'<div class="kapanis">'+kapanis+'</div>'
+    +'<div class="usd-karsi">≈ '+usdKarsi+'</div>'
+    +'<div class="acilis-row"><span class="acilis-lbl">Açılış</span><span class="acilis-val">'+acilis+'</span></div>'
+    +'</div>';
 }
 
 function renderGelir(){
@@ -629,6 +622,7 @@ function bakiyeKaydet(tip,kasaId,key){
   document.querySelector('.modal-ov')?.remove();
   renderAll();
   toast(`✓ ${tip==='acilis'?'Açılış':'Kapanış'} güncellendi`);
+  otoDriveKaydet(key);
 }
 
 // ─── HAREKET MODAL ────────────────────────────────────────
@@ -764,13 +758,49 @@ function hareketKaydet(tur,key){
   document.querySelector('.modal-ov')?.remove();
   renderAll();
   toast(`✓ ${tur} kaydedildi`);
+  // Otomatik Drive kaydet
+  otoDriveKaydet(key);
 }
 
 function avansKapat(hId){
   const d=getDonem();
   const veri=getKasaVeri(d.key);
   const h=veri.hareketler.find(x=>x.id===hId);
-  if(h){h.avansKapali=true;renderAll();toast('✓ Avans kapatıldı');}
+  if(h){
+    h.avansKapali=true;
+    renderAll();
+    toast('✓ Avans kapatıldı');
+    otoDriveKaydet(getDonem().key);
+  }
+}
+
+// ─── OTO DRIVE KAYDET ─────────────────────────────────────
+async function otoDriveKaydet(key){
+  const veri=getKasaVeri(key);
+  const res=await apiSave({
+    action:'setKasa',
+    donemKey:key,
+    acilis:veri.acilis,
+    kapanis:veri.kapanis,
+    hareketler:veri.hareketler,
+  });
+  if(res?.ok){
+    document.getElementById('statusDot').className='status-dot ok';
+    // Sonraki ayın açılışını güncelle
+    const idx=DONEMLER.findIndex(d=>d.key===key);
+    if(idx>=0&&idx<DONEMLER.length-1){
+      const sonrakiKey=DONEMLER[idx+1].key;
+      const sonrakiVeri=getKasaVeri(sonrakiKey);
+      // Sadece sonraki ayın açılışı 0 ise aktar
+      if(!sonrakiVeri.acilis.TL&&!sonrakiVeri.acilis.USD&&!sonrakiVeri.acilis.EUR){
+        sonrakiVeri.acilis={...veri.kapanis};
+        // Sonraki ayı da kaydet
+        apiSave({action:'setKasa',donemKey:sonrakiKey,
+          acilis:sonrakiVeri.acilis,kapanis:sonrakiVeri.kapanis,
+          hareketler:sonrakiVeri.hareketler});
+      }
+    }
+  }
 }
 
 // ─── KAPANIŞ KAYDET (DRIVE) ───────────────────────────────
@@ -800,10 +830,22 @@ async function init(){
     sel.appendChild(o);
   });
 
+  // Mayıs 2026 varsayılan verileri — Drive'dan gelmezse kullan
+  const may26=getKasaVeri('2026-4');
+  if(!may26.kapanis.TL&&!may26.kapanis.USD){
+    may26.acilis={TL:401123,USD:2600,EUR:0,ALTIN:30,GUMUS:0};
+    may26.kapanis={TL:19155,USD:24100,EUR:0,ALTIN:30,GUMUS:0};
+  }
+
   renderAll();
 
-  // Kur verilerini yükle
-  const kurRes=await apiGet(KUR_API,'getKurlar');
+  // Drive'dan yükle
+  document.getElementById('statusDot').className='status-dot';
+  const [kurRes,kasaRes]=await Promise.all([
+    apiGet(KUR_API,'getKurlar'),
+    apiGet(KASA_API,'getKasa'),
+  ]);
+
   if(kurRes?.ok&&kurRes.kurlar){
     window.KURLAR={...window.KURLAR,...kurRes.kurlar};
     document.getElementById('statusDot').className='status-dot ok';
@@ -811,20 +853,29 @@ async function init(){
     document.getElementById('statusDot').className='status-dot err';
   }
 
-  // Kasa verilerini yükle
-  const kasaRes=await apiGet(KASA_API,'getKasa');
   if(kasaRes?.ok&&kasaRes.veri){
     Object.entries(kasaRes.veri).forEach(([key,v])=>{
-      window.KASA[key]={...getKasaVeri(key),...v};
+      window.KASA[key]=v;
     });
+    // Drive'dan geldikten sonra Mayıs varsayılanını tekrar kontrol et
+    const m26=getKasaVeri('2026-4');
+    if(!m26.kapanis.TL&&!m26.kapanis.USD){
+      m26.acilis={TL:401123,USD:2600,EUR:0,ALTIN:30,GUMUS:0};
+      m26.kapanis={TL:19155,USD:24100,EUR:0,ALTIN:30,GUMUS:0};
+    }
   }
 
-  // Mayıs 2026 başlangıç verileri (Drive'da yoksa varsayılan)
-  const may26=getKasaVeri('2026-4');
-  if(!may26.kapanis.TL&&!may26.kapanis.USD){
-    may26.acilis={TL:401123,USD:2600,EUR:0,ALTIN:30,GUMUS:0};
-    may26.kapanis={TL:19155,USD:24100,EUR:0,ALTIN:30,GUMUS:0};
-  }
+  // Otomatik açılış aktarımı — her dönem için önceki kapanış = bu dönem açılış
+  DONEMLER.forEach((d,i)=>{
+    if(i===0) return;
+    const prev=DONEMLER[i-1];
+    const prevVeri=window.KASA[prev.key];
+    const buVeri=getKasaVeri(d.key);
+    // Sadece açılış sıfırsa aktar (elle girilmişse dokunma)
+    if(prevVeri&&prevVeri.kapanis&&!buVeri.acilis.TL&&!buVeri.acilis.USD&&!buVeri.acilis.EUR){
+      buVeri.acilis={...prevVeri.kapanis};
+    }
+  });
 
   renderAll();
   toast('✓ Veri yüklendi');
