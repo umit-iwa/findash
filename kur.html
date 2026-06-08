@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kur Yönetimi — FinDash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;
+  --bg2:#161b27;
+  --bg3:#1e2535;
+  --border:#2a3348;
+  --border2:#3a4a66;
+  --text:#e8edf5;
+  --text2:#8a9bb8;
+  --text3:#4a5a78;
+  --accent:#4f9cf9;
+  --accent2:#1a4a8a;
+  --green:#2ecc8a;
+  --green-bg:#0d2e1f;
+  --amber:#f0a030;
+  --amber-bg:#2a1f0a;
+  --red:#e05555;
+  --red-bg:#2a1010;
+  --font:'IBM Plex Sans',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  --r:6px;
+}
+
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+
+/* LOCK */
+#lock{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:20px}
+.lock-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:40px 48px;width:340px;text-align:center}
+.lock-icon{font-size:32px;margin-bottom:16px;color:var(--accent)}
+.lock-box h2{font-size:18px;font-weight:500;margin-bottom:4px}
+.lock-box p{font-size:12px;color:var(--text2);margin-bottom:24px}
+.lock-box input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;color:var(--text);font-family:var(--mono);font-size:15px;letter-spacing:2px;text-align:center;outline:none;margin-bottom:12px}
+.lock-box input:focus{border-color:var(--accent)}
+.lock-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:10px;font-size:14px;font-family:var(--font);font-weight:500;cursor:pointer}
+.lock-btn:hover{background:#3a8ae8}
+.lock-err{color:var(--red);font-size:12px;margin-top:8px;display:none}
+
+/* LAYOUT */
+#app{display:none;max-width:960px;margin:0 auto;padding:32px 24px}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.hdr-left h1{font-size:22px;font-weight:600;letter-spacing:-.3px}
+.hdr-left p{font-size:12px;color:var(--text2);margin-top:3px}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.kur-badge{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-family:var(--mono);font-size:13px;color:var(--accent)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--text3)}
+.status-dot.ok{background:var(--green)}
+.status-dot.err{background:var(--red)}
+
+/* FORM */
+.form-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:24px}
+.form-card h3{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);margin-bottom:18px}
+.form-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg label{font-size:11px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.fg input,.fg select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border .15s}
+.fg input:focus,.fg select:focus{border-color:var(--accent)}
+.fg select{font-family:var(--font);cursor:pointer}
+.fg input.w80{width:80px}
+.fg input.w110{width:110px}
+.fg select.w90{width:90px}
+.fg select.w120{width:120px}
+.fg select.w180{width:180px}
+.save-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:9px 20px;font-size:13px;font-family:var(--font);font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s;white-space:nowrap}
+.save-btn:hover{background:#3a8ae8}
+.save-btn.loading{background:var(--bg3);color:var(--text2);cursor:not-allowed}
+.hint{font-size:11px;color:var(--text3);margin-top:10px}
+.hint a{color:var(--accent);text-decoration:none}
+
+/* TABLE */
+.tbl-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.tbl-card table{width:100%;border-collapse:collapse}
+.tbl-card th{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);font-weight:600;padding:10px 16px;text-align:left;background:var(--bg3);border-bottom:1px solid var(--border)}
+.tbl-card th.num{text-align:right}
+.tbl-card td{padding:11px 16px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl-card tr:last-child td{border-bottom:none}
+.tbl-card tr.aktif{background:rgba(79,156,249,.06)}
+.tbl-card tr:hover{background:var(--bg3)}
+.mono{font-family:var(--mono);font-size:13px}
+.num{text-align:right}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.3px}
+.tag-aktif{background:rgba(79,156,249,.15);color:var(--accent)}
+.tag-girildi{background:rgba(46,204,138,.12);color:var(--green)}
+.tag-bekliyor{background:var(--bg3);color:var(--text3)}
+.tag-tcmb{background:rgba(46,204,138,.08);color:var(--green);font-size:9px}
+.tag-manuel{background:var(--bg3);color:var(--text2);font-size:9px}
+.period{font-size:13px;font-weight:500}
+.period.aktif{color:var(--accent)}
+.edit-btn{background:transparent;border:1px solid var(--border);border-radius:4px;padding:3px 7px;color:var(--text2);cursor:pointer;font-size:11px;transition:all .15s}
+.edit-btn:hover{border-color:var(--accent);color:var(--accent)}
+.edit-inp{background:var(--bg3);border:1px solid var(--accent);border-radius:4px;padding:3px 7px;color:var(--text);font-family:var(--mono);font-size:13px;width:90px;outline:none}
+.saving-indicator{font-size:10px;color:var(--amber);display:none}
+.saved-indicator{font-size:10px;color:var(--green);display:none}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 18px;font-size:13px;display:flex;align-items:center;gap:10px;z-index:100;transform:translateY(80px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-color:var(--green)}
+.toast.err{border-color:var(--red)}
+.toast-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+.toast.err .toast-dot{background:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- KİLİT -->
+<div id="lock">
+  <div class="lock-box">
+    <div class="lock-icon">⬡</div>
+    <h2>Kur Yönetimi</h2>
+    <p>FinDash · Döviz Kurları Modülü</p>
+    <input type="password" id="passInp" placeholder="••••••••••" onkeydown="if(event.key==='Enter')checkPass()">
+    <button class="lock-btn" onclick="checkPass()">Giriş yap</button>
+    <div class="lock-err" id="lockErr">Hatalı şifre</div>
+  </div>
+</div>
+
+<!-- UYGULAMA -->
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-left">
+      <h1>Kur Yönetimi</h1>
+      <p>TCMB ay sonu efektif alış kurları — tüm FinDash modülleri bu tablodan beslenir</p>
+    </div>
+    <div class="hdr-right">
+      <div class="status-dot" id="statusDot"></div>
+      <div class="kur-badge" id="kurBadge">yükleniyor…</div>
+    </div>
+  </div>
+
+  <!-- YENİ KUR GİRİŞİ -->
+  <div class="form-card">
+    <h3>Yeni kur girişi</h3>
+    <div class="form-row">
+      <div class="fg"><label>Yıl</label><select id="fYil" class="w90"><option>2025</option><option selected>2026</option><option>2027</option></select></div>
+      <div class="fg"><label>Ay</label><select id="fAy" class="w120">
+        <option value="0">Ocak</option><option value="1">Şubat</option><option value="2">Mart</option>
+        <option value="3">Nisan</option><option value="4" selected>Mayıs</option><option value="5">Haziran</option>
+        <option value="6">Temmuz</option><option value="7">Ağustos</option><option value="8">Eylül</option>
+        <option value="9">Ekim</option><option value="10">Kasım</option><option value="11">Aralık</option>
+      </select></div>
+      <div class="fg"><label>USD/TRY <span style="color:var(--red)">*</span></label><input type="number" id="fUsd" class="w110" step="0.0001" placeholder="38.5000"></div>
+      <div class="fg"><label>EUR/USD</label><input type="number" id="fEur" class="w110" step="0.0001" placeholder="1.1000"></div>
+      <div class="fg"><label>GBP/USD</label><input type="number" id="fGbp" class="w110" step="0.0001" placeholder="1.2800"></div>
+      <div class="fg"><label>Altın ($/gr)</label><input type="number" id="fAltin" class="w110" step="0.01" placeholder="95.00"></div>
+      <div class="fg"><label>Gümüş ($/gr)</label><input type="number" id="fGumus" class="w110" step="0.001" placeholder="1.050"></div>
+      <div class="fg"><label>Kaynak</label><select id="fKaynak" class="w180">
+        <option>TCMB efektif alış</option><option>TCMB gösterge</option><option>Manuel</option>
+      </select></div>
+      <button class="save-btn" id="saveBtn" onclick="formKaydet()">
+        <span id="saveBtnTxt">✓ Kaydet</span>
+      </button>
+    </div>
+    <div class="hint">Her ayın son iş gününde <a href="https://tcmb.gov.tr" target="_blank">tcmb.gov.tr</a> → Döviz Kurları → Efektif Alış sütunundaki USD/TRY değerini girin.</div>
+  </div>
+
+  <!-- KUR TABLOSU -->
+  <div class="tbl-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Dönem</th>
+          <th class="num">USD/TRY</th>
+          <th class="num">EUR/USD</th>
+          <th class="num">GBP/USD</th>
+          <th class="num">Altın ($/gr)</th>
+          <th class="num">Gümüş ($/gr)</th>
+          <th class="num">EUR/TRY (≈)</th>
+          <th>Kaynak</th>
+          <th>Tarih</th>
+          <th>Durum</th>
+        </tr>
+      </thead>
+      <tbody id="kurTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast" id="toast"><div class="toast-dot"></div><span id="toastMsg"></span></div>
+
+<script>
+// ─── AYARLAR ───────────────────────────────────────────────
+const PASS = 'Za334286**';
+const API_URL = 'https://script.google.com/a/macros/iwaconcept.com.tr/s/AKfycbwoO1cDZZQvruE-nleoprtLHfH2hS4DaHsnAalMbkcRFHqRgNlFnTZvuTLOLM2_Dkd7YA/exec';
+const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+
+// Dönemler: 2025-Ocak → 2026-Mayıs + gelecek 6 ay
+const DONEMLER = [];
+for(let y=2025;y<=2027;y++){
+  for(let m=0;m<12;m++){
+    if(y===2025&&m<0) continue;
+    if(y===2027&&m>5) break;
+    DONEMLER.push({y,m,key:y+'-'+m,lbl:MONTHS[m]+' '+y});
+  }
+}
+
+// Varsayılan kurlar
+window.KURLAR = {
+  '2025-0':{kur:32.78,eurUsd:1.030,gbpUsd:1.250,altinUsd:85.0,gumusUsd:0.95,kaynak:'TCMB efektif alış',tarih:'2025-01-31'},
+  '2025-1':{kur:33.52,eurUsd:1.040,gbpUsd:1.260,altinUsd:87.0,gumusUsd:0.97,kaynak:'TCMB efektif alış',tarih:'2025-02-28'},
+  '2025-2':{kur:34.11,eurUsd:1.075,gbpUsd:1.290,altinUsd:90.0,gumusUsd:1.00,kaynak:'TCMB efektif alış',tarih:'2025-03-31'},
+  '2025-3':{kur:35.20,eurUsd:1.130,gbpUsd:1.330,altinUsd:92.0,gumusUsd:1.02,kaynak:'TCMB efektif alış',tarih:'2025-04-30'},
+  '2025-4':{kur:35.88,eurUsd:1.130,gbpUsd:1.350,altinUsd:93.0,gumusUsd:1.03,kaynak:'TCMB efektif alış',tarih:'2025-05-31'},
+  '2025-5':{kur:36.40,eurUsd:1.120,gbpUsd:1.360,altinUsd:93.5,gumusUsd:1.04,kaynak:'TCMB efektif alış',tarih:'2025-06-30'},
+  '2025-6':{kur:36.95,eurUsd:1.090,gbpUsd:1.340,altinUsd:94.0,gumusUsd:1.05,kaynak:'TCMB efektif alış',tarih:'2025-07-31'},
+  '2025-7':{kur:37.30,eurUsd:1.105,gbpUsd:1.315,altinUsd:94.5,gumusUsd:1.05,kaynak:'TCMB efektif alış',tarih:'2025-08-31'},
+  '2025-8':{kur:37.68,eurUsd:1.115,gbpUsd:1.335,altinUsd:95.0,gumusUsd:1.06,kaynak:'TCMB efektif alış',tarih:'2025-09-30'},
+  '2025-9':{kur:38.05,eurUsd:1.090,gbpUsd:1.300,altinUsd:95.5,gumusUsd:1.07,kaynak:'TCMB efektif alış',tarih:'2025-10-31'},
+  '2025-10':{kur:38.20,eurUsd:1.055,gbpUsd:1.270,altinUsd:96.0,gumusUsd:1.08,kaynak:'TCMB efektif alış',tarih:'2025-11-30'},
+  '2025-11':{kur:38.42,eurUsd:1.045,gbpUsd:1.260,altinUsd:96.5,gumusUsd:1.09,kaynak:'TCMB efektif alış',tarih:'2025-12-31'},
+  '2026-0':{kur:38.55,eurUsd:1.040,gbpUsd:1.245,altinUsd:97.0,gumusUsd:1.10,kaynak:'TCMB efektif alış',tarih:'2026-01-31'},
+  '2026-1':{kur:38.61,eurUsd:1.048,gbpUsd:1.255,altinUsd:97.5,gumusUsd:1.11,kaynak:'TCMB efektif alış',tarih:'2026-02-28'},
+  '2026-2':{kur:38.70,eurUsd:1.083,gbpUsd:1.295,altinUsd:98.0,gumusUsd:1.12,kaynak:'TCMB efektif alış',tarih:'2026-03-31'},
+  '2026-3':{kur:38.78,eurUsd:1.133,gbpUsd:1.330,altinUsd:98.5,gumusUsd:1.13,kaynak:'TCMB efektif alış',tarih:'2026-04-30'},
+  '2026-4':{kur:38.50,eurUsd:1.130,gbpUsd:1.350,altinUsd:95.0,gumusUsd:1.05,kaynak:'Manuel',tarih:'2026-05-31'},
+};
+
+// Aktif dönem = bu ay
+const now = new Date();
+const AKTif_KEY = now.getFullYear()+'-'+(now.getMonth());
+
+// ─── AUTH ──────────────────────────────────────────────────
+function checkPass(){
+  const v = document.getElementById('passInp').value;
+  if(v === PASS){
+    document.getElementById('lock').style.display='none';
+    document.getElementById('app').style.display='block';
+    init();
+  } else {
+    document.getElementById('lockErr').style.display='block';
+    document.getElementById('passInp').value='';
+    document.getElementById('passInp').focus();
+  }
+}
+
+// ─── API ───────────────────────────────────────────────────
+async function apiGet(action){
+  try{
+    const r = await fetch(`${API_URL}?action=${action}`);
+    return await r.json();
+  }catch(e){return null;}
+}
+async function apiSave(body){
+  try{
+    const data = encodeURIComponent(JSON.stringify(body));
+    const r = await fetch(`${API_URL}?action=${body.action}&data=${data}`);
+    return await r.json();
+  }catch(e){return null;}
+}
+
+// ─── TOAST ────────────────────────────────────────────────
+function toast(msg, type='ok'){
+  const t = document.getElementById('toast');
+  const m = document.getElementById('toastMsg');
+  t.className = 'toast '+type;
+  m.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ─── RENDER ───────────────────────────────────────────────
+function renderTablo(){
+  const tbody = document.getElementById('kurTbody');
+  const aktifKur = window.KURLAR[AKTif_KEY];
+  if(aktifKur){
+    document.getElementById('kurBadge').textContent = aktifKur.kur.toFixed(2)+' TL/USD';
+    document.getElementById('statusDot').className = 'status-dot ok';
+  }
+
+  const rows = [...DONEMLER].reverse().map(({y,m,key,lbl})=>{
+    const d = window.KURLAR[key];
+    const isAktif = key === AKTif_KEY;
+    const eurTry = d ? (d.kur*(d.eurUsd||1.10)).toFixed(2) : '—';
+    const altinGoster = d ? (d.altinUsd||'—') : '—';
+    const durum = isAktif ? '<span class="tag tag-aktif">aktif</span>'
+                 : d ? '<span class="tag tag-girildi">girildi</span>'
+                 : '<span class="tag tag-bekliyor">bekliyor</span>';
+    const kaynak = d ? `<span class="tag ${d.kaynak==='Manuel'?'tag-manuel':'tag-tcmb'}">${d.kaynak}</span>` : '—';
+    const tarih = d ? `<span style="font-family:var(--mono);font-size:11px;color:var(--text2)">${d.tarih}</span>` : '—';
+
+    return `<tr class="${isAktif?'aktif':''}">
+      <td><span class="period ${isAktif?'aktif':''}">${lbl}</span></td>
+      <td class="num"><span class="mono" id="kur_${key}">${d?d.kur.toFixed(4):'—'}</span>
+        ${d?`<button class="edit-btn" style="margin-left:6px" onclick="editKur('${key}','usd',${d.kur})">✎</button>`:
+            `<button class="edit-btn" style="margin-left:6px" onclick="quickFill(${y},${m})">+</button>`}
+      </td>
+      <td class="num"><span class="mono" id="eur_${key}">${d?(d.eurUsd||'—'):'—'}</span>
+        ${d?`<button class="edit-btn" style="margin-left:6px" onclick="editKur('${key}','eur',${d.eurUsd||1.10})">✎</button>`:''}
+      </td>
+      <td class="num"><span class="mono" id="gbp_${key}">${d?(d.gbpUsd||'—'):'—'}</span>
+        ${d?`<button class="edit-btn" style="margin-left:6px" onclick="editKur('${key}','gbp',${d.gbpUsd||1.28})">✎</button>`:''}
+      </td>
+      <td class="num"><span class="mono" id="altin_${key}">${altinGoster}</span>
+        ${d?`<button class="edit-btn" style="margin-left:6px" onclick="editKur('${key}','altin',${d.altinUsd||95})">✎</button>`:''}
+      </td>
+      <td class="num"><span class="mono" id="gumus_${key}">${d?(d.gumusUsd||'—'):'—'}</span>
+        ${d?`<button class="edit-btn" style="margin-left:6px" onclick="editKur('${key}','gumus',${d.gumusUsd||1.05})">✎</button>`:''}
+      </td>
+      <td class="num mono" style="color:var(--text2)">${eurTry}</td>
+      <td>${kaynak}</td>
+      <td>${tarih}</td>
+      <td>${durum}</td>
+    </tr>`;
+  }).join('');
+  tbody.innerHTML = rows;
+}
+
+// ─── INLINE DÜZENLEME ─────────────────────────────────────
+function editKur(key, tip, mevcut){
+  const spanId = tip==='usd'?`kur_${key}`:tip==='eur'?`eur_${key}`:tip==='gbp'?`gbp_${key}`:tip==='altin'?`altin_${key}`:`gumus_${key}`;
+  const span = document.getElementById(spanId);
+  if(!span) return;
+  const orig = span.textContent;
+  span.innerHTML = `<input class="edit-inp" type="number" value="${mevcut}" step="0.0001" id="ei_${key}_${tip}">`;
+  const inp = document.getElementById(`ei_${key}_${tip}`);
+  inp.focus(); inp.select();
+
+  const save = async ()=>{
+    const v = parseFloat(inp.value);
+    if(!v||v<0.1){ span.textContent=orig; return; }
+    if(!window.KURLAR[key]) return;
+    if(tip==='usd') window.KURLAR[key].kur = v;
+    else if(tip==='eur') window.KURLAR[key].eurUsd = v;
+    else if(tip==='gbp') window.KURLAR[key].gbpUsd = v;
+    else if(tip==='altin') window.KURLAR[key].altinUsd = v;
+    else if(tip==='gumus') window.KURLAR[key].gumusUsd = v;
+    window.KURLAR[key].kaynak = 'Manuel';
+    renderTablo();
+    // Drive'a kaydet
+    const d = window.KURLAR[key];
+    const parts = key.split('-');
+    const res = await apiSave({
+      action:'setKur', y:parseInt(parts[0]), m:parseInt(parts[1]),
+      kur:d.kur, eurUsd:d.eurUsd||1.10, gbpUsd:d.gbpUsd||1.28,
+      kaynak:d.kaynak, tarih:d.tarih||key
+    });
+    if(res?.ok) toast('✓ '+key+' kaydedildi');
+    else toast('Drive hatası', 'err');
+  };
+  inp.onblur = save;
+  inp.onkeydown = e=>{ if(e.key==='Enter') inp.blur(); if(e.key==='Escape'){ span.textContent=orig; } };
+}
+
+function quickFill(y,m){
+  document.getElementById('fYil').value = y;
+  document.getElementById('fAy').value = m;
+  document.getElementById('fUsd').focus();
+}
+
+// ─── FORM KAYDET ──────────────────────────────────────────
+async function formKaydet(){
+  const y = parseInt(document.getElementById('fYil').value);
+  const m = parseInt(document.getElementById('fAy').value);
+  const kur = parseFloat(document.getElementById('fUsd').value);
+  const eurUsd = parseFloat(document.getElementById('fEur').value)||null;
+  const altinUsd = parseFloat(document.getElementById('fAltin').value)||null;
+  const gumusUsd = parseFloat(document.getElementById('fGumus').value)||null;
+  const kaynak = document.getElementById('fKaynak').value;
+
+  if(!kur||kur<1){ toast('Geçerli bir USD/TRY kuru giriniz','err'); return; }
+
+  const ayDaysInMonth = new Date(y,m+1,0).getDate();
+  const tarih = `${y}-${String(m+1).padStart(2,'0')}-${String(ayDaysInMonth).padStart(2,'0')}`;
+  const key = y+'-'+m;
+
+  // Mevcut veriyi koru, sadece değişenleri güncelle
+  const mevcut = window.KURLAR[key]||{};
+  window.KURLAR[key] = {
+    kur,
+    eurUsd:   eurUsd   || mevcut.eurUsd   || 1.10,
+    gbpUsd:   gbpUsd   || mevcut.gbpUsd   || 1.28,
+    altinUsd: altinUsd || mevcut.altinUsd || 95.0,
+    gumusUsd: gumusUsd || mevcut.gumusUsd || 1.05,
+    kaynak, tarih
+  };
+
+  // Kaydet butonu loading
+  const btn = document.getElementById('saveBtn');
+  const txt = document.getElementById('saveBtnTxt');
+  btn.className = 'save-btn loading';
+  txt.textContent = '⏳ Kaydediliyor…';
+
+  const res = await apiSave({
+    action:'setKur', y, m,
+    kur:      window.KURLAR[key].kur,
+    eurUsd:   window.KURLAR[key].eurUsd,
+    gbpUsd:   window.KURLAR[key].gbpUsd,
+    altinUsd: window.KURLAR[key].altinUsd,
+    gumusUsd: window.KURLAR[key].gumusUsd,
+    kaynak, tarih
+  });
+
+  btn.className = 'save-btn';
+  txt.textContent = '✓ Kaydet';
+
+  if(res?.ok){
+    renderTablo();
+    document.getElementById('fUsd').value = '';
+    document.getElementById('fEur').value = '';
+    document.getElementById('fGbp').value = '';
+    toast(`✓ ${MONTHS[m]} ${y} kaydedildi`);
+  } else {
+    toast('Drive bağlantı hatası', 'err');
+  }
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+async function init(){
+  renderTablo();
+  document.getElementById('statusDot').className = 'status-dot';
+  document.getElementById('kurBadge').textContent = 'Drive yükleniyor…';
+
+  const res = await apiGet('getKurlar');
+  if(res?.ok && res.kurlar && Object.keys(res.kurlar).length>0){
+    // Drive'daki veriler varsayılanların üzerine yazar
+    window.KURLAR = {...window.KURLAR, ...res.kurlar};
+    document.getElementById('statusDot').className = 'status-dot ok';
+    renderTablo();
+    toast('✓ Drive bağlantısı kuruldu');
+  } else {
+    document.getElementById('statusDot').className = 'status-dot err';
+    document.getElementById('kurBadge').textContent = 'Yerel veri';
+    toast('Drive bağlanamadı — yerel veriler kullanılıyor','err');
+  }
+}
+
+document.getElementById('passInp').focus();
+</script>
+</body>
+</html>
