@@ -1,12 +1,13 @@
-<!DOCTYPE html>
-<!-- saved from url=(0045)file:///Users/umitmaden/Downloads/kasa_2.html -->
-<html lang="tr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nakit Kasa — FinDash</title>
-<link href="./kasa_files/css2" rel="stylesheet">
-<script src="./kasa_files/auth.js"></script>
-<script src="./kasa_files/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -101,12 +102,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
   </div>
   <div class="tabs">
-    <div class="tab active" onclick="switchTab(&#39;ozet&#39;,this)">📊 Özet</div>
-    <div class="tab" onclick="switchTab(&#39;gelir&#39;,this)">📈 Gelirler</div>
-    <div class="tab" onclick="switchTab(&#39;gider&#39;,this)">📉 Giderler</div>
-    <div class="tab" onclick="switchTab(&#39;avans&#39;,this)">🔄 Avanslar</div>
-    <div class="tab" onclick="switchTab(&#39;doviz&#39;,this)">💱 Döviz Bozdurma</div>
-    <div class="tab" onclick="switchTab(&#39;hareketler&#39;,this)">📋 Tüm Hareketler</div>
+    <div class="tab active" onclick="switchTab('ozet',this)">📊 Özet</div>
+    <div class="tab" onclick="switchTab('gelir',this)">📈 Gelirler</div>
+    <div class="tab" onclick="switchTab('gider',this)">📉 Giderler</div>
+    <div class="tab" onclick="switchTab('avans',this)">🔄 Avanslar</div>
+    <div class="tab" onclick="switchTab('doviz',this)">💱 Döviz Bozdurma</div>
+    <div class="tab" onclick="switchTab('hareketler',this)">📋 Tüm Hareketler</div>
   </div>
   <div class="panel active" id="panel-ozet">
     <div class="toplam-banner">
@@ -148,20 +149,20 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="toolbar" id="kasaToolbar"></div>
   </div>
   <div class="panel" id="panel-gelir">
-    <div class="toolbar"><button class="btn btn-green" onclick="hareketModal(&#39;gelir&#39;)">+ Yeni gelir</button></div>
+    <div class="toolbar"><button class="btn btn-green" onclick="hareketModal('gelir')">+ Yeni gelir</button></div>
     <div id="gelirIcerik"></div>
   </div>
   <div class="panel" id="panel-gider">
-    <div class="toolbar"><button class="btn btn-red" onclick="hareketModal(&#39;gider&#39;)">− Yeni gider</button></div>
+    <div class="toolbar"><button class="btn btn-red" onclick="hareketModal('gider')">− Yeni gider</button></div>
     <div id="giderIcerik"></div>
   </div>
   <div class="panel" id="panel-avans">
-    <div class="toolbar"><button class="btn btn-amber" onclick="hareketModal(&#39;avans&#39;)">↕ Yeni avans</button></div>
+    <div class="toolbar"><button class="btn btn-amber" onclick="hareketModal('avans')">↕ Yeni avans</button></div>
     <div class="info-box"><strong>Borç avans:</strong> Kasadan çıkış, geri dönünce gelir yazılmaz.<br><strong>Hizmet avansı:</strong> Harcanınca gidere dönüşür.</div>
     <div id="avansIcerik"></div>
   </div>
   <div class="panel" id="panel-doviz">
-    <div class="toolbar"><button class="btn" onclick="hareketModal(&#39;doviz&#39;)">⇄ Yeni döviz bozdurma</button></div>
+    <div class="toolbar"><button class="btn" onclick="hareketModal('doviz')">⇄ Yeni döviz bozdurma</button></div>
     <div class="info-box">Piyasa kuru kullanılır. Kur farkı işlenmez.</div>
     <div id="dovizIcerik"></div>
   </div>
@@ -399,7 +400,7 @@ function renderGrafikler(){
     const toplam=data.reduce((a,b)=>a+b,0);
     const pct=function(ctx){return ' '+ctx.label+': '+Math.round(ctx.raw).toLocaleString('tr-TR')+' ('+((ctx.raw/toplam)*100).toFixed(0)+'%)';};
     const c=new Chart(canvas,{type:'pie',data:{labels:keys,datasets:[{data,backgroundColor:GRAFIK_RENKLER,borderWidth:2,borderColor:'#161b27'}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:pct}}}}}});
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:pct}}}}});
     legend.innerHTML=keys.map((l,i)=>'<div style="display:flex;justify-content:space-between;margin-bottom:2px"><div style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:'+GRAFIK_RENKLER[i]+';display:inline-block"></span><span style="color:var(--text2)">'+l+'</span></div><span style="font-family:var(--mono)">'+((data[i]/toplam)*100).toFixed(0)+'%</span></div>').join('');
     return c;
   }
@@ -718,6 +719,5 @@ async function init(){
   toast('✓ Veri yüklendi');
 }
 </script>
-
-
-</body></html>
+</body>
+</html>
