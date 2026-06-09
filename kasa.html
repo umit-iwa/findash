@@ -282,6 +282,9 @@ function getKur(y,m){return window.KURLAR[y+'-'+m]||{kur:38.5,eurUsd:1.10,gbpUsd
 
 function donemKilitliMi(y,m){return !!window.KILITLI_DONEMLER[y+'-'+m];}
 
+// Avansın kasadan çıkan etkin tutarı = kalan (harcandıkça azalır)
+function avansEtkin(x){ return x.avansKalan !== undefined ? x.avansKalan : x.tutarSay; }
+
 function hesaplaKapanis(key){
   const veri=getKasaVeri(key);
   if(veri._adminKapanis) return veri._adminKapanis;
@@ -293,7 +296,7 @@ function hesaplaKapanis(key){
     const k=x.kasaDoviz;
     if(x.tur==='gelir'){if(k==='TL')kap.TL+=t;else if(k==='USD')kap.USD+=t;else if(k==='EUR')kap.EUR+=t;else if(k==='GBP')kap.GBP+=t;}
     if(x.tur==='gider'){if(k==='TL')kap.TL-=t;else if(k==='USD')kap.USD-=t;else if(k==='EUR')kap.EUR-=t;else if(k==='GBP')kap.GBP-=t;}
-    if(x.tur==='avans'&&!x.avansKapali){if(k==='TL')kap.TL-=t;else if(k==='USD')kap.USD-=t;else if(k==='EUR')kap.EUR-=t;else if(k==='GBP')kap.GBP-=t;}
+    if(x.tur==='avans'&&!x.avansKapali){const ae=avansEtkin(x);if(k==='TL')kap.TL-=ae;else if(k==='USD')kap.USD-=ae;else if(k==='EUR')kap.EUR-=ae;else if(k==='GBP')kap.GBP-=ae;}
     if(x.tur==='doviz'){
       const cin=x.cinsi,ci=x.cikanMiktar||0,gi=x.girenMiktar||0;
       if(cin==='USD→TL'){kap.USD-=ci;kap.TL+=gi;}
@@ -363,7 +366,7 @@ function renderOzet(){
   function kasaKart(baslik,cls,kapBakiye,kapSay,usdKarsi,acBakiye,editId){
     const giren=h.filter(x=>x.tur==='gelir'&&x.kasaDoviz===editId).reduce((s,x)=>s+(x.tutarSay||0),0);
     const cGider=h.filter(x=>x.tur==='gider'&&x.kasaDoviz===editId).reduce((s,x)=>s+(x.tutarSay||0),0);
-    const cAvans=h.filter(x=>x.tur==='avans'&&!x.avansKapali&&x.kasaDoviz===editId).reduce((s,x)=>s+(x.tutarSay||0),0);
+    const cAvans=h.filter(x=>x.tur==='avans'&&!x.avansKapali&&x.kasaDoviz===editId).reduce((s,x)=>s+avansEtkin(x),0);
     const sym={TL:'₺',USD:'$',EUR:'€',ALTIN:'gr',GUMUS:'gr'}[editId]||'';
     const fmt=v=>sym+(editId==='TL'?new Intl.NumberFormat('tr-TR').format(Math.round(v)):editId==='USD'?new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(Math.round(v)):new Intl.NumberFormat('tr-TR').format(Math.round(v)));
     const adminBtns=isAdmin()?'<button class="edit-btn" onclick="bakiyeGir(\'acilis\',\''+editId+'\')">Açılış ✎</button> <button class="edit-btn" onclick="adminKapanisGir(\''+editId+'\')">Override ✎</button>':'';
@@ -417,7 +420,7 @@ function renderOzet(){
   ];
   document.getElementById('ozetTbody').innerHTML=kasalar.map(k=>{
     const giren=h.filter(x=>x.tur==='gelir'&&x.kasaDoviz===k.lbl).reduce((s,x)=>s+(x.tutarSay||0),0);
-    const cikan=h.filter(x=>(x.tur==='gider'||x.tur==='avans')&&x.kasaDoviz===k.lbl).reduce((s,x)=>s+(x.tutarSay||0),0);
+    const cikan=h.filter(x=>(x.tur==='gider'||x.tur==='avans')&&x.kasaDoviz===k.lbl).reduce((s,x)=>s+(x.tur==='avans'?avansEtkin(x):x.tutarSay||0),0);
     const fark=k.kap-k.ac;
     return '<tr><td><strong>'+k.lbl+'</strong></td><td class="num mono">'+k.fmt(k.ac)+'</td><td class="num mono" style="color:var(--green)">'+
       (giren>0?k.fmt(giren):'—')+'</td><td class="num mono" style="color:var(--red)">'+
@@ -678,7 +681,7 @@ function renderHareketler(){
 
   const gelirTop=items.filter(x=>x.tur==='gelir').reduce((s,x)=>s+(x.tutarSay||0),0);
   const giderTop=items.filter(x=>x.tur==='gider').reduce((s,x)=>s+(x.tutarSay||0),0);
-  const avansTop=items.filter(x=>x.tur==='avans'&&!x.avansKapali).reduce((s,x)=>s+(x.tutarSay||0),0);
+  const avansTop=items.filter(x=>x.tur==='avans'&&!x.avansKapali).reduce((s,x)=>s+avansEtkin(x),0);
 
   const ozet='<div class="card" style="margin-bottom:12px"><div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center">'+
     '<div style="display:flex;gap:8px;align-items:center">'+
