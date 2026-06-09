@@ -556,13 +556,72 @@ function avansTablosu(items,acik){
     '</tbody></table></div>';
 }
 function renderDoviz(){
-  const v=getKasaVeri(getDonem().key);
+function renderDoviz(){
+  const d=getDonem();
+  const v=getKasaVeri(d.key);
   const items=v.hareketler.filter(x=>x.tur==='doviz');
-  document.getElementById('dovizIcerik').innerHTML=items.length?'<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Tarih</th><th>İşlem</th><th class="num">Çıkan</th><th class="num">Giren</th><th>Kur</th><th>Not</th></tr></thead><tbody>'+
-    items.map(x=>'<tr><td style="font-size:11px;color:var(--text3)">'+x.tarih+'</td><td><span class="tag tag-doviz">'+x.cinsi+'</span></td><td class="num mono">'+(x.cikanGoster||'—')+'</td><td class="num mono">'+(x.girenGoster||'—')+'</td><td class="mono" style="font-size:11px">'+(x.piyasaKur||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+(x.aciklama||'')+'</td></tr>').join('')+
-    '</tbody></table></div></div>':'<div class="card"><p style="color:var(--text3);font-size:12px">Döviz bozdurma kaydı yok.</p></div>';
+  if(!items.length){
+    document.getElementById('dovizIcerik').innerHTML='<div class="card"><p style="color:var(--text3);font-size:12px">Döviz bozdurma kaydı yok.</p></div>';
+    return;
+  }
+  const adminCol=isAdmin()?'<th style="width:60px"></th>':'';
+  const adminRow=x=>isAdmin()
+    ?'<td><button class="edit-btn" onclick="dovizDuzenle(\''+x.id+'\')" title="Düzenle">✎</button> <button class="edit-btn" style="color:var(--red);border-color:var(--red)" onclick="hareketSil(\''+x.id+'\')" title="Sil">✕</button></td>'
+    :'';
+  document.getElementById('dovizIcerik').innerHTML='<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Tarih</th><th>İşlem</th><th class="num">Çıkan</th><th class="num">Giren</th><th>Kur</th><th>Not</th>'+adminCol+'</tr></thead><tbody>'+
+    items.map(x=>'<tr><td style="font-size:11px;color:var(--text3)">'+x.tarih+'</td><td><span class="tag tag-doviz">'+x.cinsi+'</span></td><td class="num mono">'+(x.cikanGoster||'—')+'</td><td class="num mono">'+(x.girenGoster||'—')+'</td><td class="mono" style="font-size:11px">'+(x.piyasaKur||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+(x.aciklama||'')+'</td>'+adminRow(x)+'</tr>').join('')+
+    '</tbody></table></div></div>';
 }
-function renderHareketler(){
+
+function dovizDuzenle(hId){
+  if(!isAdmin()) return;
+  const d=getDonem();
+  const veri=getKasaVeri(d.key);
+  const h=veri.hareketler.find(x=>x.id===hId);
+  if(!h) return;
+  const ISLEMLER=['USD→TL','TL→USD','EUR→TL','TL→EUR','USD→EUR','EUR→USD','GBP→TL','TL→GBP','ALTIN_ALIS','ALTIN_SATIS','GUMUS_ALIS','GUMUS_SATIS'];
+  const ov=document.createElement('div');ov.className='modal-ov';
+  const form='<div class="fg fg-full"><label>İşlem türü</label><select id="dv_cinsi" onchange="dovizFormGuncelle(\'dv\')">'+ ISLEMLER.map(t=>'<option'+(t===h.cinsi?' selected':'')+'>'+t+'</option>').join('')+'</select></div>'
+    +'<div class="fg"><label id="dv_cikan_lbl">Çıkan</label><input id="dv_cikan" type="number" step="0.01" value="'+(h.cikanMiktar||0)+'" oninput="dovizKurHesapla(\'dv\')">'+'</div>'
+    +'<div class="fg"><label id="dv_giren_lbl">Giren</label><input id="dv_giren" type="number" step="0.01" value="'+(h.girenMiktar||0)+'" oninput="dovizKurHesapla(\'dv\')">'+'</div>'
+    +'<div class="fg"><label>Hesaplanan kur <span style="font-size:10px;color:var(--text3)">(otomatik)</span></label><input id="dv_piyasaKur" type="text" readonly value="'+(h.piyasaKur||'')+'" style="background:var(--bg2);color:var(--accent);font-family:var(--mono);cursor:default;border-color:var(--border2)"></div>'
+    +'<div class="fg"><label>Tarih</label><input id="dv_tarih" type="date" value="'+h.tarih+'"></div>'
+    +'<div class="fg fg-full"><label>Açıklama</label><input id="dv_aciklama" type="text" value="'+(h.aciklama||'')+'"></div>';
+  ov.innerHTML='<div class="modal"><h3>✎ Döviz Düzenle</h3><div class="form-grid">'+form+'</div>'
+    +'<div class="modal-footer"><button class="btn" onclick="this.closest(\'.modal-ov\').remove()">İptal</button>'
+    +'<button class="btn btn-primary" onclick="dovizDuzenleKaydet(\''+hId+'\',\''+d.key+'\')">✓ Kaydet</button></div></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  setTimeout(()=>dovizFormGuncelle('dv'),10);
+}
+
+function dovizDuzenleKaydet(hId,key){
+  const veri=getKasaVeri(key);
+  const h=veri.hareketler.find(x=>x.id===hId);
+  if(!h) return;
+  const g=id=>document.getElementById(id)?.value||'';
+  const cinsi=g('dv_cinsi');
+  const ci=parseFloat(g('dv_cikan'))||0;
+  const gi=parseFloat(g('dv_giren'))||0;
+  const pk=parseFloat(g('dv_piyasaKur'))||null;
+  const symMap={'USD→TL':['$','₺'],'TL→USD':['₺','$'],'EUR→TL':['€','₺'],'TL→EUR':['₺','€'],'USD→EUR':['$','€'],'EUR→USD':['€','$'],'GBP→TL':['£','₺'],'TL→GBP':['₺','£'],'ALTIN_ALIS':['₺','gr'],'ALTIN_SATIS':['gr','₺'],'GUMUS_ALIS':['₺','gr'],'GUMUS_SATIS':['gr','₺']};
+  const syms=symMap[cinsi]||['',''];
+  const tlGiren=['USD→TL','EUR→TL','GBP→TL','ALTIN_SATIS','GUMUS_SATIS'].includes(cinsi)?gi:ci;
+  h.cinsi=cinsi;
+  h.cikanMiktar=ci; h.girenMiktar=gi;
+  h.tutarSay=tlGiren;
+  h.tutar=syms[0]+ci.toLocaleString('tr-TR')+' → '+syms[1]+gi.toLocaleString('tr-TR');
+  h.cikanGoster=syms[0]+ci.toLocaleString('tr-TR');
+  h.girenGoster=syms[1]+gi.toLocaleString('tr-TR');
+  h.piyasaKur=pk?pk.toFixed(4):null;
+  h.tarih=g('dv_tarih')||h.tarih;
+  h.aciklama=g('dv_aciklama');
+  document.querySelector('.modal-ov')?.remove();
+  renderAll();
+  toast('✓ Döviz işlemi güncellendi');
+  otoDriveKaydet(key);
+}
+
   const v=getKasaVeri(getDonem().key);
   const seciliSirket=document.getElementById('sirketSuzgec')?.value||'Tümü';
   let items=[...v.hareketler].reverse();
@@ -739,24 +798,24 @@ const DOVIZ_META = {
   'GUMUS_SATIS':{cikan:'Satılan (gr)', giren:'Alınan (TL ₺)', kurLbl:'Birim fiyat (TL/gr)'},
 };
 
-function dovizFormGuncelle(){
-  const cinsi = document.getElementById('hm_cinsi')?.value;
+function dovizFormGuncelle(pfx){
+  pfx = pfx || 'hm';
+  const cinsi = document.getElementById(pfx+'_cinsi')?.value;
   const meta = DOVIZ_META[cinsi] || {cikan:'Çıkan', giren:'Giren', kurLbl:'Kur'};
-  const cLbl = document.getElementById('hm_cikan_lbl');
-  const gLbl = document.getElementById('hm_giren_lbl');
+  const cLbl = document.getElementById(pfx+'_cikan_lbl');
+  const gLbl = document.getElementById(pfx+'_giren_lbl');
   if(cLbl) cLbl.textContent = meta.cikan;
   if(gLbl) gLbl.textContent = meta.giren;
-  dovizKurHesapla();
+  dovizKurHesapla(pfx);
 }
 
-function dovizKurHesapla(){
-  const cinsi = document.getElementById('hm_cinsi')?.value;
-  const ci = parseFloat(document.getElementById('hm_cikan')?.value) || 0;
-  const gi = parseFloat(document.getElementById('hm_giren')?.value) || 0;
-  const kurEl = document.getElementById('hm_piyasaKur');
+function dovizKurHesapla(pfx){
+  pfx = pfx || 'hm';
+  const cinsi = document.getElementById(pfx+'_cinsi')?.value;
+  const ci = parseFloat(document.getElementById(pfx+'_cikan')?.value) || 0;
+  const gi = parseFloat(document.getElementById(pfx+'_giren')?.value) || 0;
+  const kurEl = document.getElementById(pfx+'_piyasaKur');
   if(!kurEl) return;
-  // Kur = giren ÷ çıkan (TL/birim veya gr fiyatı)
-  // İstisna: TL→USD, TL→EUR, TL→GBP — kur = çıkan ÷ giren
   const tersKur = ['TL→USD','TL→EUR','TL→GBP','USD→EUR','EUR→USD'];
   if(ci > 0 && gi > 0){
     const kur = tersKur.includes(cinsi) ? (ci / gi) : (gi / ci);
