@@ -931,7 +931,7 @@ async function topluKaydet(){
 }
 
 // ─── BAKİYE GİR ───────────────────────────────────────────
-  const d=getDonem();
+function bakiyeGir(tip,kasaId){
   const veri=getKasaVeri(d.key);
   const hedef=veri[tip];
   const tipLbl=tip==='acilis'?'Açılış':'Kapanış';
