@@ -262,7 +262,7 @@ function getAktifDonem(){return DONEMLER[aktifDonemIdx];}
 
 function getKasaVeri(key){
   if(!window.KASA[key]) window.KASA[key]={
-    acilis:{TL:0,USD:0,EUR:0,ALTIN:0,GUMUS:0},
+    acilis:{TL:0,USD:0,EUR:0,GBP:0,ALTIN:0,GUMUS:0},
     hareketler:[],_adminKapanis:null
   };
   return window.KASA[key];
@@ -282,13 +282,13 @@ function hesaplaKapanis(key){
   if(veri._adminKapanis) return veri._adminKapanis;
   const ac=veri.acilis;
   const h=veri.hareketler||[];
-  const kap={TL:ac.TL||0,USD:ac.USD||0,EUR:ac.EUR||0,ALTIN:ac.ALTIN||0,GUMUS:ac.GUMUS||0};
+  const kap={TL:ac.TL||0,USD:ac.USD||0,EUR:ac.EUR||0,GBP:ac.GBP||0,ALTIN:ac.ALTIN||0,GUMUS:ac.GUMUS||0};
   h.forEach(x=>{
     const t=x.tutarSay||0;
     const k=x.kasaDoviz;
-    if(x.tur==='gelir'){if(k==='TL')kap.TL+=t;else if(k==='USD')kap.USD+=t;else if(k==='EUR')kap.EUR+=t;}
-    if(x.tur==='gider'){if(k==='TL')kap.TL-=t;else if(k==='USD')kap.USD-=t;else if(k==='EUR')kap.EUR-=t;}
-    if(x.tur==='avans'&&!x.avansKapali){if(k==='TL')kap.TL-=t;else if(k==='USD')kap.USD-=t;else if(k==='EUR')kap.EUR-=t;}
+    if(x.tur==='gelir'){if(k==='TL')kap.TL+=t;else if(k==='USD')kap.USD+=t;else if(k==='EUR')kap.EUR+=t;else if(k==='GBP')kap.GBP+=t;}
+    if(x.tur==='gider'){if(k==='TL')kap.TL-=t;else if(k==='USD')kap.USD-=t;else if(k==='EUR')kap.EUR-=t;else if(k==='GBP')kap.GBP-=t;}
+    if(x.tur==='avans'&&!x.avansKapali){if(k==='TL')kap.TL-=t;else if(k==='USD')kap.USD-=t;else if(k==='EUR')kap.EUR-=t;else if(k==='GBP')kap.GBP-=t;}
     if(x.tur==='doviz'){
       const cin=x.cinsi,ci=x.cikanMiktar||0,gi=x.girenMiktar||0;
       if(cin==='USD→TL'){kap.USD-=ci;kap.TL+=gi;}
@@ -301,6 +301,8 @@ function hesaplaKapanis(key){
       else if(cin==='ALTIN_SATIS'){kap.ALTIN-=ci;kap.TL+=gi;}
       else if(cin==='GUMUS_ALIS'){kap.TL-=ci;kap.GUMUS+=gi;}
       else if(cin==='GUMUS_SATIS'){kap.GUMUS-=ci;kap.TL+=gi;}
+      else if(cin==='GBP→TL'){kap.GBP-=ci;kap.TL+=gi;}
+      else if(cin==='TL→GBP'){kap.TL-=ci;kap.GBP+=gi;}
     }
   });
   return kap;
@@ -612,7 +614,7 @@ function hareketModal(tur){
   if(tur==='gelir'){
     form='<div class="fg"><label>Kategori</label><select id="hm_cinsi" onchange="serbCinsi(this,\'hm_cinsi_serbest\')">'+GELIR_TURLERI.map(t=>'<option>'+t+'</option>').join('')+'<option value="__serbest__">✏️ Serbest giriş…</option></select></div>'+
       '<div class="fg fg-full" id="hm_cinsi_serbest" style="display:none"><label>Kategori adı</label><input id="hm_cinsi_input" type="text" placeholder="Kategori adını yazın"></div>'+
-      '<div class="fg"><label>Kasa</label><select id="hm_kasa"><option value="TL">TL</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div>'+
+      '<div class="fg"><label>Kasa</label><select id="hm_kasa"><option value="TL">TL</option><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP £</option></select></div>'+
       '<div class="fg"><label>Tutar</label><input id="hm_tutar" type="number" step="0.01" placeholder="0"></div>'+
       '<div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="'+today+'"></div>'+
       '<div class="fg"><label>Şirket</label><select id="hm_sirket"><option value="IWA">IWA</option><option value="Citi">Citi</option><option value="Ortak">Ortak</option></select></div>'+
@@ -634,11 +636,12 @@ function hareketModal(tur){
       '<div class="fg"><label>Şirket</label><select id="hm_sirket"><option value="IWA">IWA</option><option value="Citi">Citi</option><option value="Ortak">Ortak</option></select></div>'+
       '<div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text"></div>';
   } else if(tur==='doviz'){
-    form='<div class="fg fg-full"><label>İşlem türü</label><select id="hm_cinsi">'+
-      ['USD→TL','TL→USD','EUR→TL','TL→EUR','USD→EUR','EUR→USD','ALTIN_ALIS','ALTIN_SATIS','GUMUS_ALIS','GUMUS_SATIS'].map(x=>'<option>'+x+'</option>').join('')+'</select></div>'+
-      '<div class="fg"><label>Çıkan miktar</label><input id="hm_cikan" type="number" step="0.01" placeholder="0"></div>'+
-      '<div class="fg"><label>Giren miktar</label><input id="hm_giren" type="number" step="0.01" placeholder="0"></div>'+
-      '<div class="fg"><label>Piyasa kuru</label><input id="hm_piyasaKur" type="number" step="0.0001" placeholder="'+kur.kur.toFixed(4)+'"></div>'+
+    form='<div class="fg fg-full"><label>İşlem türü</label><select id="hm_cinsi" onchange="dovizFormGuncelle()">'+
+      ['USD→TL','TL→USD','EUR→TL','TL→EUR','USD→EUR','EUR→USD','GBP→TL','TL→GBP','ALTIN_ALIS','ALTIN_SATIS','GUMUS_ALIS','GUMUS_SATIS'].map(x=>'<option>'+x+'</option>').join('')+'</select></div>'+
+      '<div class="fg"><label id="hm_cikan_lbl">Çıkan</label><input id="hm_cikan" type="number" step="0.01" placeholder="0" oninput="dovizKurHesapla()"></div>'+
+      '<div class="fg"><label id="hm_giren_lbl">Giren</label><input id="hm_giren" type="number" step="0.01" placeholder="0" oninput="dovizKurHesapla()"></div>'+
+      '<div class="fg"><label>Hesaplanan kur <span style=\'font-size:10px;color:var(--text3)\'>(otomatik)</span></label>'+
+        '<input id="hm_piyasaKur" type="text" readonly placeholder="—" style="background:var(--bg2);color:var(--accent);font-family:var(--mono);cursor:default;border-color:var(--border2)"></div>'+
       '<div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="'+today+'"></div>'+
       '<div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text"></div>';
   }
@@ -646,11 +649,55 @@ function hareketModal(tur){
   ov.innerHTML='<div class="modal"><h3>'+lblMap[tur]+' — '+d.lbl+'</h3><div class="form-grid">'+form+'</div><div class="modal-footer"><button class="btn" onclick="this.closest(\'.modal-ov\').remove()">İptal</button><button class="btn btn-primary" onclick="hareketKaydet(\''+tur+'\',\''+d.key+'\')">✓ Kaydet</button></div></div>';
   document.body.appendChild(ov);
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  if(tur==='doviz') setTimeout(dovizFormGuncelle,10);
 }
 
 function serbCinsi(sel, divId){
   const div=document.getElementById(divId);
   if(div) div.style.display=sel.value==='__serbest__'?'block':'none';
+}
+
+// Döviz formu: işlem türüne göre etiketleri güncelle
+const DOVIZ_META = {
+  'USD→TL':    {cikan:'Çıkan (USD $)', giren:'Giren (TL ₺)',  kurLbl:'Kur (TL/USD)'},
+  'TL→USD':    {cikan:'Çıkan (TL ₺)',  giren:'Giren (USD $)', kurLbl:'Kur (TL/USD)'},
+  'EUR→TL':    {cikan:'Çıkan (EUR €)', giren:'Giren (TL ₺)',  kurLbl:'Kur (TL/EUR)'},
+  'TL→EUR':    {cikan:'Çıkan (TL ₺)',  giren:'Giren (EUR €)', kurLbl:'Kur (TL/EUR)'},
+  'USD→EUR':   {cikan:'Çıkan (USD $)', giren:'Giren (EUR €)', kurLbl:'Kur (EUR/USD)'},
+  'EUR→USD':   {cikan:'Çıkan (EUR €)', giren:'Giren (USD $)', kurLbl:'Kur (USD/EUR)'},
+  'GBP→TL':    {cikan:'Çıkan (GBP £)', giren:'Giren (TL ₺)',  kurLbl:'Kur (TL/GBP)'},
+  'TL→GBP':    {cikan:'Çıkan (TL ₺)',  giren:'Giren (GBP £)', kurLbl:'Kur (TL/GBP)'},
+  'ALTIN_ALIS':{cikan:'Ödenen (TL ₺)', giren:'Alınan (gr)',   kurLbl:'Birim fiyat (TL/gr)'},
+  'ALTIN_SATIS':{cikan:'Satılan (gr)', giren:'Alınan (TL ₺)', kurLbl:'Birim fiyat (TL/gr)'},
+  'GUMUS_ALIS': {cikan:'Ödenen (TL ₺)',giren:'Alınan (gr)',   kurLbl:'Birim fiyat (TL/gr)'},
+  'GUMUS_SATIS':{cikan:'Satılan (gr)', giren:'Alınan (TL ₺)', kurLbl:'Birim fiyat (TL/gr)'},
+};
+
+function dovizFormGuncelle(){
+  const cinsi = document.getElementById('hm_cinsi')?.value;
+  const meta = DOVIZ_META[cinsi] || {cikan:'Çıkan', giren:'Giren', kurLbl:'Kur'};
+  const cLbl = document.getElementById('hm_cikan_lbl');
+  const gLbl = document.getElementById('hm_giren_lbl');
+  if(cLbl) cLbl.textContent = meta.cikan;
+  if(gLbl) gLbl.textContent = meta.giren;
+  dovizKurHesapla();
+}
+
+function dovizKurHesapla(){
+  const cinsi = document.getElementById('hm_cinsi')?.value;
+  const ci = parseFloat(document.getElementById('hm_cikan')?.value) || 0;
+  const gi = parseFloat(document.getElementById('hm_giren')?.value) || 0;
+  const kurEl = document.getElementById('hm_piyasaKur');
+  if(!kurEl) return;
+  // Kur = giren ÷ çıkan (TL/birim veya gr fiyatı)
+  // İstisna: TL→USD, TL→EUR, TL→GBP — kur = çıkan ÷ giren
+  const tersKur = ['TL→USD','TL→EUR','TL→GBP','USD→EUR','EUR→USD'];
+  if(ci > 0 && gi > 0){
+    const kur = tersKur.includes(cinsi) ? (ci / gi) : (gi / ci);
+    kurEl.value = kur.toFixed(4);
+  } else {
+    kurEl.value = '';
+  }
 }
 
 function hareketKaydet(tur,key){
@@ -669,12 +716,27 @@ function hareketKaydet(tur,key){
     const cinsi=g('hm_cinsi');
     const ci=parseFloat(g('hm_cikan'))||0;
     const gi=parseFloat(g('hm_giren'))||0;
-    const pk=parseFloat(g('hm_piyasaKur'))||null;
-    const symMap={'USD→TL':['$','₺'],'TL→USD':['₺','$'],'EUR→TL':['€','₺'],'TL→EUR':['₺','€'],'USD→EUR':['$','€'],'EUR→USD':['€','$'],'ALTIN_ALIS':['₺','gr'],'ALTIN_SATIS':['gr','₺'],'GUMUS_ALIS':['₺','gr'],'GUMUS_SATIS':['gr','₺']};
+    // Kur: hesaplanan değeri oku (otomatik)
+    const pkRaw=parseFloat(document.getElementById('hm_piyasaKur')?.value)||null;
+    const symMap={
+      'USD→TL':['$','₺'],'TL→USD':['₺','$'],
+      'EUR→TL':['€','₺'],'TL→EUR':['₺','€'],
+      'USD→EUR':['$','€'],'EUR→USD':['€','$'],
+      'GBP→TL':['£','₺'],'TL→GBP':['₺','£'],
+      'ALTIN_ALIS':['₺','gr'],'ALTIN_SATIS':['gr','₺'],
+      'GUMUS_ALIS':['₺','gr'],'GUMUS_SATIS':['gr','₺']
+    };
     const syms=symMap[cinsi]||['',''];
-    h={...h,cinsi,kasaDoviz:'DOVIZ',tutar:syms[0]+ci+' → '+syms[1]+gi,tutarSay:ci,
-      cikanMiktar:ci,girenMiktar:gi,cikanGoster:syms[0]+ci.toLocaleString('tr-TR'),
-      girenGoster:syms[1]+gi.toLocaleString('tr-TR'),piyasaKur:pk?pk.toFixed(4):null};
+    // tutarSay = kasaya giren TL miktarı (veya döviz miktarı işlem türüne göre)
+    // TL kasasına ne girdi onu saklayalım
+    const tlGiren = ['USD→TL','EUR→TL','GBP→TL','ALTIN_SATIS','GUMUS_SATIS'].includes(cinsi) ? gi : ci;
+    h={...h,cinsi,kasaDoviz:'DOVIZ',
+      tutar:syms[0]+ci.toLocaleString('tr-TR')+' → '+syms[1]+gi.toLocaleString('tr-TR'),
+      tutarSay:tlGiren,
+      cikanMiktar:ci,girenMiktar:gi,
+      cikanGoster:syms[0]+ci.toLocaleString('tr-TR'),
+      girenGoster:syms[1]+gi.toLocaleString('tr-TR'),
+      piyasaKur:pkRaw?pkRaw.toFixed(4):null};
   }
   veri.hareketler.push(h);
   document.querySelector('.modal-ov')?.remove();
