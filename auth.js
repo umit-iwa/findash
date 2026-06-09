@@ -173,3 +173,52 @@ function fdToast(msg, type='ok') {
   clearTimeout(t._timer);
   t._timer = setTimeout(() => { t.style.transform='translateY(80px)'; t.style.opacity='0'; }, 3000);
 }
+function fdTemaUygula(mod) {
+  const r = document.documentElement;
+  if (mod === 'light') {
+    r.style.setProperty('--bg', '#f0f4f8');
+    r.style.setProperty('--bg2', '#ffffff');
+    r.style.setProperty('--bg3', '#e8edf5');
+    r.style.setProperty('--bg4', '#dde3ee');
+    r.style.setProperty('--border', '#c8d3e8');
+    r.style.setProperty('--border2', '#a0b0d0');
+    r.style.setProperty('--text', '#1a2540');
+    r.style.setProperty('--text2', '#4a5a78');
+    r.style.setProperty('--text3', '#8a9bb8');
+    r.style.setProperty('--accent', '#1a3a8a');
+    r.style.setProperty('--green', '#0a7a4a');
+    r.style.setProperty('--green-bg', '#d0f0e0');
+    r.style.setProperty('--amber', '#8a5a00');
+    r.style.setProperty('--amber-bg', '#fff0d0');
+    r.style.setProperty('--red', '#a02020');
+    r.style.setProperty('--red-bg', '#ffe0e0');
+  } else {
+    r.style.setProperty('--bg', '#0f1117');
+    r.style.setProperty('--bg2', '#161b27');
+    r.style.setProperty('--bg3', '#1e2535');
+    r.style.setProperty('--bg4', '#252d3f');
+    r.style.setProperty('--border', '#2a3348');
+    r.style.setProperty('--border2', '#3a4a66');
+    r.style.setProperty('--text', '#e8edf5');
+    r.style.setProperty('--text2', '#8a9bb8');
+    r.style.setProperty('--text3', '#4a5a78');
+    r.style.setProperty('--accent', '#4f9cf9');
+    r.style.setProperty('--green', '#2ecc8a');
+    r.style.setProperty('--green-bg', '#0d2e1f');
+    r.style.setProperty('--amber', '#f0a030');
+    r.style.setProperty('--amber-bg', '#2a1f0a');
+    r.style.setProperty('--red', '#e05555');
+    r.style.setProperty('--red-bg', '#2a1010');
+  }
+  localStorage.setItem('fd_tema', mod);
+  const btn = document.getElementById('fd-tema-btn');
+  if (btn) btn.textContent = mod === 'light' ? '🌙' : '☀️';
+}
+function fdTemaInit() {
+  const k = localStorage.getItem('fd_tema') || 'dark';
+  fdTemaUygula(k);
+}
+function fdTemaDegistir() {
+  const m = localStorage.getItem('fd_tema') || 'dark';
+  fdTemaUygula(m === 'dark' ? 'light' : 'dark');
+}
