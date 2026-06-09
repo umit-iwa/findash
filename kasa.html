@@ -980,6 +980,23 @@ async function init(){
   renderAll();
   toast('✓ Veri yüklendi');
 }
+
+// Standalone fallback — auth.js yoksa direkt aç
+if(typeof fdInit === 'undefined'){
+  window.FINDASH_API = null;
+  window.FD_SESSION = {rol:'admin', ad:'Admin'};
+  function fdInit(){}
+  function fdApiGet(){ return Promise.resolve(null); }
+  function fdApiSave(){ return Promise.resolve(null); }
+  function fdToast(msg){ console.log(msg); }
+  function fdTemaDegistir(){}
+  function fdApplyYetkiler(){}
+  document.addEventListener('DOMContentLoaded', ()=>{
+    document.getElementById('app').style.display = 'block';
+    kullaniciRol = 'admin';
+    init();
+  });
+}
 </script>
 </body>
 </html>
