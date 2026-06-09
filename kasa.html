@@ -172,6 +172,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
     </div>
 
+    <div class="card" id="yatirimOzetiKart" style="display:none">
+      <div class="card-title">📈 Dönem yatırımları <span style="font-size:10px;color:var(--text3);font-weight:400">(istatistik — kasa hareketinden bağımsız)</span></div>
+      <div id="yatirimOzetiIcerik"></div>
+    </div>
+
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
         <div class="card-title" style="margin:0">Dönem karşılaştırma</div>
@@ -421,6 +426,9 @@ function renderOzet(){
       '</td></tr>';
   }).join('');
 
+  // Yatırım özeti
+  renderYatirimOzeti(h,d);
+
   // Toolbar
   const toolbar=document.getElementById('kasaToolbar');
   if(toolbar){
@@ -499,6 +507,36 @@ function renderGrafikler(){
   iwaGiderChart  = ciz('iwaGiderGrafik','iwaGiderLegend','iwaGiderToplam',  grupla('gider','IWA'),  iwaGiderChart);
   citiGelirChart = ciz('citiGelirGrafik','citiGelirLegend','citiGelirToplam',grupla('gelir','Citi'), citiGelirChart);
   citiGiderChart = ciz('citiGiderGrafik','citiGiderLegend','citiGiderToplam',grupla('gider','Citi'), citiGiderChart);
+}
+
+function renderYatirimOzeti(h, d){
+  const kart = document.getElementById('yatirimOzetiKart');
+  const icerik = document.getElementById('yatirimOzetiIcerik');
+  if(!kart||!icerik) return;
+  const yItems = (h||[]).filter(x=>x.yatirimTutar>0);
+  if(!yItems.length){ kart.style.display='none'; return; }
+  kart.style.display='block';
+
+  // Şirket toplamları
+  const iwaTop = yItems.filter(x=>x.sirket==='IWA').reduce((s,x)=>s+x.yatirimTutar,0);
+  const citiTop = yItems.filter(x=>x.sirket==='Citi').reduce((s,x)=>s+x.yatirimTutar,0);
+  const genTop = yItems.reduce((s,x)=>s+x.yatirimTutar,0);
+
+  // Kategori kırılımı
+  const katMap = {};
+  yItems.forEach(x=>{ const k=x.cinsi||'Diğer'; if(!katMap[k]) katMap[k]={tutar:0,sirketler:{}}; katMap[k].tutar+=x.yatirimTutar; katMap[k].sirketler[x.sirket]=(katMap[k].sirketler[x.sirket]||0)+x.yatirimTutar; });
+
+  const banner = '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px">'
+    +(iwaTop?'<div style="background:var(--iwa-bg,rgba(79,156,249,.1));border:1px solid var(--accent);border-radius:8px;padding:10px 16px"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">IWA</div><div style="font-family:var(--mono);font-size:16px;font-weight:600;color:var(--accent)">'+fTL(iwaTop)+'</div></div>':'')
+    +(citiTop?'<div style="background:var(--citi-bg,rgba(46,204,138,.1));border:1px solid var(--green);border-radius:8px;padding:10px 16px"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">Citi</div><div style="font-family:var(--mono);font-size:16px;font-weight:600;color:var(--green)">'+fTL(citiTop)+'</div></div>':'')
+    +'<div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 16px"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">Toplam</div><div style="font-family:var(--mono);font-size:16px;font-weight:600;color:var(--text)">'+fTL(genTop)+'</div></div>'
+    +'</div>';
+
+  const tablo = '<div class="tbl-wrap"><table><thead><tr><th>Kategori</th><th class="num">Yatırım Tutarı</th><th class="num">Şirket</th><th>Gider Tarihi</th></tr></thead><tbody>'
+    +yItems.map(x=>'<tr><td style="font-size:12px">'+x.cinsi+'</td><td class="num mono" style="color:var(--accent)">'+fTL(x.yatirimTutar)+'</td><td><span class="tag tag-kapali">'+(x.sirket||'—')+'</span></td><td style="font-size:11px;color:var(--text3)">'+x.tarih+'</td></tr>').join('')
+    +'</tbody></table></div>';
+
+  icerik.innerHTML = banner + tablo;
 }
 
 function renderKarsilastirma(){
@@ -778,6 +816,17 @@ function hareketModal(tur){
       '<div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="'+today+'"></div>'+
       '<div class="fg"><label>Şirket</label><select id="hm_sirket"><option value="IWA">IWA</option><option value="Citi">Citi</option><option value="Ortak">Ortak</option></select></div>'+
       '<div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text"></div>'+
+      '<div class="fg fg-full" style="background:rgba(79,156,249,.06);border:1px solid var(--border2);border-radius:6px;padding:10px">'
+        +'<div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="yatirimToggle()">'
+        +'<input type="checkbox" id="hm_yatirim_chk" style="width:15px;height:15px;cursor:pointer">'
+        +'<label style="color:var(--accent);cursor:pointer;font-size:12px;font-weight:600">📈 Bu giderin bir kısmı yatırım</label>'
+        +'</div>'
+        +'<div id="hm_yatirim_wrap" style="display:none;margin-top:8px">'
+        +'<label style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Yatırım tutarı</label>'
+        +'<input id="hm_yatirim_tutar" type="number" step="0.01" placeholder="0" style="margin-top:4px;width:100%">'
+        +'<div style="font-size:10px;color:var(--text3);margin-top:4px">Kasa hareketini etkilemez — sadece istatistik</div>'
+        +'</div>'
+        +'</div>'+
       avansSecHtml;
   } else if(tur==='avans'){
     form='<div class="fg"><label>Tür</label><select id="hm_avansType"><option value="borc">Borç avans</option><option value="hizmet">Hizmet avansı</option></select></div>'+
@@ -807,6 +856,12 @@ function hareketModal(tur){
 function serbCinsi(sel, divId){
   const div=document.getElementById(divId);
   if(div) div.style.display=sel.value==='__serbest__'?'block':'none';
+}
+
+function yatirimToggle(){
+  const chk=document.getElementById('hm_yatirim_chk');
+  const wrap=document.getElementById('hm_yatirim_wrap');
+  if(wrap) wrap.style.display=chk?.checked?'block':'none';
 }
 
 // Döviz formu: işlem türüne göre etiketleri güncelle
@@ -861,9 +916,12 @@ function hareketKaydet(tur,key){
   const tutarSay=parseFloat(g('hm_tutar'))||0;
   const kasaDoviz=g('hm_kasa')||'TL';
   const sym={TL:'₺',USD:'$',EUR:'€'}[kasaDoviz]||'';
+  const yatirimChk=document.getElementById('hm_yatirim_chk');
+  const yatirimTutar=yatirimChk?.checked?(parseFloat(document.getElementById('hm_yatirim_tutar')?.value)||0):0;
   let h={id,tur,tarih:g('hm_tarih'),cinsi:cinsiVal,kasaDoviz,
     tutar:sym+new Intl.NumberFormat('tr-TR').format(tutarSay),tutarSay,
-    aciklama:g('hm_aciklama'),sirket:g('hm_sirket')||'IWA',avansKisi:g('hm_avansKisi'),avansType:g('hm_avansType'),avansKapali:false};
+    aciklama:g('hm_aciklama'),sirket:g('hm_sirket')||'IWA',avansKisi:g('hm_avansKisi'),avansType:g('hm_avansType'),avansKapali:false,
+    yatirimTutar:yatirimTutar||undefined};
   if(tur==='doviz'){
     const cinsi=g('hm_cinsi');
     const ci=parseFloat(g('hm_cikan'))||0;
