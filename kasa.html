@@ -1,13 +1,13 @@
 
 <!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
+<!-- saved from url=(0045)file:///Users/umitmaden/Downloads/kasa_2.html -->
+<html lang="tr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nakit Kasa — FinDash</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="auth.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="./kasa_files/css2" rel="stylesheet">
+<script src="./kasa_files/auth.js"></script>
+<script src="./kasa_files/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -98,17 +98,16 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div><h1>Nakit Kasa</h1><p>TL · USD · EUR · Değerli Madenler — dönemsel gelir / gider / avans</p></div>
     <div style="display:flex;align-items:center;gap:10px">
       <select class="donem-sel" id="donemSel" onchange="donemDegis()"></select>
-      <button id="fd-tema-btn" onclick="fdTemaDegistir()" style="background:transparent;border:1px solid var(--border);border-radius:20px;padding:5px 12px;cursor:pointer;font-size:16px;color:var(--text2)">☀️</button>
       <div class="status-dot" id="statusDot"></div>
     </div>
   </div>
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('ozet',this)">📊 Özet</div>
-    <div class="tab" onclick="switchTab('gelir',this)">📈 Gelirler</div>
-    <div class="tab" onclick="switchTab('gider',this)">📉 Giderler</div>
-    <div class="tab" onclick="switchTab('avans',this)">🔄 Avanslar</div>
-    <div class="tab" onclick="switchTab('doviz',this)">💱 Döviz Bozdurma</div>
-    <div class="tab" onclick="switchTab('hareketler',this)">📋 Tüm Hareketler</div>
+    <div class="tab active" onclick="switchTab(&#39;ozet&#39;,this)">📊 Özet</div>
+    <div class="tab" onclick="switchTab(&#39;gelir&#39;,this)">📈 Gelirler</div>
+    <div class="tab" onclick="switchTab(&#39;gider&#39;,this)">📉 Giderler</div>
+    <div class="tab" onclick="switchTab(&#39;avans&#39;,this)">🔄 Avanslar</div>
+    <div class="tab" onclick="switchTab(&#39;doviz&#39;,this)">💱 Döviz Bozdurma</div>
+    <div class="tab" onclick="switchTab(&#39;hareketler&#39;,this)">📋 Tüm Hareketler</div>
   </div>
   <div class="panel active" id="panel-ozet">
     <div class="toplam-banner">
@@ -150,20 +149,20 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="toolbar" id="kasaToolbar"></div>
   </div>
   <div class="panel" id="panel-gelir">
-    <div class="toolbar"><button class="btn btn-green" onclick="hareketModal('gelir')">+ Yeni gelir</button></div>
+    <div class="toolbar"><button class="btn btn-green" onclick="hareketModal(&#39;gelir&#39;)">+ Yeni gelir</button></div>
     <div id="gelirIcerik"></div>
   </div>
   <div class="panel" id="panel-gider">
-    <div class="toolbar"><button class="btn btn-red" onclick="hareketModal('gider')">− Yeni gider</button></div>
+    <div class="toolbar"><button class="btn btn-red" onclick="hareketModal(&#39;gider&#39;)">− Yeni gider</button></div>
     <div id="giderIcerik"></div>
   </div>
   <div class="panel" id="panel-avans">
-    <div class="toolbar"><button class="btn btn-amber" onclick="hareketModal('avans')">↕ Yeni avans</button></div>
+    <div class="toolbar"><button class="btn btn-amber" onclick="hareketModal(&#39;avans&#39;)">↕ Yeni avans</button></div>
     <div class="info-box"><strong>Borç avans:</strong> Kasadan çıkış, geri dönünce gelir yazılmaz.<br><strong>Hizmet avansı:</strong> Harcanınca gidere dönüşür.</div>
     <div id="avansIcerik"></div>
   </div>
   <div class="panel" id="panel-doviz">
-    <div class="toolbar"><button class="btn" onclick="hareketModal('doviz')">⇄ Yeni döviz bozdurma</button></div>
+    <div class="toolbar"><button class="btn" onclick="hareketModal(&#39;doviz&#39;)">⇄ Yeni döviz bozdurma</button></div>
     <div class="info-box">Piyasa kuru kullanılır. Kur farkı işlenmez.</div>
     <div id="dovizIcerik"></div>
   </div>
@@ -180,10 +179,6 @@ fdInit('kasa', 'Nakit Kasa', '💰');
 function fdOnGiris() {
   kullaniciRol = window.FD_SESSION.rol;
   fdApplyYetkiler();
-  // Tema butonunu güncelle
-  const mod = localStorage.getItem('fd_tema') || 'dark';
-  const btn = document.getElementById('fd-tema-btn');
-  if(btn) btn.textContent = mod === 'light' ? '🌙' : '☀️';
   init();
 }
 
@@ -405,7 +400,7 @@ function renderGrafikler(){
     const toplam=data.reduce((a,b)=>a+b,0);
     const pct=function(ctx){return ' '+ctx.label+': '+Math.round(ctx.raw).toLocaleString('tr-TR')+' ('+((ctx.raw/toplam)*100).toFixed(0)+'%)';};
     const c=new Chart(canvas,{type:'pie',data:{labels:keys,datasets:[{data,backgroundColor:GRAFIK_RENKLER,borderWidth:2,borderColor:'#161b27'}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:pct}}}}});
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:pct}}}}}});
     legend.innerHTML=keys.map((l,i)=>'<div style="display:flex;justify-content:space-between;margin-bottom:2px"><div style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:'+GRAFIK_RENKLER[i]+';display:inline-block"></span><span style="color:var(--text2)">'+l+'</span></div><span style="font-family:var(--mono)">'+((data[i]/toplam)*100).toFixed(0)+'%</span></div>').join('');
     return c;
   }
@@ -479,26 +474,19 @@ function renderHareketler(){
   const seciliSirket=document.getElementById('sirketSuzgec')?.value||'Tümü';
   let items=[...v.hareketler].reverse();
   if(seciliSirket!=='Tümü') items=items.filter(x=>x.sirket===seciliSirket);
-
-  // Toplamlar
   const gelirTop=items.filter(x=>x.tur==='gelir').reduce((s,x)=>s+(x.tutarSay||0),0);
   const giderTop=items.filter(x=>x.tur==='gider').reduce((s,x)=>s+(x.tutarSay||0),0);
   const avansTop=items.filter(x=>x.tur==='avans'&&!x.avansKapali).reduce((s,x)=>s+(x.tutarSay||0),0);
-
-  const ozet='<div class="card" style="margin-bottom:12px"><div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center">'+
-    '<div style="display:flex;gap:8px;align-items:center">'+
-    '<label style="font-size:11px;color:var(--text2)">Şirket</label>'+
+  const ozet='<div class="card" style="margin-bottom:12px"><div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">'+
+    '<div style="display:flex;gap:8px;align-items:center"><label style="font-size:11px;color:var(--text2)">Şirket</label>'+
     '<select id="sirketSuzgec" onchange="renderHareketler()" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font)">'+
-    '<option value="Tümü">Tümü</option><option value="IWA">IWA</option><option value="Citi">Citi</option><option value="Ortak">Ortak</option>'+
-    '</select></div>'+
-    '<div style="display:flex;gap:16px;margin-left:auto">'+
-    '<div><span style="font-size:11px;color:var(--text3)">Toplam Gelir </span><span style="font-family:var(--mono);color:var(--green);font-size:13px">'+fTL(gelirTop)+'</span></div>'+
-    '<div><span style="font-size:11px;color:var(--text3)">Toplam Gider </span><span style="font-family:var(--mono);color:var(--red);font-size:13px">'+fTL(giderTop)+'</span></div>'+
-    (avansTop>0?'<div><span style="font-size:11px;color:var(--text3)">Açık Avans </span><span style="font-family:var(--mono);color:var(--amber);font-size:13px">'+fTL(avansTop)+'</span></div>':'')+
+    '<option value="Tümü">Tümü</option><option value="IWA">IWA</option><option value="Citi">Citi</option><option value="Ortak">Ortak</option></select></div>'+
+    '<div style="margin-left:auto;display:flex;gap:16px">'+
+    '<span style="font-size:12px"><span style="color:var(--text3)">Toplam Gelir </span><span style="font-family:var(--mono);color:var(--green)">'+fTL(gelirTop)+'</span></span>'+
+    '<span style="font-size:12px"><span style="color:var(--text3)">Toplam Gider </span><span style="font-family:var(--mono);color:var(--red)">'+fTL(giderTop)+'</span></span>'+
+    (avansTop>0?'<span style="font-size:12px"><span style="color:var(--text3)">Açık Avans </span><span style="font-family:var(--mono);color:var(--amber)">'+fTL(avansTop)+'</span></span>':'')+
     '</div></div></div>';
-
   document.getElementById('hareketlerIcerik').innerHTML=ozet+(items.length?hareketTablosu(items):'<div class="card"><p style="color:var(--text3);font-size:12px">Kayıt yok.</p></div>');
-  // Seçili değeri koru
   const sel=document.getElementById('sirketSuzgec');
   if(sel) sel.value=seciliSirket;
 }
@@ -515,16 +503,14 @@ function hareketModal(tur){
   const ov=document.createElement('div');ov.className='modal-ov';
   let form='';
   if(tur==='gelir'){
-    form='<div class="fg"><label>Kategori</label><select id="hm_cinsi" onchange="serbCinsi(this,\'hm_cinsi_serbest\')">'+GELIR_TURLERI.map(t=>'<option>'+t+'</option>').join('')+'<option value="__serbest__">✏️ Serbest giriş…</option></select></div>'+
-      '<div class="fg fg-full" id="hm_cinsi_serbest" style="display:none"><label>Kategori adı</label><input id="hm_cinsi_input" type="text" placeholder="Kategori adını yazın"></div>'+
+    form='<div class="fg"><label>Kategori</label><select id="hm_cinsi">'+GELIR_TURLERI.map(t=>'<option>'+t+'</option>').join('')+'</select></div>'+
       '<div class="fg"><label>Kasa</label><select id="hm_kasa"><option value="TL">TL</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div>'+
       '<div class="fg"><label>Tutar</label><input id="hm_tutar" type="number" step="0.01" placeholder="0"></div>'+
       '<div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="'+today+'"></div>'+
       '<div class="fg"><label>Şirket</label><select id="hm_sirket"><option value="IWA">IWA</option><option value="Citi">Citi</option><option value="Ortak">Ortak</option></select></div>'+
       '<div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text"></div>';
   } else if(tur==='gider'){
-    form='<div class="fg"><label>Kategori</label><select id="hm_cinsi" onchange="serbCinsi(this,\'hm_cinsi_serbest\')">'+GIDER_TURLERI.map(t=>'<option>'+t+'</option>').join('')+'<option value="__serbest__">✏️ Serbest giriş…</option></select></div>'+
-      '<div class="fg fg-full" id="hm_cinsi_serbest" style="display:none"><label>Kategori adı</label><input id="hm_cinsi_input" type="text" placeholder="Kategori adını yazın"></div>'+
+    form='<div class="fg"><label>Kategori</label><select id="hm_cinsi">'+GIDER_TURLERI.map(t=>'<option>'+t+'</option>').join('')+'</select></div>'+
       '<div class="fg"><label>Kasa</label><select id="hm_kasa"><option value="TL">TL</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div>'+
       '<div class="fg"><label>Tutar</label><input id="hm_tutar" type="number" step="0.01" placeholder="0"></div>'+
       '<div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="'+today+'"></div>'+
@@ -553,21 +539,14 @@ function hareketModal(tur){
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
 }
 
-function serbCinsi(sel, divId){
-  const div=document.getElementById(divId);
-  if(div) div.style.display=sel.value==='__serbest__'?'block':'none';
-}
-
 function hareketKaydet(tur,key){
   const g=id=>document.getElementById(id)?.value||'';
   const veri=getKasaVeri(key);
   const id='h'+String(hareketSay++).padStart(4,'0');
-  const rawCinsi=g('hm_cinsi');
-  const cinsiVal=rawCinsi==='__serbest__'?(g('hm_cinsi_input')||'Diğer'):rawCinsi;
   const tutarSay=parseFloat(g('hm_tutar'))||0;
   const kasaDoviz=g('hm_kasa')||'TL';
   const sym={TL:'₺',USD:'$',EUR:'€'}[kasaDoviz]||'';
-  let h={id,tur,tarih:g('hm_tarih'),cinsi:cinsiVal,kasaDoviz,
+  let h={id,tur,tarih:g('hm_tarih'),cinsi:g('hm_cinsi'),kasaDoviz,
     tutar:sym+new Intl.NumberFormat('tr-TR').format(tutarSay),tutarSay,
     aciklama:g('hm_aciklama'),sirket:g('hm_sirket')||'IWA',avansKisi:g('hm_avansKisi'),avansType:g('hm_avansType'),avansKapali:false};
   if(tur==='doviz'){
@@ -759,5 +738,6 @@ async function init(){
   toast('✓ Veri yüklendi');
 }
 </script>
-</body>
-</html>
+
+
+</body></html>
