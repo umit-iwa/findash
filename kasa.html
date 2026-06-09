@@ -6,6 +6,7 @@
 <title>Nakit Kasa — FinDash</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -140,18 +141,6 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </head>
 <body>
 
-<!-- KİLİT -->
-<div id="lock">
-  <div class="lock-box">
-    <div class="lock-icon">💰</div>
-    <h2>Nakit Kasa</h2>
-    <p>FinDash · Kasa Yönetimi Modülü</p>
-    <input type="password" id="passInp" placeholder="••••••••••" onkeydown="if(event.key==='Enter')checkPass()">
-    <button class="lock-btn" onclick="checkPass()">Giriş yap</button>
-    <div class="lock-err" id="lockErr">Hatalı şifre</div>
-  </div>
-</div>
-
 <!-- UYGULAMA -->
 <div id="app">
   <div class="hdr">
@@ -245,9 +234,23 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <script>
 // ─── AYARLAR ──────────────────────────────────────────────
-const PASS = 'Za334286**';
-const KUR_API = 'https://script.google.com/macros/s/AKfycby0evX5BZ8_Y2yn-wTsAPX9Lwfk3_KrPv-BTcl9VaP8uvD3TGKCO2fMuCCtSJCa3TZTCg/exec';
-const KASA_API = KUR_API;
+const KUR_API  = FINDASH_API;
+const KASA_API = FINDASH_API;
+let kullaniciRol = '';
+
+// auth.js modül init
+fdInit('kasa', 'Nakit Kasa', '💰');
+
+// Giriş başarılı olunca çağrılır
+function fdOnGiris(){
+  kullaniciRol = window.FD_SESSION.rol;
+  fdApplyYetkiler();
+  init();
+}
+
+function isAdmin(){ return window.FD_SESSION.rol === 'admin'; }
+function apiGet(url, action){ return fdApiGet(action); }
+function apiSave(body){ return fdApiSave(body); }
 
 const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
@@ -306,30 +309,7 @@ const GIDER_TURLERI = [
   'Altyapı & İşletme','Hammadde','Kargo','Diğer Gider'
 ];
 
-// ─── AUTH ─────────────────────────────────────────────────
-function checkPass(){
-  if(document.getElementById('passInp').value===PASS){
-    document.getElementById('lock').style.display='none';
-    document.getElementById('app').style.display='block';
-    init();
-  } else {
-    document.getElementById('lockErr').style.display='block';
-    document.getElementById('passInp').value='';
-  }
-}
-
-// ─── API ──────────────────────────────────────────────────
-async function apiGet(url, action){
-  try{const r=await fetch(`${url}?action=${action}`);return await r.json();}
-  catch(e){return null;}
-}
-async function apiSave(body){
-  try{
-    const data=encodeURIComponent(JSON.stringify(body));
-    const r=await fetch(`${KASA_API}?action=${body.action}&data=${data}`);
-    return await r.json();
-  }catch(e){return null;}
-}
+// ─── API — auth.js üzerinden ──────────────────────────────
 
 // ─── TOAST ────────────────────────────────────────────────
 function toast(msg,type='ok'){
@@ -368,7 +348,60 @@ function getKasaVeri(key){
 // ─── KURLAR ───────────────────────────────────────────────
 function getKur(y,m){return window.KURLAR[y+'-'+m]||{kur:38.5,eurUsd:1.10,gbpUsd:1.28,altinUsd:95,gumusUsd:1.05};}
 
-// ─── USD HESAPLA ──────────────────────────────────────────
+// Kapanışı hareketlerden otomatik hesapla
+function hesaplaKapanis(key){
+  const veri = getKasaVeri(key);
+  const ac = veri.acilis;
+  const h = veri.hareketler || [];
+  
+  const kap = {
+    TL:    ac.TL    || 0,
+    USD:   ac.USD   || 0,
+    EUR:   ac.EUR   || 0,
+    ALTIN: ac.ALTIN || 0,
+    GUMUS: ac.GUMUS || 0,
+  };
+
+  h.forEach(hareket => {
+    if(hareket.tur === 'gelir'){
+      const t = hareket.tutarSay || 0;
+      if(hareket.kasaDoviz === 'TL')  kap.TL  += t;
+      if(hareket.kasaDoviz === 'USD') kap.USD += t;
+      if(hareket.kasaDoviz === 'EUR') kap.EUR += t;
+    }
+    if(hareket.tur === 'gider'){
+      const t = hareket.tutarSay || 0;
+      if(hareket.kasaDoviz === 'TL')  kap.TL  -= t;
+      if(hareket.kasaDoviz === 'USD') kap.USD -= t;
+      if(hareket.kasaDoviz === 'EUR') kap.EUR -= t;
+    }
+    if(hareket.tur === 'avans' && !hareket.avansKapali){
+      const t = hareket.tutarSay || 0;
+      if(hareket.kasaDoviz === 'TL')  kap.TL  -= t;
+      if(hareket.kasaDoviz === 'USD') kap.USD -= t;
+      if(hareket.kasaDoviz === 'EUR') kap.EUR -= t;
+    }
+    if(hareket.tur === 'doviz'){
+      const cinsi = hareket.cinsi;
+      const cikan = hareket.cikanMiktar || 0;
+      const giren = hareket.girenMiktar || 0;
+      if(cinsi === 'USD→TL')    { kap.USD -= cikan; kap.TL  += giren; }
+      if(cinsi === 'TL→USD')    { kap.TL  -= cikan; kap.USD += giren; }
+      if(cinsi === 'EUR→TL')    { kap.EUR -= cikan; kap.TL  += giren; }
+      if(cinsi === 'TL→EUR')    { kap.TL  -= cikan; kap.EUR += giren; }
+      if(cinsi === 'USD→EUR')   { kap.USD -= cikan; kap.EUR += giren; }
+      if(cinsi === 'EUR→USD')   { kap.EUR -= cikan; kap.USD += giren; }
+      if(cinsi === 'ALTIN_ALIS'){ kap.TL  -= cikan; kap.ALTIN += giren; }
+      if(cinsi === 'ALTIN_SATIS'){ kap.ALTIN -= cikan; kap.TL += giren; }
+      if(cinsi === 'GUMUS_ALIS'){ kap.TL  -= cikan; kap.GUMUS += giren; }
+      if(cinsi === 'GUMUS_SATIS'){ kap.GUMUS -= cikan; kap.TL += giren; }
+    }
+  });
+
+  // Admin override varsa onu kullan
+  if(veri._adminKapanis) return veri._adminKapanis;
+  return kap;
+}
 function kasaToplamUSD(kapanis,kur){
   const tlUsd   = (kapanis.TL||0) / kur.kur;
   const usd     = kapanis.USD||0;
@@ -404,8 +437,8 @@ function renderOzet(){
   const d=getDonem();
   const kur=getKur(d.y,d.m);
   const veri=getKasaVeri(d.key);
-  const kap=veri.kapanis;
-  const ac=veri.acilis;
+  const kap = hesaplaKapanis(d.key);
+  const ac = veri.acilis;
   const usdDetay=kasaToplamUSD(kap,kur);
 
   // Toplam banner
@@ -417,30 +450,28 @@ function renderOzet(){
     <div class="item"><div class="d-lbl">EUR (≈USD)</div><div class="d-val">${fUSD(usdDetay.eurUsd)}</div></div>
     <div class="item"><div class="d-lbl">Madenler (≈USD)</div><div class="d-val">${fUSD(usdDetay.altinUsd+usdDetay.gumusUsd)}</div></div>`;
 
-  // Kasa kartları
   document.getElementById('kasaKartlar').innerHTML=`
-    ${kasaKart('TL Kasası','tl','₺',fTL(kap.TL||0),fUSD(usdDetay.tlUsd),fTL(ac.TL||0),'TL','TL')}
-    ${kasaKart('USD Kasası','usd','$',fUSD(kap.USD||0),fUSD(usdDetay.usd),fUSD(ac.USD||0),'USD','USD')}
-    ${kasaKart('EUR Kasası','eur','€',fEUR(kap.EUR||0),fUSD(usdDetay.eurUsd),fEUR(ac.EUR||0),'EUR','EUR')}
-    ${kasaKart('Değerli Madenler','maden','⬡',
-      `${kap.ALTIN||0} gr Altın / ${kap.GUMUS||0} gr Gümüş`,
+    ${kasaKart('TL Kasası','tl',fTL(kap.TL||0),fUSD(usdDetay.tlUsd),fTL(ac.TL||0),'TL')}
+    ${kasaKart('USD Kasası','usd',fUSD(kap.USD||0),fUSD(usdDetay.usd),fUSD(ac.USD||0),'USD')}
+    ${kasaKart('EUR Kasası','eur',fEUR(kap.EUR||0),fUSD(usdDetay.eurUsd),fEUR(ac.EUR||0),'EUR')}
+    ${kasaKart('Değerli Madenler','maden',
+      (kap.ALTIN||0)+' gr Altın / '+(kap.GUMUS||0)+' gr Gümüş',
       fUSD(usdDetay.altinUsd+usdDetay.gumusUsd),
-      `${ac.ALTIN||0} gr Altın / ${ac.GUMUS||0} gr Gümüş`,'MADEN','ALTIN+GUMUS')}`;
+      (ac.ALTIN||0)+' gr Altın / '+(ac.GUMUS||0)+' gr Gümüş','ALTIN+GUMUS')}`;
 
   // Toolbar
   const toolbar = document.getElementById('kasaToolbar');
   if(toolbar){
     if(donemKilitliMi(d.y,d.m)){
       toolbar.innerHTML = '<div class="info-box blue" style="margin:0;flex:1">🔒 <strong>Kilitli dönem</strong> — Değişiklik yapılamaz.</div>'
-        +'<button class="btn" style="margin-left:8px" onclick="donemKilidinAc(\''+d.key+'\')">🔓 Kilidi aç</button>';
+        +(isAdmin()?'<button class="btn" style="margin-left:8px" onclick="donemKilidinAc(\''+d.key+'\')">🔓 Kilidi aç</button>':'');
     } else {
       toolbar.innerHTML = `
         <button class="btn btn-green" onclick="hareketModal('gelir')">+ Gelir ekle</button>
         <button class="btn btn-red" onclick="hareketModal('gider')">− Gider ekle</button>
         <button class="btn btn-amber" onclick="hareketModal('avans')">↕ Avans ekle</button>
         <button class="btn" onclick="hareketModal('doviz')">⇄ Döviz bozdurma</button>
-        <button class="btn" style="margin-left:auto" onclick="donemKilitle('${d.key}')">🔒 Dönemi kilitle</button>
-        <button class="btn btn-primary" onclick="kapanisKaydet()">💾 Kapanışı kaydet</button>`;
+        ${isAdmin()?'<button class="btn" style="margin-left:auto" onclick="donemKilitle(\''+d.key+'\')">🔒 Dönemi kilitle</button>':''}`;
     }
   }
   const kasalar=[
@@ -473,13 +504,14 @@ function renderOzet(){
   }).join('');
 }
 
-function kasaKart(baslik,cls,sym,kapanis,usdKarsi,acilis,kasaTip,editId){
+function kasaKart(baslik,cls,kapanis,usdKarsi,acilis,editId){
+  const adminBtnler = isAdmin()
+    ? '<button class="edit-btn" onclick="bakiyeGir(\'acilis\',\''+editId+'\')">Açılış ✎</button>'
+      +'<button class="edit-btn" onclick="adminKapanisGir(\''+editId+'\')">Override ✎</button>'
+    : '';
   return '<div class="kasa-kart '+cls+'">'
     +'<div class="ust"><div><div class="doviz">'+baslik+'</div></div>'
-    +'<div style="display:flex;gap:6px">'
-    +'<button class="edit-btn" onclick="bakiyeGir(\'acilis\',\''+editId+'\')">Açılış ✎</button>'
-    +'<button class="edit-btn" onclick="bakiyeGir(\'kapanis\',\''+editId+'\')">Kapanış ✎</button>'
-    +'</div></div>'
+    +'<div style="display:flex;gap:6px">'+adminBtnler+'</div></div>'
     +'<div class="kapanis">'+kapanis+'</div>'
     +'<div class="usd-karsi">≈ '+usdKarsi+'</div>'
     +'<div class="acilis-row"><span class="acilis-lbl">Açılış</span><span class="acilis-val">'+acilis+'</span></div>'
@@ -790,7 +822,46 @@ function hareketKaydet(tur,key){
   otoDriveKaydet(key);
 }
 
-function avansKapat(hId){
+function adminKapanisGir(kasaId){
+  const d=getDonem();
+  const veri=getKasaVeri(d.key);
+  const mevcut=hesaplaKapanis(d.key);
+  const ov=document.createElement('div');ov.className='modal-ov';
+  let formHTML='';
+  if(kasaId==='TL') formHTML=`<div class="fg fg-full"><label>Override TL Kapanış (₺)</label><input id="ao_val" type="number" step="0.01" value="${mevcut.TL||0}" style="font-family:var(--mono);font-size:16px"></div>`;
+  else if(kasaId==='USD') formHTML=`<div class="fg fg-full"><label>Override USD Kapanış ($)</label><input id="ao_val" type="number" step="0.01" value="${mevcut.USD||0}" style="font-family:var(--mono);font-size:16px"></div>`;
+  else if(kasaId==='EUR') formHTML=`<div class="fg fg-full"><label>Override EUR Kapanış (€)</label><input id="ao_val" type="number" step="0.01" value="${mevcut.EUR||0}" style="font-family:var(--mono);font-size:16px"></div>`;
+  else formHTML=`
+    <div class="fg"><label>Override Altın (gr)</label><input id="ao_altin" type="number" step="0.001" value="${mevcut.ALTIN||0}" style="font-family:var(--mono)"></div>
+    <div class="fg"><label>Override Gümüş (gr)</label><input id="ao_gumus" type="number" step="0.001" value="${mevcut.GUMUS||0}" style="font-family:var(--mono)"></div>`;
+
+  ov.innerHTML=`<div class="modal">
+    <h3>⚠️ Admin Override — ${d.lbl}</h3>
+    <div class="info-box" style="margin-bottom:14px">Bu değer otomatik hesabın üzerine yazılır. Sayım farkı veya düzeltme amaçlıdır.</div>
+    <div class="form-grid">${formHTML}</div>
+    <div class="modal-footer">
+      <button class="btn" onclick="this.closest('.modal-ov').remove()">İptal</button>
+      <button class="btn btn-primary" onclick="adminKapanisKaydet('${kasaId}','${d.key}')">⚠️ Override uygula</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  setTimeout(()=>{const inp=ov.querySelector('input');if(inp){inp.focus();inp.select();}},50);
+}
+
+function adminKapanisKaydet(kasaId, key){
+  const g=id=>parseFloat(document.getElementById(id)?.value)||0;
+  const veri=getKasaVeri(key);
+  if(!veri._adminKapanis) veri._adminKapanis={...hesaplaKapanis(key)};
+  if(kasaId==='TL') veri._adminKapanis.TL=g('ao_val');
+  else if(kasaId==='USD') veri._adminKapanis.USD=g('ao_val');
+  else if(kasaId==='EUR') veri._adminKapanis.EUR=g('ao_val');
+  else { veri._adminKapanis.ALTIN=g('ao_altin'); veri._adminKapanis.GUMUS=g('ao_gumus'); }
+  document.querySelector('.modal-ov')?.remove();
+  renderAll();
+  toast('⚠️ Override uygulandı');
+  otoDriveKaydet(key);
+}
   const d=getDonem();
   const veri=getKasaVeri(d.key);
   const h=veri.hareketler.find(x=>x.id===hId);
@@ -916,7 +987,7 @@ async function init(){
   toast('✓ Veri yüklendi');
 }
 
-document.getElementById('passInp').focus();
+// fdInit yukarıda çağrıldı
 </script>
 </body>
 </html>
