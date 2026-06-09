@@ -506,7 +506,8 @@ function renderOzet(){
         <button class="btn btn-red" onclick="hareketModal('gider')">− Gider ekle</button>
         <button class="btn btn-amber" onclick="hareketModal('avans')">↕ Avans ekle</button>
         <button class="btn" onclick="hareketModal('doviz')">⇄ Döviz bozdurma</button>
-        ${isAdmin()?'<button class="btn" style="margin-left:auto" onclick="donemKilitle(\''+d.key+'\')">🔒 Dönemi kilitle</button>':''}`;
+        ${isAdmin()?'<button class="btn" style="margin-left:auto" onclick="donemKilitle(\''+d.key+'\')">🔒 Dönemi kilitle</button>':''}`
+        +${isAdmin()?'<button class="btn" onclick="topluVeriGir()">📋 Toplu geçmiş giriş</button>':''};
     }
   }
   const kasalar=[
@@ -850,7 +851,86 @@ function renderKarsilastirma(){
         </tr>`).join('')}</tbody>
     </table></div>`;
 }
-function bakiyeGir(tip,kasaId){
+// ─── TOPLU GEÇMİŞ VERİ GİRİŞİ ───────────────────────────
+function topluVeriGir(){
+  const ov=document.createElement('div');ov.className='modal-ov';
+  const satirlar=DONEMLER.map(d=>{
+    const v=getKasaVeri(d.key);
+    const kap=hesaplaKapanis(d.key);
+    return '<tr>'
+      +'<td style="font-size:12px;white-space:nowrap;padding:6px 8px">'+d.lbl+'</td>'
+      +'<td style="padding:4px"><input class="edit-inp" style="width:90px" type="number" step="0.01" placeholder="₺0" data-key="'+d.key+'" data-tip="ac_TL" value="'+(v.acilis.TL||'')+'"></td>'
+      +'<td style="padding:4px"><input class="edit-inp" style="width:80px" type="number" step="0.01" placeholder="$0" data-key="'+d.key+'" data-tip="ac_USD" value="'+(v.acilis.USD||'')+'"></td>'
+      +'<td style="padding:4px"><input class="edit-inp" style="width:70px" type="number" step="0.01" placeholder="gr" data-key="'+d.key+'" data-tip="ac_ALTIN" value="'+(v.acilis.ALTIN||'')+'"></td>'
+      +'<td style="padding:4px 8px;color:var(--text3);font-size:11px">→</td>'
+      +'<td style="padding:4px"><input class="edit-inp" style="width:90px" type="number" step="0.01" placeholder="₺0" data-key="'+d.key+'" data-tip="kap_TL" value="'+(kap.TL||'')+'"></td>'
+      +'<td style="padding:4px"><input class="edit-inp" style="width:80px" type="number" step="0.01" placeholder="$0" data-key="'+d.key+'" data-tip="kap_USD" value="'+(kap.USD||'')+'"></td>'
+      +'<td style="padding:4px"><input class="edit-inp" style="width:70px" type="number" step="0.01" placeholder="gr" data-key="'+d.key+'" data-tip="kap_ALTIN" value="'+(kap.ALTIN||'')+'"></td>'
+      +'</tr>';
+  }).join('');
+
+  ov.innerHTML='<div class="modal" style="width:min(860px,98vw);max-height:90vh">'
+    +'<h3>📋 Toplu geçmiş veri girişi</h3>'
+    +'<div class="info-box blue" style="margin-bottom:12px">Kapanış girince sonraki ayın açılışı otomatik doldurulur.</div>'
+    +'<div style="overflow:auto;max-height:55vh">'
+    +'<table style="font-size:12px;width:100%;border-collapse:collapse">'
+    +'<thead><tr style="position:sticky;top:0;background:var(--bg3)">'
+    +'<th style="padding:8px;text-align:left">Dönem</th>'
+    +'<th style="padding:8px" colspan="3">Açılış (TL / USD / Altın gr)</th>'
+    +'<th></th>'
+    +'<th style="padding:8px" colspan="3">Kapanış (TL / USD / Altın gr)</th>'
+    +'</tr></thead>'
+    +'<tbody id="toplu_tbody">'+satirlar+'</tbody>'
+    +'</table></div>'
+    +'<div class="modal-footer">'
+    +'<button class="btn" onclick="this.closest(\'.modal-ov\').remove()">İptal</button>'
+    +'<button class="btn btn-primary" onclick="topluKaydet()">✓ Tümünü kaydet</button>'
+    +'</div></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+}
+
+async function topluKaydet(){
+  const inps=document.querySelectorAll('#toplu_tbody input');
+  const veriler={};
+  inps.forEach(inp=>{
+    const key=inp.dataset.key;
+    const tip=inp.dataset.tip;
+    const val=parseFloat(inp.value)||0;
+    if(!veriler[key]) veriler[key]={ac_TL:null,ac_USD:null,ac_ALTIN:null,kap_TL:null,kap_USD:null,kap_ALTIN:null};
+    if(inp.value!=='') veriler[key][tip]=val;
+  });
+
+  for(const d of DONEMLER){
+    const v=veriler[d.key];
+    if(!v) continue;
+    const veri=getKasaVeri(d.key);
+    if(v.ac_TL!==null) veri.acilis.TL=v.ac_TL;
+    if(v.ac_USD!==null) veri.acilis.USD=v.ac_USD;
+    if(v.ac_ALTIN!==null) veri.acilis.ALTIN=v.ac_ALTIN;
+    if(v.kap_TL!==null||v.kap_USD!==null||v.kap_ALTIN!==null){
+      if(!veri._adminKapanis) veri._adminKapanis={...hesaplaKapanis(d.key)};
+      if(v.kap_TL!==null) veri._adminKapanis.TL=v.kap_TL;
+      if(v.kap_USD!==null) veri._adminKapanis.USD=v.kap_USD;
+      if(v.kap_ALTIN!==null) veri._adminKapanis.ALTIN=v.kap_ALTIN;
+      // Sonraki ayın açılışını güncelle
+      const idx=DONEMLER.findIndex(x=>x.key===d.key);
+      if(idx>=0&&idx<DONEMLER.length-1){
+        const sonrakiVeri=getKasaVeri(DONEMLER[idx+1].key);
+        sonrakiVeri.acilis={...veri._adminKapanis};
+      }
+    }
+  }
+  document.querySelector('.modal-ov')?.remove();
+  renderAll();
+  toast('💾 Drive\'a kaydediliyor…');
+  for(const d of DONEMLER){
+    if(window.KASA[d.key]) await otoDriveKaydet(d.key);
+  }
+  toast('✓ Tüm dönemler kaydedildi');
+}
+
+// ─── BAKİYE GİR ───────────────────────────────────────────
   const d=getDonem();
   const veri=getKasaVeri(d.key);
   const hedef=veri[tip];
@@ -1069,8 +1149,17 @@ function adminKapanisKaydet(kasaId, key){
   else if(kasaId==='EUR') veri._adminKapanis.EUR=g('ao_val');
   else { veri._adminKapanis.ALTIN=g('ao_altin'); veri._adminKapanis.GUMUS=g('ao_gumus'); }
   document.querySelector('.modal-ov')?.remove();
+
+  // Sonraki ayın açılışını güncelle
+  const idx=DONEMLER.findIndex(d=>d.key===key);
+  if(idx>=0&&idx<DONEMLER.length-1){
+    const sonrakiKey=DONEMLER[idx+1].key;
+    const sonrakiVeri=getKasaVeri(sonrakiKey);
+    sonrakiVeri.acilis={...veri._adminKapanis};
+  }
+
   renderAll();
-  toast('⚠️ Override uygulandı');
+  toast('⚠️ Override uygulandı — sonraki ay açılışı güncellendi');
   otoDriveKaydet(key);
 }
 
