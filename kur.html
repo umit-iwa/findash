@@ -125,6 +125,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
     <div class="hdr-right">
       <div class="status-dot" id="statusDot"></div>
       <div class="kur-badge" id="kurBadge">yükleniyor…</div>
+      <button class="save-btn" style="padding:6px 14px;font-size:12px" onclick="yeniDonemAc()">+ Dönem aç</button>
     </div>
   </div>
 
@@ -247,7 +248,15 @@ function renderTablo(){
     document.getElementById('statusDot').className = 'status-dot ok';
   }
 
-  const rows = [...DONEMLER].reverse().map(({y,m,key,lbl})=>{
+  // Sadece girilmiş dönemler + aktif dönem + açılmış gelecek dönemler gösterilir
+  const gosterilecek = [...DONEMLER].reverse().filter(({y,m,key})=>{
+    if(window.KURLAR[key]) return true; // girilmiş
+    if(key === AKTif_KEY) return true;  // aktif dönem
+    if(window.ACIK_DONEMLER && window.ACIK_DONEMLER[key]) return true; // admin tarafından açılmış
+    return false;
+  });
+
+  const rows = gosterilecek.map(({y,m,key,lbl})=>{
     const d = window.KURLAR[key];
     const isAktif = key === AKTif_KEY;
     const eurTry = d ? (d.kur*(d.eurUsd||1.10)).toFixed(2) : '—';
@@ -255,14 +264,13 @@ function renderTablo(){
     const durum = isAktif ? '<span class="tag tag-aktif">aktif</span>'
                  : d ? '<span class="tag tag-girildi">girildi</span>'
                  : '<span class="tag tag-bekliyor">bekliyor</span>';
-    const kaynak = d ? `<span class="tag ${d.kaynak==='Manuel'?'tag-manuel':'tag-tcmb'}">${d.kaynak}</span>` : '—';
     const tarih = d ? `<span style="font-family:var(--mono);font-size:11px;color:var(--text2)">${d.tarih}</span>` : '—';
 
     return `<tr class="${isAktif?'aktif':''}">
       <td><span class="period ${isAktif?'aktif':''}">${lbl}</span></td>
       <td class="num"><span class="mono" id="kur_${key}">${d?d.kur.toFixed(4):'—'}</span>
         ${d?`<button class="edit-btn" style="margin-left:6px" onclick="editKur('${key}','usd',${d.kur})">✎</button>`:
-            `<button class="edit-btn" style="margin-left:6px" onclick="quickFill(${y},${m})">+</button>`}
+            `<button class="edit-btn" style="margin-left:6px" onclick="quickFill(${y},${m})">Gir</button>`}
       </td>
       <td class="num"><span class="mono" id="eur_${key}">${d?(d.eurUsd||'—'):'—'}</span>
         ${d?`<button class="edit-btn" style="margin-left:6px" onclick="editKur('${key}','eur',${d.eurUsd||1.10})">✎</button>`:''}
@@ -284,7 +292,60 @@ function renderTablo(){
   tbody.innerHTML = rows;
 }
 
-// ─── INLINE DÜZENLEME ─────────────────────────────────────
+// ─── YENİ DÖNEM AÇ ───────────────────────────────────────
+window.ACIK_DONEMLER = {};
+
+function yeniDonemAc(){
+  // Girilmemiş en yakın gelecek ayı bul
+  const sonraki = DONEMLER.find(({key}) => !window.KURLAR[key] && key !== AKTif_KEY);
+  if(!sonraki){ toast('Tüm dönemler girilmiş veya açık','amber'); return; }
+
+  const ov = document.createElement('div'); ov.className='modal-ov';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px';
+  ov.innerHTML=`<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:28px;width:min(400px,100%)">
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:16px">+ Yeni dönem aç</h3>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;gap:10px">
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Yıl</label>
+          <select id="nd_yil" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;color:var(--text);font-family:var(--font)">
+            <option>2025</option><option selected>2026</option><option>2027</option>
+          </select>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+          <label style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Ay</label>
+          <select id="nd_ay" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;color:var(--text);font-family:var(--font)">
+            ${MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--text3)">Dönem açılınca tabloda görünür ve kur girişi yapılabilir.</p>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+      <button style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:7px 14px;color:var(--text2);cursor:pointer;font-family:var(--font)" onclick="this.closest('[style]').remove()">İptal</button>
+      <button style="background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:7px 16px;font-family:var(--font);cursor:pointer" onclick="donemAcKaydet()">+ Aç</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  // Sonraki dönemi öner
+  document.getElementById('nd_yil').value = sonraki.y;
+  document.getElementById('nd_ay').value = sonraki.m;
+}
+
+function donemAcKaydet(){
+  const y = parseInt(document.getElementById('nd_yil').value);
+  const m = parseInt(document.getElementById('nd_ay').value);
+  const key = y+'-'+m;
+  window.ACIK_DONEMLER[key] = true;
+  document.querySelector('[style*="rgba(0,0,0,.7)"]')?.remove();
+  renderTablo();
+  toast('✓ '+MONTHS[m]+' '+y+' dönemi açıldı');
+  // Formu o aya ayarla
+  document.getElementById('fYil').value = y;
+  document.getElementById('fAy').value = m;
+  document.getElementById('fUsd').focus();
+}
 function editKur(key, tip, mevcut){
   const spanId = tip==='usd'?`kur_${key}`:tip==='eur'?`eur_${key}`:tip==='gbp'?`gbp_${key}`:tip==='altin'?`altin_${key}`:`gumus_${key}`;
   const span = document.getElementById(spanId);
