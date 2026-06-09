@@ -873,15 +873,18 @@ async function init(){
     }
   }
 
-  // Otomatik açılış aktarımı — her dönem için önceki kapanış = bu dönem açılış
+  // Otomatik açılış aktarımı — Drive yüklendikten sonra
   DONEMLER.forEach((d,i)=>{
     if(i===0) return;
     const prev=DONEMLER[i-1];
     const prevVeri=window.KASA[prev.key];
+    if(!prevVeri||!prevVeri.kapanis) return;
     const buVeri=getKasaVeri(d.key);
-    // Sadece açılış sıfırsa aktar (elle girilmişse dokunma)
-    if(prevVeri&&prevVeri.kapanis&&!buVeri.acilis.TL&&!buVeri.acilis.USD&&!buVeri.acilis.EUR){
-      buVeri.acilis={...prevVeri.kapanis};
+    // Sadece açılış sıfırsa aktar
+    const acilisBoş = !buVeri.acilis.TL && !buVeri.acilis.USD && 
+                      !buVeri.acilis.EUR && !buVeri.acilis.ALTIN;
+    if(acilisBoş){
+      buVeri.acilis = {...prevVeri.kapanis};
     }
   });
 
