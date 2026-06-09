@@ -6,6 +6,7 @@
 <title>Kur Yönetimi — FinDash</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="auth.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -114,17 +115,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
 <body>
 
 <!-- KİLİT -->
-<div id="lock">
-  <div class="lock-box">
-    <div class="lock-icon">⬡</div>
-    <h2>Kur Yönetimi</h2>
-    <p>FinDash · Döviz Kurları Modülü</p>
-    <input type="password" id="passInp" placeholder="••••••••••" onkeydown="if(event.key==='Enter')checkPass()">
-    <button class="lock-btn" onclick="checkPass()">Giriş yap</button>
-    <div class="lock-err" id="lockErr">Hatalı şifre</div>
-  </div>
-</div>
-
 <!-- UYGULAMA -->
 <div id="app">
   <div class="hdr">
@@ -186,12 +176,21 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
 
 <script>
 // ─── AYARLAR ───────────────────────────────────────────────
-const PASS = 'Za334286**';
-const API_URL = 'https://script.google.com/macros/s/AKfycby0evX5BZ8_Y2yn-wTsAPX9Lwfk3_KrPv-BTcl9VaP8uvD3TGKCO2fMuCCtSJCa3TZTCg/exec';
+const API_URL = FINDASH_API; // auth.js'den gelir
 const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
-// Dönemler: 2025-Ocak → 2026-Mayıs + gelecek 6 ay
+// auth.js modül init — lock ekranını oluşturur
+fdInit('kur', 'Kur Yönetimi', '⬡');
+
+// Giriş başarılı olunca çağrılır
+function fdOnGiris() {
+  // Admin düzenleme butonlarını yetki kontrolüne bağla
+  fdApplyYetkiler();
+  init();
+}
+// Dönemler
 const DONEMLER = [];
+// Aktif dönem = bu ay
 for(let y=2025;y<=2027;y++){
   for(let m=0;m<12;m++){
     if(y===2025&&m<0) continue;
@@ -225,34 +224,9 @@ window.KURLAR = {
 const now = new Date();
 const AKTif_KEY = now.getFullYear()+'-'+(now.getMonth());
 
-// ─── AUTH ──────────────────────────────────────────────────
-function checkPass(){
-  const v = document.getElementById('passInp').value;
-  if(v === PASS){
-    document.getElementById('lock').style.display='none';
-    document.getElementById('app').style.display='block';
-    init();
-  } else {
-    document.getElementById('lockErr').style.display='block';
-    document.getElementById('passInp').value='';
-    document.getElementById('passInp').focus();
-  }
-}
-
-// ─── API ───────────────────────────────────────────────────
-async function apiGet(action){
-  try{
-    const r = await fetch(`${API_URL}?action=${action}`);
-    return await r.json();
-  }catch(e){return null;}
-}
-async function apiSave(body){
-  try{
-    const data = encodeURIComponent(JSON.stringify(body));
-    const r = await fetch(`${API_URL}?action=${body.action}&data=${data}`);
-    return await r.json();
-  }catch(e){return null;}
-}
+// ─── API — auth.js'den gelen fdApiGet/fdApiSave kullanılır ──
+function apiGet(action){ return fdApiGet(action); }
+function apiSave(body){ return fdApiSave(body); }
 
 // ─── TOAST ────────────────────────────────────────────────
 function toast(msg, type='ok'){
@@ -430,7 +404,7 @@ async function init(){
   }
 }
 
-document.getElementById('passInp').focus();
+// auth.js fdInit çağrısı yukarıda yapıldı
 </script>
 </body>
 </html>
