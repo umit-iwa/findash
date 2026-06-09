@@ -98,7 +98,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div><h1>Nakit Kasa</h1><p>TL · USD · EUR · Değerli Madenler — dönemsel gelir / gider / avans</p></div>
     <div style="display:flex;align-items:center;gap:10px">
       <select class="donem-sel" id="donemSel" onchange="donemDegis()"></select>
-      <button id="fd-tema-btn" onclick="fdTemaDegistir()" style="background:transparent;border:1px solid var(--border);border-radius:20px;padding:5px 10px;cursor:pointer;font-size:14px">☀️</button><div class="status-dot" id="statusDot"></div>
+      <button id="fd-tema-btn" onclick="fdTemaDegistir()" style="background:transparent;border:1px solid var(--border);border-radius:20px;padding:5px 12px;cursor:pointer;font-size:16px;color:var(--text2)">☀️</button>
+      <div class="status-dot" id="statusDot"></div>
     </div>
   </div>
   <div class="tabs">
@@ -179,6 +180,10 @@ fdInit('kasa', 'Nakit Kasa', '💰');
 function fdOnGiris() {
   kullaniciRol = window.FD_SESSION.rol;
   fdApplyYetkiler();
+  // Tema butonunu güncelle
+  const mod = localStorage.getItem('fd_tema') || 'dark';
+  const btn = document.getElementById('fd-tema-btn');
+  if(btn) btn.textContent = mod === 'light' ? '🌙' : '☀️';
   init();
 }
 
