@@ -194,11 +194,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </table></div>
     </div>
     <div class="toolbar">
+      ${!donemKilitliMi(d.y,d.m)?`
       <button class="btn btn-green" onclick="hareketModal('gelir')">+ Gelir ekle</button>
       <button class="btn btn-red" onclick="hareketModal('gider')">− Gider ekle</button>
       <button class="btn btn-amber" onclick="hareketModal('avans')">↕ Avans ekle</button>
       <button class="btn" onclick="hareketModal('doviz')">⇄ Döviz bozdurma</button>
       <button class="btn btn-primary" style="margin-left:auto" onclick="kapanisKaydet()">💾 Kapanışı kaydet</button>
+      `:`<div class="info-box blue" style="margin:0"><strong>🔒 Kilitli dönem</strong> — Bu dönem muhasebe tarafından onaylanmıştır. Değişiklik yapılamaz.</div>`}
     </div>
   </div>
 
@@ -252,8 +254,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <script>
 // ─── AYARLAR ──────────────────────────────────────────────
 const PASS = 'Za334286**';
-const KUR_API = 'https://script.google.com/a/macros/iwaconcept.com.tr/s/AKfycbwoO1cDZZQvruE-nleoprtLHfH2hS4DaHsnAalMbkcRFHqRgNlFnTZvuTLOLM2_Dkd7YA/exec';
-const KASA_API = KUR_API; // Aynı Apps Script
+const KUR_API = 'https://script.google.com/macros/s/AKfycby0evX5BZ8_Y2yn-wTsAPX9Lwfk3_KrPv-BTcl9VaP8uvD3TGKCO2fMuCCtSJCa3TZTCg/exec';
+const KASA_API = KUR_API;
 
 const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
@@ -278,7 +280,13 @@ const now = new Date();
 let aktifDonem = DONEMLER.findIndex(d=>d.y===now.getFullYear()&&d.m===now.getMonth());
 if(aktifDonem<0) aktifDonem = DONEMLER.length-1;
 
-// Gelir/Gider kategorileri
+// Dönem kilitli mi? (Mayıs 2026 = 2026-4 ve öncesi kilitli — sadece görüntüleme)
+const KILIT_DONEM = {y:2026, m:4}; // Bu dönem ve öncesi kilitli (muhasebe onaylı)
+function donemKilitliMi(y,m){
+  if(y < KILIT_DONEM.y) return true;
+  if(y === KILIT_DONEM.y && m <= KILIT_DONEM.m) return true;
+  return false;
+}
 const GELIR_TURLERI = [
   'Yurtdışı Kargo','Yurtiçi Kargo','Döviz Bozdurma (TL geliri)',
   'Ürün Satışı — Ahşap','Ürün Satışı — Metal','Ürün Satışı — Cam',
