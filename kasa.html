@@ -506,8 +506,8 @@ function renderOzet(){
         <button class="btn btn-red" onclick="hareketModal('gider')">− Gider ekle</button>
         <button class="btn btn-amber" onclick="hareketModal('avans')">↕ Avans ekle</button>
         <button class="btn" onclick="hareketModal('doviz')">⇄ Döviz bozdurma</button>
-        ${isAdmin()?'<button class="btn" style="margin-left:auto" onclick="donemKilitle(\''+d.key+'\')">🔒 Dönemi kilitle</button>':''}`
-        +${isAdmin()?'<button class="btn" onclick="topluVeriGir()">📋 Toplu geçmiş giriş</button>':''};
+        ${isAdmin()?'<button class="btn" style="margin-left:auto" onclick="donemKilitle(\''+d.key+'\')">🔒 Dönemi kilitle</button>':''}
+        ${isAdmin()?'<button class="btn" onclick="topluVeriGir()">📋 Toplu geçmiş giriş</button>':''}` ;
     }
   }
   const kasalar=[
