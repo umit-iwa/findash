@@ -1,13 +1,12 @@
 <!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
+<!-- saved from url=(0046)file:///Users/umitmaden/Downloads/kasa_14.html -->
+<html lang="tr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nakit Kasa — FinDash</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="auth.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="./kasa_files/css2" rel="stylesheet">
+<script src="./kasa_files/auth.js"></script>
+<script src="./kasa_files/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -16,103 +15,62 @@
   --text:#e8edf5;--text2:#8a9bb8;--text3:#4a5a78;
   --accent:#4f9cf9;--green:#2ecc8a;--green-bg:#0d2e1f;
   --amber:#f0a030;--amber-bg:#2a1f0a;--red:#e05555;--red-bg:#2a1010;
-  --gold:#f5c842;--silver:#b0bec5;
+  --gold:#f5c842;
   --font:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--r:6px;
 }
 body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
-
-/* LOCK */
-#lock{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999}
-.lock-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:40px 48px;width:340px;text-align:center}
-.lock-icon{font-size:32px;margin-bottom:16px}
-.lock-box h2{font-size:18px;font-weight:500;margin-bottom:4px}
-.lock-box p{font-size:12px;color:var(--text2);margin-bottom:24px}
-.lock-box input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;color:var(--text);font-family:var(--mono);font-size:15px;letter-spacing:2px;text-align:center;outline:none;margin-bottom:12px}
-.lock-box input:focus{border-color:var(--accent)}
-.lock-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:10px;font-size:14px;font-family:var(--font);font-weight:500;cursor:pointer}
-.lock-err{color:var(--red);font-size:12px;margin-top:8px;display:none}
-
-/* LAYOUT */
 #app{display:none;max-width:1100px;margin:0 auto;padding:28px 24px}
-
-/* HEADER */
 .hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px}
-.hdr-left h1{font-size:20px;font-weight:600}
-.hdr-left p{font-size:12px;color:var(--text2);margin-top:3px}
-.hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.donem-sel{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--text);font-family:var(--font);outline:none;cursor:pointer}
-.status-dot{width:8px;height:8px;border-radius:50%;background:var(--text3)}
+.hdr h1{font-size:20px;font-weight:600}
+.hdr p{font-size:12px;color:var(--text2);margin-top:3px}
+.donem-sel{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--text);outline:none;cursor:pointer;font-family:var(--font)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);display:inline-block}
 .status-dot.ok{background:var(--green)}
 .status-dot.err{background:var(--red)}
-
-/* TABS */
 .tabs{display:flex;gap:2px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:4px;margin-bottom:20px;flex-wrap:wrap}
 .tab{padding:7px 16px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);transition:all .15s;white-space:nowrap}
 .tab.active{background:var(--bg3);color:var(--text);border:1px solid var(--border2)}
-.panel{display:none}
-.panel.active{display:block}
-
-/* CARDS */
+.panel{display:none}.panel.active{display:block}
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
 .card-title{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);font-weight:600;margin-bottom:16px}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
-.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
-
-/* KASA KARTLARI */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:16px}
 .kasa-kart{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px}
 .kasa-kart .ust{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.kasa-kart .icon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px}
 .kasa-kart .doviz{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
-.kasa-kart .kapanis{font-size:22px;font-weight:600;font-family:var(--mono);margin-bottom:4px}
+.kasa-kart .kapanis{font-size:20px;font-weight:600;font-family:var(--mono);margin-bottom:4px}
 .kasa-kart .usd-karsi{font-size:11px;color:var(--text2);font-family:var(--mono)}
 .kasa-kart .acilis-row{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
 .kasa-kart .acilis-lbl{font-size:10px;color:var(--text3)}
 .kasa-kart .acilis-val{font-size:12px;font-family:var(--mono);color:var(--text2)}
-.kasa-kart .edit-btn{background:transparent;border:1px solid var(--border);border-radius:4px;padding:2px 8px;color:var(--text3);cursor:pointer;font-size:11px;transition:all .15s}
-.kasa-kart .edit-btn:hover{border-color:var(--accent);color:var(--accent)}
-.tl{border-top:2px solid #e05555}
-.usd{border-top:2px solid #2ecc8a}
-.eur{border-top:2px solid #4f9cf9}
-.maden{border-top:2px solid var(--gold)}
-
-/* TOPLAM BANNER */
+.tl{border-top:2px solid var(--red)}.usd{border-top:2px solid var(--green)}.eur{border-top:2px solid var(--accent)}.maden{border-top:2px solid var(--gold)}
 .toplam-banner{background:linear-gradient(135deg,var(--bg3) 0%,#1a2540 100%);border:1px solid var(--border2);border-radius:10px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
 .toplam-banner .lbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
 .toplam-banner .val{font-size:28px;font-weight:700;font-family:var(--mono);color:var(--accent)}
 .toplam-banner .sub{font-size:11px;color:var(--text3);margin-top:2px}
 .toplam-detay{display:flex;gap:24px;flex-wrap:wrap}
-.toplam-detay .item{text-align:right}
 .toplam-detay .item .d-lbl{font-size:10px;color:var(--text3)}
 .toplam-detay .item .d-val{font-size:13px;font-family:var(--mono);color:var(--text2)}
-
-/* BUTTONS */
 .btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:7px 14px;color:var(--text2);cursor:pointer;font-size:12px;font-family:var(--font);display:inline-flex;align-items:center;gap:6px;transition:all .15s}
 .btn:hover{border-color:var(--accent);color:var(--accent)}
 .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-.btn-primary:hover{background:#3a8ae8;border-color:#3a8ae8;color:#fff}
+.btn-primary:hover{background:#3a8ae8;color:#fff}
 .btn-green{background:var(--green-bg);color:var(--green);border-color:var(--green)}
 .btn-red{background:var(--red-bg);color:var(--red);border-color:var(--red)}
 .btn-amber{background:var(--amber-bg);color:var(--amber);border-color:var(--amber)}
-.toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-
-/* TABLE */
+.toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);font-weight:600;padding:9px 12px;text-align:left;background:var(--bg3);border-bottom:1px solid var(--border)}
 td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(255,255,255,.02)}
-.num{text-align:right}
-.mono{font-family:var(--mono)}
+.num{text-align:right}.mono{font-family:var(--mono)}
 .tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
 .tag-gelir{background:var(--green-bg);color:var(--green)}
 .tag-gider{background:var(--red-bg);color:var(--red)}
 .tag-avans{background:var(--amber-bg);color:var(--amber)}
 .tag-doviz{background:rgba(79,156,249,.1);color:var(--accent)}
-.tag-acik{background:var(--amber-bg);color:var(--amber)}
 .tag-kapali{background:var(--bg3);color:var(--text3)}
-
-/* MODAL */
 .modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
 .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:28px;width:min(520px,100%);max-height:90vh;overflow-y:auto}
 .modal h3{font-size:16px;font-weight:600;margin-bottom:20px}
@@ -120,52 +78,36 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .fg{display:flex;flex-direction:column;gap:6px}
 .fg-full{grid-column:1/-1}
 .fg label{font-size:11px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
-.fg input,.fg select,.fg textarea{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:border .15s}
+.fg input,.fg select,.fg textarea{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none}
 .fg input:focus,.fg select:focus{border-color:var(--accent)}
-.fg textarea{resize:vertical;min-height:60px}
 .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
 .info-box{background:var(--amber-bg);border:1px solid var(--amber);border-radius:6px;padding:10px 14px;font-size:11px;color:var(--amber);margin-bottom:12px;line-height:1.5}
 .info-box.blue{background:rgba(79,156,249,.08);border-color:var(--accent);color:var(--accent)}
-
-/* TOAST */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 18px;font-size:13px;display:flex;align-items:center;gap:10px;z-index:300;transform:translateY(80px);opacity:0;transition:all .3s}
-.toast.show{transform:translateY(0);opacity:1}
-.toast.ok{border-color:var(--green)}
-.toast.err{border-color:var(--red)}
-.toast-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
-.toast.err .toast-dot{background:var(--red)}
-
-/* DELTA */
+.edit-inp{background:var(--bg3);border:1px solid var(--accent);border-radius:4px;padding:3px 8px;color:var(--text);font-family:var(--mono);font-size:13px;width:110px;outline:none}
+.edit-btn{background:transparent;border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text2);cursor:pointer;font-size:11px}
+.edit-btn:hover{border-color:var(--accent);color:var(--accent)}
 .delta-pos{color:var(--green);font-size:11px}
 .delta-neg{color:var(--red);font-size:11px}
+.divider{height:1px;background:var(--border);margin:12px 0}
 </style>
 </head>
 <body>
-
-<!-- UYGULAMA -->
 <div id="app">
   <div class="hdr">
-    <div class="hdr-left">
-      <h1>Nakit Kasa</h1>
-      <p>TL · USD · EUR · Değerli Madenler — dönemsel gelir / gider / avans</p>
-    </div>
-    <div class="hdr-right">
+    <div><h1>Nakit Kasa</h1><p>TL · USD · EUR · Değerli Madenler — dönemsel gelir / gider / avans</p></div>
+    <div style="display:flex;align-items:center;gap:10px">
       <select class="donem-sel" id="donemSel" onchange="donemDegis()"></select>
       <div class="status-dot" id="statusDot"></div>
     </div>
   </div>
-
-  <!-- TABS -->
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('ozet',this)">📊 Özet</div>
-    <div class="tab" onclick="switchTab('gelir',this)">📈 Gelirler</div>
-    <div class="tab" onclick="switchTab('gider',this)">📉 Giderler</div>
-    <div class="tab" onclick="switchTab('avans',this)">🔄 Avanslar</div>
-    <div class="tab" onclick="switchTab('doviz',this)">💱 Döviz Bozdurma</div>
-    <div class="tab" onclick="switchTab('hareketler',this)">📋 Tüm Hareketler</div>
+    <div class="tab active" onclick="switchTab(&#39;ozet&#39;,this)">📊 Özet</div>
+    <div class="tab" onclick="switchTab(&#39;gelir&#39;,this)">📈 Gelirler</div>
+    <div class="tab" onclick="switchTab(&#39;gider&#39;,this)">📉 Giderler</div>
+    <div class="tab" onclick="switchTab(&#39;avans&#39;,this)">🔄 Avanslar</div>
+    <div class="tab" onclick="switchTab(&#39;doviz&#39;,this)">💱 Döviz Bozdurma</div>
+    <div class="tab" onclick="switchTab(&#39;hareketler&#39;,this)">📋 Tüm Hareketler</div>
   </div>
-
-  <!-- ÖZET -->
   <div class="panel active" id="panel-ozet">
     <div class="toplam-banner">
       <div>
@@ -179,110 +121,71 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="card">
       <div class="card-title">Dönem özeti</div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Kasa</th><th class="num">Açılış</th><th class="num">Toplam Giren</th><th class="num">Toplam Çıkan</th><th class="num">Kapanış</th><th class="num">Fark</th></tr></thead>
+        <thead><tr><th>Kasa</th><th class="num">Açılış</th><th class="num">Giren</th><th class="num">Çıkan</th><th class="num">Bakiye</th><th class="num">Fark</th></tr></thead>
         <tbody id="ozetTbody"></tbody>
       </table></div>
     </div>
-
-    <!-- GRAFİKLER -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" id="grafik-grid">
-      <div class="card">
-        <div class="card-title">Gelir kırılımı</div>
-        <canvas id="gelirGrafik" height="220"></canvas>
-        <div id="gelirLegend" style="margin-top:10px;font-size:11px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="card"><div class="card-title">Gelir kırılımı</div>
+        <div style="height:180px"><canvas id="gelirGrafik"></canvas></div>
+        <div id="gelirLegend" style="margin-top:8px;font-size:11px"></div>
       </div>
-      <div class="card">
-        <div class="card-title">Gider kırılımı</div>
-        <canvas id="giderGrafik" height="220"></canvas>
-        <div id="giderLegend" style="margin-top:10px;font-size:11px"></div>
+      <div class="card"><div class="card-title">Gider kırılımı</div>
+        <div style="height:180px"><canvas id="giderGrafik"></canvas></div>
+        <div id="giderLegend" style="margin-top:8px;font-size:11px"></div>
       </div>
     </div>
-
-    <!-- DÖNEM KARŞILAŞTIRMA -->
-    <div class="card" id="karsilastirmaCard">
+    <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
         <div class="card-title" style="margin:0">Dönem karşılaştırma</div>
         <div style="display:flex;gap:8px;align-items:center">
           <span style="font-size:12px;color:var(--text2)">Güncel vs</span>
-          <select id="karsiDonem2" onchange="renderKarsilastirma()" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font)"></select>
+          <select id="karsiDonem" onchange="renderKarsilastirma()" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font)"></select>
         </div>
       </div>
       <div id="karsilastirmaIcerik"></div>
     </div>
-
     <div class="toolbar" id="kasaToolbar"></div>
   </div>
-
-  <!-- GELİRLER -->
   <div class="panel" id="panel-gelir">
-    <div class="toolbar">
-      <button class="btn btn-green" onclick="hareketModal('gelir')">+ Yeni gelir ekle</button>
-    </div>
+    <div class="toolbar"><button class="btn btn-green" onclick="hareketModal(&#39;gelir&#39;)">+ Yeni gelir</button></div>
     <div id="gelirIcerik"></div>
   </div>
-
-  <!-- GİDERLER -->
   <div class="panel" id="panel-gider">
-    <div class="toolbar">
-      <button class="btn btn-red" onclick="hareketModal('gider')">− Yeni gider ekle</button>
-    </div>
+    <div class="toolbar"><button class="btn btn-red" onclick="hareketModal(&#39;gider&#39;)">− Yeni gider</button></div>
     <div id="giderIcerik"></div>
   </div>
-
-  <!-- AVANSLAR -->
   <div class="panel" id="panel-avans">
-    <div class="toolbar">
-      <button class="btn btn-amber" onclick="hareketModal('avans')">↕ Yeni avans ekle</button>
-    </div>
-    <div class="info-box">
-      <strong>Borç avans:</strong> Kasadan çıkış yapılır, alacak olarak bekler. Geri dönünce gelir yazılmaz — sadece avans kapatılır.<br>
-      <strong>Hizmet avansı:</strong> Harcanınca gider kategorisine dönüşür.
-    </div>
+    <div class="toolbar"><button class="btn btn-amber" onclick="hareketModal(&#39;avans&#39;)">↕ Yeni avans</button></div>
+    <div class="info-box"><strong>Borç avans:</strong> Kasadan çıkış, geri dönünce gelir yazılmaz.<br><strong>Hizmet avansı:</strong> Harcanınca gidere dönüşür.</div>
     <div id="avansIcerik"></div>
   </div>
-
-  <!-- DÖVİZ BOZDURMA -->
   <div class="panel" id="panel-doviz">
-    <div class="toolbar">
-      <button class="btn" onclick="hareketModal('doviz')">⇄ Yeni döviz bozdurma</button>
-    </div>
-    <div class="info-box">
-      Döviz bozdurmalarda <strong>piyasa kuru</strong> kullanılır (TCMB değil). Kur farkı muhasebede işlenmez — sadece kasa hareketleri kaydedilir.
-    </div>
+    <div class="toolbar"><button class="btn" onclick="hareketModal(&#39;doviz&#39;)">⇄ Yeni döviz bozdurma</button></div>
+    <div class="info-box">Piyasa kuru kullanılır. Kur farkı işlenmez.</div>
     <div id="dovizIcerik"></div>
   </div>
-
-  <!-- TÜM HAREKETLER -->
-  <div class="panel" id="panel-hareketler">
-    <div id="hareketlerIcerik"></div>
-  </div>
+  <div class="panel" id="panel-hareketler"><div id="hareketlerIcerik"></div></div>
 </div>
 
-<div class="toast" id="toast"><div class="toast-dot"></div><span id="toastMsg"></span></div>
-
 <script>
-// ─── AYARLAR ──────────────────────────────────────────────
-const KUR_API  = FINDASH_API;
+const KUR_API = FINDASH_API;
 const KASA_API = FINDASH_API;
 let kullaniciRol = '';
 
-// auth.js modül init
 fdInit('kasa', 'Nakit Kasa', '💰');
 
-// Giriş başarılı olunca çağrılır
-function fdOnGiris(){
+function fdOnGiris() {
   kullaniciRol = window.FD_SESSION.rol;
   fdApplyYetkiler();
   init();
 }
 
-function isAdmin(){ return window.FD_SESSION.rol === 'admin'; }
-function apiGet(url, action){ return fdApiGet(action); }
-function apiSave(body){ return fdApiSave(body); }
+function isAdmin() { return window.FD_SESSION.rol === 'admin'; }
+function apiGet(url, action) { return fdApiGet(action); }
+function apiSave(body) { return fdApiSave(body); }
 
 const MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-
-// Dönemler
 const DONEMLER = [];
 for(let y=2025;y<=2027;y++){
   for(let m=0;m<12;m++){
@@ -291,225 +194,140 @@ for(let y=2025;y<=2027;y++){
   }
 }
 
-// Kur verileri (kur modülünden gelir)
 window.KURLAR = {};
-
-// Kasa verileri: {donemKey: {acilis, kapanis, hareketler}}
 window.KASA = {};
-let hareketSay = 1;
-
-// Aktif dönem
-const now = new Date();
-let aktifDonem = DONEMLER.findIndex(d=>d.y===now.getFullYear()&&d.m===now.getMonth());
-if(aktifDonem<0) aktifDonem = DONEMLER.length-1;
-
-// Kilitli dönemler — kullanıcı tarafından kilitlenen dönemler
 window.KILITLI_DONEMLER = {};
+let hareketSay = 1;
+let gelirChart = null, giderChart = null;
 
-function donemKilitliMi(y,m){
-  return !!window.KILITLI_DONEMLER[y+'-'+m];
+const now = new Date();
+let aktifDonemIdx = DONEMLER.findIndex(d=>d.y===now.getFullYear()&&d.m===now.getMonth());
+if(aktifDonemIdx<0) aktifDonemIdx = DONEMLER.length-1;
+let seciliDonemIdx = aktifDonemIdx;
+
+const GELIR_TURLERI = ['Yurtdışı Kargo','Yurtiçi Kargo','Döviz Bozdurma (TL geliri)','Ürün Satışı — Ahşap','Ürün Satışı — Metal','Ürün Satışı — Cam','Ürün Satışı — Harita','Ürün Satışı — Mobilya','Ürün Satışı — Karma','Ürün Satışı — Kadife','Ürün Satışı — Al-Sat','Hurda Satışı','Malzeme Ücreti','Ortak Sermaye Girişi — IWA','Ortak Sermaye Girişi — Citi','Diğer Gelir'];
+const GIDER_TURLERI = ['Personel','Sosyal Personel','Dış Hizmetler','Lansman','Muhtelif Alım','Masif Ahşap','Makina & Teçhizat','Altyapı & İşletme','Hammadde','Kargo','Diğer Gider'];
+const GRAFIK_RENKLER = ['#4f9cf9','#2ecc8a','#f0a030','#e05555','#a78bfa','#f59e0b','#10b981','#ef4444','#3b82f6','#ec4899','#8b5cf6','#14b8a6','#f97316','#06b6d4','#84cc16','#6366f1'];
+
+function fTL(v){return '₺'+new Intl.NumberFormat('tr-TR').format(Math.round(v));}
+function fUSD(v){return '$'+new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(Math.round(v));}
+function fEUR(v){return '€'+new Intl.NumberFormat('tr-TR').format(Math.round(v));}
+
+function toast(msg,type='ok'){fdToast(msg,type);}
+
+function getDonem(){return DONEMLER[seciliDonemIdx];}
+function getAktifDonem(){return DONEMLER[aktifDonemIdx];}
+
+function getKasaVeri(key){
+  if(!window.KASA[key]) window.KASA[key]={
+    acilis:{TL:0,USD:0,EUR:0,ALTIN:0,GUMUS:0},
+    hareketler:[],_adminKapanis:null
+  };
+  return window.KASA[key];
 }
 
-function donemKilitle(key){
-  window.KILITLI_DONEMLER[key] = true;
+function getKur(y,m){return window.KURLAR[y+'-'+m]||{kur:38.5,eurUsd:1.10,gbpUsd:1.28,altinUsd:95,gumusUsd:1.05};}
+
+function donemKilitliMi(y,m){return !!window.KILITLI_DONEMLER[y+'-'+m];}
+
+function hesaplaKapanis(key){
+  const veri=getKasaVeri(key);
+  if(veri._adminKapanis) return veri._adminKapanis;
+  const ac=veri.acilis;
+  const h=veri.hareketler||[];
+  const kap={TL:ac.TL||0,USD:ac.USD||0,EUR:ac.EUR||0,ALTIN:ac.ALTIN||0,GUMUS:ac.GUMUS||0};
+  h.forEach(x=>{
+    const t=x.tutarSay||0;
+    const k=x.kasaDoviz;
+    if(x.tur==='gelir'){if(k==='TL')kap.TL+=t;else if(k==='USD')kap.USD+=t;else if(k==='EUR')kap.EUR+=t;}
+    if(x.tur==='gider'){if(k==='TL')kap.TL-=t;else if(k==='USD')kap.USD-=t;else if(k==='EUR')kap.EUR-=t;}
+    if(x.tur==='avans'&&!x.avansKapali){if(k==='TL')kap.TL-=t;else if(k==='USD')kap.USD-=t;else if(k==='EUR')kap.EUR-=t;}
+    if(x.tur==='doviz'){
+      const cin=x.cinsi,ci=x.cikanMiktar||0,gi=x.girenMiktar||0;
+      if(cin==='USD→TL'){kap.USD-=ci;kap.TL+=gi;}
+      else if(cin==='TL→USD'){kap.TL-=ci;kap.USD+=gi;}
+      else if(cin==='EUR→TL'){kap.EUR-=ci;kap.TL+=gi;}
+      else if(cin==='TL→EUR'){kap.TL-=ci;kap.EUR+=gi;}
+      else if(cin==='USD→EUR'){kap.USD-=ci;kap.EUR+=gi;}
+      else if(cin==='EUR→USD'){kap.EUR-=ci;kap.USD+=gi;}
+      else if(cin==='ALTIN_ALIS'){kap.TL-=ci;kap.ALTIN+=gi;}
+      else if(cin==='ALTIN_SATIS'){kap.ALTIN-=ci;kap.TL+=gi;}
+      else if(cin==='GUMUS_ALIS'){kap.TL-=ci;kap.GUMUS+=gi;}
+      else if(cin==='GUMUS_SATIS'){kap.GUMUS-=ci;kap.TL+=gi;}
+    }
+  });
+  return kap;
+}
+
+function kasaToplamUSD(kap,kur){
+  const tlUsd=(kap.TL||0)/kur.kur;
+  const usd=kap.USD||0;
+  const eurUsd=(kap.EUR||0)*kur.eurUsd;
+  const altinUsd=(kap.ALTIN||0)*kur.altinUsd;
+  const gumusUsd=(kap.GUMUS||0)*kur.gumusUsd;
+  return{tlUsd,usd,eurUsd,altinUsd,gumusUsd,toplam:tlUsd+usd+eurUsd+altinUsd+gumusUsd};
+}
+
+function donemDegis(){
+  seciliDonemIdx=parseInt(document.getElementById('donemSel').value);
   renderAll();
-  toast('🔒 Dönem kilitlendi');
-  otoDriveKaydet(key);
 }
 
-function donemKilidinAc(key){
-  delete window.KILITLI_DONEMLER[key];
-  renderAll();
-  toast('🔓 Dönem kilidi açıldı');
-  otoDriveKaydet(key);
-}
-const GELIR_TURLERI = [
-  'Yurtdışı Kargo','Yurtiçi Kargo','Döviz Bozdurma (TL geliri)',
-  'Ürün Satışı — Ahşap','Ürün Satışı — Metal','Ürün Satışı — Cam',
-  'Ürün Satışı — Harita','Ürün Satışı — Mobilya','Ürün Satışı — Karma',
-  'Ürün Satışı — Kadife','Ürün Satışı — Al-Sat',
-  'Hurda Satışı','Malzeme Ücreti',
-  'Ortak Sermaye Girişi — IWA','Ortak Sermaye Girişi — Citi','Diğer Gelir'
-];
-const GIDER_TURLERI = [
-  'Personel','Sosyal Personel','Dış Hizmetler','Lansman',
-  'Muhtelif Alım','Masif Ahşap','Makina & Teçhizat',
-  'Altyapı & İşletme','Hammadde','Kargo','Diğer Gider'
-];
-
-// ─── API — auth.js üzerinden ──────────────────────────────
-
-// ─── TOAST ────────────────────────────────────────────────
-function toast(msg,type='ok'){
-  const t=document.getElementById('toast');
-  t.className='toast '+type;
-  document.getElementById('toastMsg').textContent=msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
-}
-
-// ─── TABS ─────────────────────────────────────────────────
 function switchTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('panel-'+id).classList.add('active');
-  renderPanel(id);
-}
-
-// ─── DÖNEM ────────────────────────────────────────────────
-function donemDegis(){
-  aktifDonem=parseInt(document.getElementById('donemSel').value);
-  renderAll();
-}
-
-function getDonem(){return DONEMLER[aktifDonem];}
-function getKasaVeri(key){
-  if(!window.KASA[key]) window.KASA[key]={
-    acilis:{TL:0,USD:0,EUR:0,ALTIN:0,GUMUS:0},
-    kapanis:{TL:0,USD:0,EUR:0,ALTIN:0,GUMUS:0},
-    hareketler:[]
-  };
-  return window.KASA[key];
-}
-
-// ─── KURLAR ───────────────────────────────────────────────
-function getKur(y,m){return window.KURLAR[y+'-'+m]||{kur:38.5,eurUsd:1.10,gbpUsd:1.28,altinUsd:95,gumusUsd:1.05};}
-
-// Kapanışı hareketlerden otomatik hesapla
-function hesaplaKapanis(key){
-  const veri = getKasaVeri(key);
-  const ac = veri.acilis;
-  const h = veri.hareketler || [];
-  
-  const kap = {
-    TL:    ac.TL    || 0,
-    USD:   ac.USD   || 0,
-    EUR:   ac.EUR   || 0,
-    ALTIN: ac.ALTIN || 0,
-    GUMUS: ac.GUMUS || 0,
-  };
-
-  h.forEach(hareket => {
-    if(hareket.tur === 'gelir'){
-      const t = hareket.tutarSay || 0;
-      if(hareket.kasaDoviz === 'TL')  kap.TL  += t;
-      if(hareket.kasaDoviz === 'USD') kap.USD += t;
-      if(hareket.kasaDoviz === 'EUR') kap.EUR += t;
-    }
-    if(hareket.tur === 'gider'){
-      const t = hareket.tutarSay || 0;
-      if(hareket.kasaDoviz === 'TL')  kap.TL  -= t;
-      if(hareket.kasaDoviz === 'USD') kap.USD -= t;
-      if(hareket.kasaDoviz === 'EUR') kap.EUR -= t;
-    }
-    if(hareket.tur === 'avans' && !hareket.avansKapali){
-      const t = hareket.tutarSay || 0;
-      if(hareket.kasaDoviz === 'TL')  kap.TL  -= t;
-      if(hareket.kasaDoviz === 'USD') kap.USD -= t;
-      if(hareket.kasaDoviz === 'EUR') kap.EUR -= t;
-    }
-    if(hareket.tur === 'doviz'){
-      const cinsi = hareket.cinsi;
-      const cikan = hareket.cikanMiktar || 0;
-      const giren = hareket.girenMiktar || 0;
-      if(cinsi === 'USD→TL')    { kap.USD -= cikan; kap.TL  += giren; }
-      if(cinsi === 'TL→USD')    { kap.TL  -= cikan; kap.USD += giren; }
-      if(cinsi === 'EUR→TL')    { kap.EUR -= cikan; kap.TL  += giren; }
-      if(cinsi === 'TL→EUR')    { kap.TL  -= cikan; kap.EUR += giren; }
-      if(cinsi === 'USD→EUR')   { kap.USD -= cikan; kap.EUR += giren; }
-      if(cinsi === 'EUR→USD')   { kap.EUR -= cikan; kap.USD += giren; }
-      if(cinsi === 'ALTIN_ALIS'){ kap.TL  -= cikan; kap.ALTIN += giren; }
-      if(cinsi === 'ALTIN_SATIS'){ kap.ALTIN -= cikan; kap.TL += giren; }
-      if(cinsi === 'GUMUS_ALIS'){ kap.TL  -= cikan; kap.GUMUS += giren; }
-      if(cinsi === 'GUMUS_SATIS'){ kap.GUMUS -= cikan; kap.TL += giren; }
-    }
-  });
-
-  // Admin override varsa onu kullan
-  if(veri._adminKapanis) return veri._adminKapanis;
-  return kap;
-}
-function kasaToplamUSD(kapanis,kur){
-  const tlUsd   = (kapanis.TL||0) / kur.kur;
-  const usd     = kapanis.USD||0;
-  const eurUsd  = (kapanis.EUR||0) * kur.eurUsd;
-  const altinUsd= (kapanis.ALTIN||0) * kur.altinUsd;
-  const gumusUsd= (kapanis.GUMUS||0) * kur.gumusUsd;
-  return {tlUsd,usd,eurUsd,altinUsd,gumusUsd,toplam:tlUsd+usd+eurUsd+altinUsd+gumusUsd};
-}
-
-// ─── RENDER ───────────────────────────────────────────────
-function renderAll(){
-  const aktifPanel = document.querySelector('.tab.active')?.textContent?.trim();
-  renderOzet();
-  const panelMap={'📊 Özet':'ozet','📈 Gelirler':'gelir','📉 Giderler':'gider','🔄 Avanslar':'avans','💱 Döviz Bozdurma':'doviz','📋 Tüm Hareketler':'hareketler'};
-  const panelId = panelMap[aktifPanel]||'ozet';
-  if(panelId!=='ozet') renderPanel(panelId);
-}
-
-function renderPanel(id){
   if(id==='ozet') renderOzet();
   else if(id==='gelir') renderGelir();
   else if(id==='gider') renderGider();
   else if(id==='avans') renderAvans();
   else if(id==='doviz') renderDoviz();
   else if(id==='hareketler') renderHareketler();
-  // Grafikler ve karşılaştırma
-  setTimeout(()=>{
-    renderGrafikler();
-    if(!document.getElementById('karsiDonem2').options.length) initKarsilastirma();
-    else renderKarsilastirma();
-  },100);
 }
 
-function fTL(v){return '₺'+new Intl.NumberFormat('tr-TR').format(Math.round(v));}
-function fUSD(v){return '$'+new Intl.NumberFormat('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}).format(Math.round(v));}
-function fEUR(v){return '€'+new Intl.NumberFormat('tr-TR').format(Math.round(v));}
+function renderAll(){renderOzet();}
 
 function renderOzet(){
   const d=getDonem();
   const kur=getKur(d.y,d.m);
   const veri=getKasaVeri(d.key);
-  const kap = hesaplaKapanis(d.key);
-  const ac = veri.acilis;
+  const kap=hesaplaKapanis(d.key);
+  const ac=veri.acilis;
+  const h=veri.hareketler||[];
   const usdDetay=kasaToplamUSD(kap,kur);
 
-  // Toplam banner
   document.getElementById('toplamUSD').textContent=fUSD(usdDetay.toplam);
-  document.getElementById('kurBilgi').textContent=`Kur: ${kur.kur.toFixed(2)} TL/USD · Altın: $${kur.altinUsd}/gr · Gümüş: $${kur.gumusUsd}/gr`;
-  document.getElementById('toplamDetay').innerHTML=`
-    <div class="item"><div class="d-lbl">TL (≈USD)</div><div class="d-val">${fUSD(usdDetay.tlUsd)}</div></div>
-    <div class="item"><div class="d-lbl">USD</div><div class="d-val">${fUSD(usdDetay.usd)}</div></div>
-    <div class="item"><div class="d-lbl">EUR (≈USD)</div><div class="d-val">${fUSD(usdDetay.eurUsd)}</div></div>
-    <div class="item"><div class="d-lbl">Madenler (≈USD)</div><div class="d-val">${fUSD(usdDetay.altinUsd+usdDetay.gumusUsd)}</div></div>`;
+  document.getElementById('kurBilgi').textContent='Kur: '+kur.kur.toFixed(2)+' TL/USD · Altın: $'+kur.altinUsd+'/gr · Gümüş: $'+kur.gumusUsd+'/gr';
+  document.getElementById('toplamDetay').innerHTML=
+    '<div class="item"><div class="d-lbl">TL (≈USD)</div><div class="d-val">'+fUSD(usdDetay.tlUsd)+'</div></div>'+
+    '<div class="item"><div class="d-lbl">USD</div><div class="d-val">'+fUSD(usdDetay.usd)+'</div></div>'+
+    '<div class="item"><div class="d-lbl">EUR (≈USD)</div><div class="d-val">'+fUSD(usdDetay.eurUsd)+'</div></div>'+
+    '<div class="item"><div class="d-lbl">Madenler (≈USD)</div><div class="d-val">'+fUSD(usdDetay.altinUsd+usdDetay.gumusUsd)+'</div></div>';
 
-  const hareketler = veri.hareketler||[];
-  document.getElementById('kasaKartlar').innerHTML=`
-    ${kasaKart('TL Kasası','tl',fTL(kap.TL||0),fUSD(usdDetay.tlUsd),fTL(ac.TL||0),'TL',hareketler,'TL')}
-    ${kasaKart('USD Kasası','usd',fUSD(kap.USD||0),fUSD(usdDetay.usd),fUSD(ac.USD||0),'USD',hareketler,'USD')}
-    ${kasaKart('EUR Kasası','eur',fEUR(kap.EUR||0),fUSD(usdDetay.eurUsd),fEUR(ac.EUR||0),'EUR',hareketler,'EUR')}
-    ${kasaKart('Değerli Madenler','maden',
-      (kap.ALTIN||0)+' gr Altın / '+(kap.GUMUS||0)+' gr Gümüş',
-      fUSD(usdDetay.altinUsd+usdDetay.gumusUsd),
-      (ac.ALTIN||0)+' gr Altın / '+(ac.GUMUS||0)+' gr Gümüş','ALTIN+GUMUS',hareketler,'ALTIN')}`;
-
-  // Toolbar
-  const toolbar = document.getElementById('kasaToolbar');
-  if(toolbar){
-    if(donemKilitliMi(d.y,d.m)){
-      toolbar.innerHTML = '<div class="info-box blue" style="margin:0;flex:1">🔒 <strong>Kilitli dönem</strong> — Değişiklik yapılamaz.</div>'
-        +(isAdmin()?'<button class="btn" style="margin-left:8px" onclick="donemKilidinAc(\''+d.key+'\')">🔓 Kilidi aç</button>':'');
-    } else {
-      toolbar.innerHTML = [
-        '<button class="btn btn-green" onclick="hareketModal(\'gelir\')">+ Gelir ekle</button>',
-        '<button class="btn btn-red" onclick="hareketModal(\'gider\')">− Gider ekle</button>',
-        '<button class="btn btn-amber" onclick="hareketModal(\'avans\')">↕ Avans ekle</button>',
-        '<button class="btn" onclick="hareketModal(\'doviz\')">⇄ Döviz bozdurma</button>',
-        isAdmin()?'<button class="btn" style="margin-left:auto" onclick="donemKilitle(\'"+d.key+"\')")>🔒 Dönemi kilitle</button>':null,
-        isAdmin()?'<button class="btn" onclick="topluVeriGir()">📋 Toplu geçmiş giriş</button>':null,
-      ].filter(Boolean).join('');
+  // Kasa kartları
+  function kasaKart(baslik,cls,kapBakiye,usdKarsi,acBakiye,editId){
+    const giren=h.filter(x=>x.tur==='gelir'&&x.kasaDoviz===editId).reduce((s,x)=>s+(x.tutarSay||0),0);
+    const cGider=h.filter(x=>x.tur==='gider'&&x.kasaDoviz===editId).reduce((s,x)=>s+(x.tutarSay||0),0);
+    const cAvans=h.filter(x=>x.tur==='avans'&&!x.avansKapali&&x.kasaDoviz===editId).reduce((s,x)=>s+(x.tutarSay||0),0);
+    const sym={TL:'₺',USD:'$',EUR:'€',ALTIN:'gr',GUMUS:'gr'}[editId]||'';
+    const fmt=v=>sym+(editId==='TL'?new Intl.NumberFormat('tr-TR').format(Math.round(v)):editId==='USD'?new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(Math.round(v)):new Intl.NumberFormat('tr-TR').format(Math.round(v)));
+    const adminBtns=isAdmin()?'<button class="edit-btn" onclick="bakiyeGir(\'acilis\',\''+editId+'\')">Açılış ✎</button> <button class="edit-btn" onclick="adminKapanisGir(\''+editId+'\')">Override ✎</button>':'';
+    let extra='';
+    if(giren>0) extra+='<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--green);margin-top:4px"><span>+ Gelirler</span><span class="mono">'+fmt(giren)+'</span></div>';
+    if(cGider>0) extra+='<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--red);margin-top:2px"><span>− Giderler</span><span class="mono">'+fmt(cGider)+'</span></div>';
+    if(cAvans>0) extra+='<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--amber);margin-top:2px"><span>− Avanslar</span><span class="mono">'+fmt(cAvans)+'</span></div>';
+    if(extra) extra='<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">'+extra+'</div>';
+    return '<div class="kasa-kart '+cls+'"><div class="ust"><div class="doviz">'+baslik+'</div><div style="display:flex;gap:4px">'+adminBtns+'</div></div><div class="kapanis">'+kapBakiye+'</div><div class="usd-karsi">≈ '+usdKarsi+'</div>'+extra+'<div class="acilis-row"><span class="acilis-lbl">Açılış</span><span class="acilis-val">'+acBakiye+'</span></div></div>';
   }
+
+  document.getElementById('kasaKartlar').innerHTML=
+    kasaKart('TL Kasası','tl',fTL(kap.TL||0),fUSD(usdDetay.tlUsd),fTL(ac.TL||0),'TL')+
+    kasaKart('USD Kasası','usd',fUSD(kap.USD||0),fUSD(usdDetay.usd),fUSD(ac.USD||0),'USD')+
+    kasaKart('EUR Kasası','eur',fEUR(kap.EUR||0),fUSD(usdDetay.eurUsd),fEUR(ac.EUR||0),'EUR')+
+    kasaKart('Değerli Madenler','maden',(kap.ALTIN||0)+' gr Altın / '+(kap.GUMUS||0)+' gr Gümüş',fUSD(usdDetay.altinUsd+usdDetay.gumusUsd),(ac.ALTIN||0)+' gr Altın / '+(ac.GUMUS||0)+' gr Gümüş','ALTIN');
+
+  // Dönem özeti tablosu
   const kasalar=[
     {lbl:'TL',ac:ac.TL||0,kap:kap.TL||0,fmt:fTL},
     {lbl:'USD',ac:ac.USD||0,kap:kap.USD||0,fmt:fUSD},
@@ -518,550 +336,186 @@ function renderOzet(){
     {lbl:'Gümüş (gr)',ac:ac.GUMUS||0,kap:kap.GUMUS||0,fmt:v=>v+' gr'},
   ];
   document.getElementById('ozetTbody').innerHTML=kasalar.map(k=>{
-    // Giren/çıkan hesapla
-    let giren=0,cikan=0;
-    hareketler.forEach(h=>{
-      if(h.kasaDoviz===k.lbl){
-        if(h.tur==='gelir') giren+=h.tutarSay||0;
-        if(h.tur==='gider'||h.tur==='avans') cikan+=h.tutarSay||0;
-      }
-    });
+    const giren=h.filter(x=>x.tur==='gelir'&&x.kasaDoviz===k.lbl).reduce((s,x)=>s+(x.tutarSay||0),0);
+    const cikan=h.filter(x=>(x.tur==='gider'||x.tur==='avans')&&x.kasaDoviz===k.lbl).reduce((s,x)=>s+(x.tutarSay||0),0);
     const fark=k.kap-k.ac;
-    const farkHtml=fark===0?'—':fark>0?`<span class="delta-pos">+${k.fmt(fark)}</span>`:`<span class="delta-neg">${k.fmt(fark)}</span>`;
-    return `<tr>
-      <td><strong>${k.lbl}</strong></td>
-      <td class="num mono">${k.fmt(k.ac)}</td>
-      <td class="num mono">${giren>0?k.fmt(giren):'—'}</td>
-      <td class="num mono">${cikan>0?k.fmt(cikan):'—'}</td>
-      <td class="num mono"><strong>${k.fmt(k.kap)}</strong></td>
-      <td class="num">${farkHtml}</td>
-    </tr>`;
+    return '<tr><td><strong>'+k.lbl+'</strong></td><td class="num mono">'+k.fmt(k.ac)+'</td><td class="num mono" style="color:var(--green)">'+
+      (giren>0?k.fmt(giren):'—')+'</td><td class="num mono" style="color:var(--red)">'+
+      (cikan>0?k.fmt(cikan):'—')+'</td><td class="num mono"><strong>'+k.fmt(k.kap)+'</strong></td><td class="num">'+
+      (fark===0?'—':fark>0?'<span class="delta-pos">+'+k.fmt(fark)+'</span>':'<span class="delta-neg">'+k.fmt(fark)+'</span>')+
+      '</td></tr>';
   }).join('');
+
+  // Toolbar
+  const toolbar=document.getElementById('kasaToolbar');
+  if(toolbar){
+    if(donemKilitliMi(d.y,d.m)){
+      toolbar.innerHTML='<div class="info-box blue" style="margin:0;flex:1">🔒 Kilitli dönem</div>'+
+        (isAdmin()?'<button class="btn" onclick="donemKilidinAc(\''+d.key+'\')">🔓 Kilidi aç</button>':'');
+    } else {
+      toolbar.innerHTML=
+        '<button class="btn btn-green" onclick="hareketModal(\'gelir\')">+ Gelir ekle</button>'+
+        '<button class="btn btn-red" onclick="hareketModal(\'gider\')">− Gider ekle</button>'+
+        '<button class="btn btn-amber" onclick="hareketModal(\'avans\')">↕ Avans ekle</button>'+
+        '<button class="btn" onclick="hareketModal(\'doviz\')">⇄ Döviz bozdurma</button>'+
+        (isAdmin()?'<button class="btn" style="margin-left:auto" onclick="donemKilitle(\''+d.key+'\')">🔒 Dönemi kilitle</button>':'')+
+        (isAdmin()?'<button class="btn" onclick="topluVeriGir()">📋 Toplu geçmiş giriş</button>':'');
+    }
+  }
+
+  // Grafikler
+  setTimeout(renderGrafikler, 50);
+
+  // Karşılaştırma dropdown
+  const sel=document.getElementById('karsiDonem');
+  if(sel&&!sel.options.length){
+    DONEMLER.filter(x=>x.key!==d.key).reverse().forEach(x=>{
+      sel.innerHTML+='<option value="'+x.key+'">'+x.lbl+'</option>';
+    });
+    renderKarsilastirma();
+  }
 }
-
-function kasaKart(baslik,cls,kapanis,usdKarsi,acilis,editId,hareketler,dovizKey){
-  // Hareketlerden giren/çıkan hesapla
-  const giren = hareketler.filter(h=>h.tur==='gelir'&&h.kasaDoviz===dovizKey).reduce((s,h)=>s+(h.tutarSay||0),0);
-  const cikanGider = hareketler.filter(h=>h.tur==='gider'&&h.kasaDoviz===dovizKey).reduce((s,h)=>s+(h.tutarSay||0),0);
-  const cikanAvans = hareketler.filter(h=>h.tur==='avans'&&!h.avansKapali&&h.kasaDoviz===dovizKey).reduce((s,h)=>s+(h.tutarSay||0),0);
-
-  const sym = {TL:'₺',USD:'$',EUR:'€',ALTIN:'gr',GUMUS:'gr'}[dovizKey]||'';
-  const fNum = v => sym+new Intl.NumberFormat('tr-TR',{minimumFractionDigits:0,maximumFractionDigits:2}).format(v);
-
-  const girenHTML = giren>0 ? `<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--green)"><span>+ Gelirler</span><span class="mono">${fNum(giren)}</span></div>` : '';
-  const giderHTML = cikanGider>0 ? `<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--red)"><span>− Giderler</span><span class="mono">${fNum(cikanGider)}</span></div>` : '';
-  const avansHTML = cikanAvans>0 ? `<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--amber)"><span>− Avanslar</span><span class="mono">${fNum(cikanAvans)}</span></div>` : '';
-  const hareketlerVar = giren>0||cikanGider>0||cikanAvans>0;
-
-  const adminBtnler = isAdmin()
-    ? '<button class="edit-btn" onclick="bakiyeGir(\'acilis\',\''+editId+'\')">Açılış ✎</button>'
-      +'<button class="edit-btn" onclick="adminKapanisGir(\''+editId+'\')">Override ✎</button>'
-    : '';
-
-  return '<div class="kasa-kart '+cls+'">'
-    +'<div class="ust"><div><div class="doviz">'+baslik+'</div></div>'
-    +'<div style="display:flex;gap:6px">'+adminBtnler+'</div></div>'
-    +'<div class="kapanis">'+kapanis+'</div>'
-    +'<div class="usd-karsi">≈ '+usdKarsi+'</div>'
-    +(hareketlerVar?'<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:4px">'
-      +girenHTML+giderHTML+avansHTML+'</div>':'')
-    +'<div class="acilis-row"><span class="acilis-lbl">Açılış</span><span class="acilis-val">'+acilis+'</span></div>'
-    +'</div>';
-}
-
-function renderGelir(){
-  const d=getDonem();
-  const veri=getKasaVeri(d.key);
-  const gelirler=veri.hareketler.filter(h=>h.tur==='gelir');
-  // Kategorilere göre grupla
-  const gruplar={};
-  gelirler.forEach(h=>{
-    if(!gruplar[h.cinsi]) gruplar[h.cinsi]=0;
-    gruplar[h.cinsi]+=h.tutarSay||0;
-  });
-  const toplamTL=gelirler.filter(h=>h.kasaDoviz==='TL').reduce((s,h)=>s+(h.tutarSay||0),0);
-  const toplamUSD=gelirler.filter(h=>h.kasaDoviz==='USD').reduce((s,h)=>s+(h.tutarSay||0),0);
-
-  document.getElementById('gelirIcerik').innerHTML=`
-    ${Object.keys(gruplar).length>0?`<div class="card"><div class="card-title">Kategori özeti — ${d.lbl}</div>
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>Kategori</th><th class="num">Toplam</th></tr></thead>
-        <tbody>${Object.entries(gruplar).map(([k,v])=>`<tr><td>${k}</td><td class="num mono">${fTL(v)}</td></tr>`).join('')}</tbody>
-        <tfoot><tr><td><strong>TL Toplam</strong></td><td class="num mono"><strong>${fTL(toplamTL)}</strong></td></tr>
-        ${toplamUSD>0?`<tr><td><strong>USD Toplam</strong></td><td class="num mono"><strong>${fUSD(toplamUSD)}</strong></td></tr>`:''}</tfoot>
-      </table></div></div>`:'<div class="card"><p style="color:var(--text3);font-size:12px">Bu dönem için henüz gelir kaydı yok.</p></div>'}
-    ${hareketTablosu(gelirler,'gelir')}`;
-}
-
-function renderGider(){
-  const d=getDonem();
-  const veri=getKasaVeri(d.key);
-  const giderler=veri.hareketler.filter(h=>h.tur==='gider');
-  const gruplar={};
-  giderler.forEach(h=>{
-    if(!gruplar[h.cinsi]) gruplar[h.cinsi]=0;
-    gruplar[h.cinsi]+=h.tutarSay||0;
-  });
-  document.getElementById('giderIcerik').innerHTML=`
-    ${Object.keys(gruplar).length>0?`<div class="card"><div class="card-title">Kategori özeti — ${d.lbl}</div>
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>Kategori</th><th class="num">Toplam</th></tr></thead>
-        <tbody>${Object.entries(gruplar).map(([k,v])=>`<tr><td>${k}</td><td class="num mono">${fTL(v)}</td></tr>`).join('')}</tbody>
-      </table></div></div>`:'<div class="card"><p style="color:var(--text3);font-size:12px">Bu dönem için henüz gider kaydı yok.</p></div>'}
-    ${hareketTablosu(giderler,'gider')}`;
-}
-
-function renderAvans(){
-  const d=getDonem();
-  const veri=getKasaVeri(d.key);
-  const avanslar=veri.hareketler.filter(h=>h.tur==='avans');
-  const acik=avanslar.filter(h=>!h.avansKapali);
-  const kapali=avanslar.filter(h=>h.avansKapali);
-  document.getElementById('avansIcerik').innerHTML=`
-    ${acik.length>0?`<div class="card"><div class="card-title">Açık avanslar (${acik.length})</div>
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>Tarih</th><th>Tür</th><th>Kişi/Firma</th><th>Kasa</th><th class="num">Tutar</th><th>Açıklama</th><th></th></tr></thead>
-        <tbody>${acik.map(h=>`<tr>
-          <td style="font-size:11px;color:var(--text3)">${h.tarih||'—'}</td>
-          <td><span class="tag ${h.avansType==='borc'?'tag-avans':'tag-doviz'}">${h.avansType==='borc'?'Borç avans':'Hizmet avansı'}</span></td>
-          <td>${h.avansKisi||'—'}</td>
-          <td><span class="tag tag-kapali">${h.kasaDoviz}</span></td>
-          <td class="num mono">${h.tutar}</td>
-          <td style="font-size:11px;color:var(--text3)">${h.aciklama||''}</td>
-          <td><button class="btn btn-green" style="padding:3px 10px;font-size:11px" onclick="avansKapat('${h.id}')">Kapat</button></td>
-        </tr>`).join('')}</tbody>
-      </table></div></div>`:'<div class="card"><p style="color:var(--text3);font-size:12px">Açık avans yok.</p></div>'}
-    ${kapali.length>0?`<div class="card"><div class="card-title">Kapatılmış avanslar</div>
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>Tarih</th><th>Tür</th><th>Kişi</th><th class="num">Tutar</th></tr></thead>
-        <tbody>${kapali.map(h=>`<tr style="opacity:.5">
-          <td style="font-size:11px">${h.tarih||'—'}</td>
-          <td><span class="tag tag-kapali">${h.avansType==='borc'?'Borç':'Hizmet'}</span></td>
-          <td>${h.avansKisi||'—'}</td>
-          <td class="num mono">${h.tutar}</td>
-        </tr>`).join('')}</tbody>
-      </table></div></div>`:''}`;
-}
-
-function renderDoviz(){
-  const d=getDonem();
-  const veri=getKasaVeri(d.key);
-  const dovizler=veri.hareketler.filter(h=>h.tur==='doviz');
-  document.getElementById('dovizIcerik').innerHTML=dovizler.length>0
-    ?`<div class="card"><div class="card-title">Döviz bozdurma hareketleri — ${d.lbl}</div>
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>Tarih</th><th>İşlem</th><th class="num">Çıkan</th><th class="num">Giren</th><th>Piyasa Kuru</th><th>Not</th></tr></thead>
-        <tbody>${dovizler.map(h=>`<tr>
-          <td style="font-size:11px;color:var(--text3)">${h.tarih||'—'}</td>
-          <td><span class="tag tag-doviz">${h.cinsi}</span></td>
-          <td class="num mono">${h.cikanGoster||'—'}</td>
-          <td class="num mono">${h.girenGoster||'—'}</td>
-          <td class="mono" style="font-size:11px;color:var(--text2)">${h.piyasaKur||'—'}</td>
-          <td style="font-size:11px;color:var(--text3)">${h.aciklama||''}</td>
-        </tr>`).join('')}</tbody>
-      </table></div></div>`
-    :'<div class="card"><p style="color:var(--text3);font-size:12px">Bu dönem için döviz bozdurma kaydı yok.</p></div>';
-}
-
-function renderHareketler(){
-  const d=getDonem();
-  const veri=getKasaVeri(d.key);
-  const hareketler=[...veri.hareketler].reverse();
-  document.getElementById('hareketlerIcerik').innerHTML=hareketler.length>0
-    ?`<div class="card"><div class="card-title">Tüm hareketler — ${d.lbl} (${hareketler.length})</div>
-      ${hareketTablosu([...veri.hareketler],'hepsi')}</div>`
-    :'<div class="card"><p style="color:var(--text3);font-size:12px">Bu dönem için kayıt yok.</p></div>';
-}
-
-function hareketTablosu(hareketler,tur){
-  if(!hareketler.length) return '';
-  return `<div class="card"><div class="card-title">Hareket listesi (${hareketler.length})</div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>Tarih</th><th>Tür</th><th>Kategori</th><th>Kasa</th><th class="num">Tutar</th><th>Açıklama</th></tr></thead>
-      <tbody>${[...hareketler].reverse().map(h=>`<tr>
-        <td style="font-size:11px;color:var(--text3)">${h.tarih||'—'}</td>
-        <td><span class="tag tag-${h.tur}">${h.tur}</span></td>
-        <td style="font-size:12px">${h.cinsi||'—'}</td>
-        <td><span class="tag tag-kapali">${h.kasaDoviz||'—'}</span></td>
-        <td class="num mono">${h.tutar||'—'}</td>
-        <td style="font-size:11px;color:var(--text3)">${h.aciklama||''}</td>
-      </tr>`).join('')}</tbody>
-    </table></div></div>`;
-}
-
-// ─── GRAFİKLER ────────────────────────────────────────────
-let gelirChart = null, giderChart = null;
-
-const GRAFIK_RENKLER = [
-  '#4f9cf9','#2ecc8a','#f0a030','#e05555','#a78bfa',
-  '#f59e0b','#10b981','#ef4444','#3b82f6','#ec4899',
-  '#8b5cf6','#14b8a6','#f97316','#06b6d4','#84cc16','#6366f1'
-];
 
 function renderGrafikler(){
   const d=getDonem();
-  const veri=getKasaVeri(d.key);
-  const hareketler=veri.hareketler||[];
+  const h=getKasaVeri(d.key).hareketler||[];
+  const gelirGrup={},giderGrup={};
+  h.filter(x=>x.tur==='gelir').forEach(x=>{const k=x.cinsi||'Diğer';gelirGrup[k]=(gelirGrup[k]||0)+(x.tutarSay||0);});
+  h.filter(x=>x.tur==='gider').forEach(x=>{const k=x.cinsi||'Diğer';giderGrup[k]=(giderGrup[k]||0)+(x.tutarSay||0);});
 
-  const gelirGrup={};
-  hareketler.filter(h=>h.tur==='gelir').forEach(h=>{
-    const k=h.cinsi||'Diğer';
-    gelirGrup[k]=(gelirGrup[k]||0)+(h.tutarSay||0);
-  });
-  const giderGrup={};
-  hareketler.filter(h=>h.tur==='gider').forEach(h=>{
-    const k=h.cinsi||'Diğer';
-    giderGrup[k]=(giderGrup[k]||0)+(h.tutarSay||0);
-  });
-
-  // Grafik grid yüksekliğini sabitle
-  const grid=document.getElementById('grafik-grid');
-  if(grid) grid.style.alignItems='start';
-
-  // Gelir grafik
-  const gelirCanvas=document.getElementById('gelirGrafik');
-  const gelirLegend=document.getElementById('gelirLegend');
-  if(gelirChart){gelirChart.destroy();gelirChart=null;}
-  gelirCanvas.style.display='block';
-  if(Object.keys(gelirGrup).length>0){
-    const labels=Object.keys(gelirGrup);
-    const data=Object.values(gelirGrup);
+  function ciz(canvasId,legendId,grup,chart_ref){
+    const canvas=document.getElementById(canvasId);
+    const legend=document.getElementById(legendId);
+    if(!canvas||!legend) return null;
+    if(chart_ref){chart_ref.destroy();chart_ref=null;}
+    const keys=Object.keys(grup);
+    if(!keys.length){
+      canvas.style.display='none';
+      legend.innerHTML='<p style="color:var(--text3);font-size:12px;text-align:center;padding:10px">Veri yok</p>';
+      return null;
+    }
+    canvas.style.display='block';
+    const data=keys.map(k=>grup[k]);
     const toplam=data.reduce((a,b)=>a+b,0);
-    gelirCanvas.style.maxHeight='200px';
-    gelirChart=new Chart(gelirCanvas,{
-      type:'pie',
-      data:{labels,datasets:[{data,backgroundColor:GRAFIK_RENKLER,borderWidth:2,borderColor:'#161b27'}]},
-      options:{
-        responsive:true,maintainAspectRatio:false,
-        plugins:{
-          legend:{display:false},
-          tooltip:{callbacks:{label:ctx=>' '+ctx.label+': ₺'+Math.round(ctx.raw).toLocaleString('tr-TR')+' ('+((ctx.raw/toplam)*100).toFixed(0)+'%)'}}
-        }
-      }
-    });
-    gelirLegend.innerHTML=labels.map((l,i)=>'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">'
-      +'<div style="display:flex;align-items:center;gap:5px">'
-      +'<span style="width:8px;height:8px;border-radius:2px;background:'+GRAFIK_RENKLER[i]+';display:inline-block;flex-shrink:0"></span>'
-      +'<span style="color:var(--text2);font-size:11px">'+l+'</span></div>'
-      +'<span style="color:var(--text);font-family:var(--mono);font-size:11px">'+((data[i]/toplam)*100).toFixed(0)+'%</span>'
-      +'</div>').join('');
-  } else {
-    gelirCanvas.style.display='none';
-    gelirLegend.innerHTML='<p style="color:var(--text3);font-size:12px;text-align:center;padding:20px 0">Bu dönem gelir kaydı yok</p>';
+    const c=new Chart(canvas,{type:'pie',data:{labels:keys,datasets:[{data,backgroundColor:GRAFIK_RENKLER,borderWidth:2,borderColor:'#161b27'}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+ctx.label+': '+Math.round(ctx.raw).toLocaleString('tr-TR')+' ('+((ctx.raw/toplam)*100).toFixed(0)+'%)'}}}}}});
+    legend.innerHTML=keys.map((l,i)=>'<div style="display:flex;justify-content:space-between;margin-bottom:2px"><div style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:'+GRAFIK_RENKLER[i]+';display:inline-block"></span><span style="color:var(--text2)">'+l+'</span></div><span style="font-family:var(--mono)">'+((data[i]/toplam)*100).toFixed(0)+'%</span></div>').join('');
+    return c;
   }
-
-  // Gider grafik
-  const giderCanvas=document.getElementById('giderGrafik');
-  const giderLegend=document.getElementById('giderLegend');
-  if(giderChart){giderChart.destroy();giderChart=null;}
-  giderCanvas.style.display='block';
-  if(Object.keys(giderGrup).length>0){
-    const labels=Object.keys(giderGrup);
-    const data=Object.values(giderGrup);
-    const toplam=data.reduce((a,b)=>a+b,0);
-    giderCanvas.style.maxHeight='200px';
-    giderChart=new Chart(giderCanvas,{
-      type:'pie',
-      data:{labels,datasets:[{data,backgroundColor:GRAFIK_RENKLER,borderWidth:2,borderColor:'#161b27'}]},
-      options:{
-        responsive:true,maintainAspectRatio:false,
-        plugins:{
-          legend:{display:false},
-          tooltip:{callbacks:{label:ctx=>' '+ctx.label+': ₺'+Math.round(ctx.raw).toLocaleString('tr-TR')+' ('+((ctx.raw/toplam)*100).toFixed(0)+'%)'}}
-        }
-      }
-    });
-    giderLegend.innerHTML=labels.map((l,i)=>'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">'
-      +'<div style="display:flex;align-items:center;gap:5px">'
-      +'<span style="width:8px;height:8px;border-radius:2px;background:'+GRAFIK_RENKLER[i]+';display:inline-block;flex-shrink:0"></span>'
-      +'<span style="color:var(--text2);font-size:11px">'+l+'</span></div>'
-      +'<span style="color:var(--text);font-family:var(--mono);font-size:11px">'+((data[i]/toplam)*100).toFixed(0)+'%</span>'
-      +'</div>').join('');
-  } else {
-    giderCanvas.style.display='none';
-    giderLegend.innerHTML='<p style="color:var(--text3);font-size:12px;text-align:center;padding:20px 0">Bu dönem gider kaydı yok</p>';
-  }
-}
-
-// ─── DÖNEM KARŞILAŞTIRMA ──────────────────────────────────
-function initKarsilastirma(){
-  const sel=document.getElementById('karsiDonem2');
-  if(!sel) return;
-  sel.innerHTML='';
-  // Sadece kapanışı olan dönemler
-  const aktifKey=getDonem().key;
-  DONEMLER.filter(d=>d.key!==aktifKey&&window.KASA[d.key]).reverse().forEach(d=>{
-    sel.innerHTML+=`<option value="${d.key}">${d.lbl}</option>`;
-  });
-  if(!sel.options.length){
-    // Kapanışı olan yoksa tüm dönemler
-    [...DONEMLER].reverse().filter(d=>d.key!==aktifKey).forEach(d=>{
-      sel.innerHTML+=`<option value="${d.key}">${d.lbl}</option>`;
-    });
-  }
-  renderKarsilastirma();
+  gelirChart=ciz('gelirGrafik','gelirLegend',gelirGrup,gelirChart);
+  giderChart=ciz('giderGrafik','giderLegend',giderGrup,giderChart);
 }
 
 function renderKarsilastirma(){
   const aktifKey=getDonem().key;
-  const key2=document.getElementById('karsiDonem2')?.value;
+  const key2=document.getElementById('karsiDonem')?.value;
   if(!key2) return;
   const d1=DONEMLER.find(d=>d.key===aktifKey);
   const d2=DONEMLER.find(d=>d.key===key2);
-  const v1=getKasaVeri(aktifKey);
-  const v2=getKasaVeri(key2);
-  const kap1=hesaplaKapanis(aktifKey);
-  const kap2=hesaplaKapanis(key2);
-
-  const topla=(veri,tur,doviz)=>(veri.hareketler||[]).filter(h=>h.tur===tur&&h.kasaDoviz===doviz).reduce((s,h)=>s+(h.tutarSay||0),0);
-
-  const satirlar=[
-    {lbl:'TL Bakiye',v1:fTL(kap1.TL||0),v2:fTL(kap2.TL||0),delta:(kap1.TL||0)-(kap2.TL||0),fmt:fTL},
-    {lbl:'USD Bakiye',v1:fUSD(kap1.USD||0),v2:fUSD(kap2.USD||0),delta:(kap1.USD||0)-(kap2.USD||0),fmt:fUSD},
-    {lbl:'EUR Bakiye',v1:fEUR(kap1.EUR||0),v2:fEUR(kap2.EUR||0),delta:(kap1.EUR||0)-(kap2.EUR||0),fmt:fEUR},
-    {lbl:'Altın',v1:(kap1.ALTIN||0)+' gr',v2:(kap2.ALTIN||0)+' gr',delta:(kap1.ALTIN||0)-(kap2.ALTIN||0),fmt:v=>v+' gr'},
+  const v1=getKasaVeri(aktifKey),v2=getKasaVeri(key2);
+  const k1=hesaplaKapanis(aktifKey),k2=hesaplaKapanis(key2);
+  const topla=(v,tur,dov)=>(v.hareketler||[]).filter(x=>x.tur===tur&&x.kasaDoviz===dov).reduce((s,x)=>s+(x.tutarSay||0),0);
+  const rows=[
+    {lbl:'TL Bakiye',v1:fTL(k1.TL||0),v2:fTL(k2.TL||0),delta:(k1.TL||0)-(k2.TL||0),fmt:fTL},
+    {lbl:'USD Bakiye',v1:fUSD(k1.USD||0),v2:fUSD(k2.USD||0),delta:(k1.USD||0)-(k2.USD||0),fmt:fUSD},
+    {lbl:'EUR Bakiye',v1:fEUR(k1.EUR||0),v2:fEUR(k2.EUR||0),delta:(k1.EUR||0)-(k2.EUR||0),fmt:fEUR},
+    {lbl:'Altın',v1:(k1.ALTIN||0)+' gr',v2:(k2.ALTIN||0)+' gr',delta:(k1.ALTIN||0)-(k2.ALTIN||0),fmt:v=>v+' gr'},
     {sep:true},
     {lbl:'TL Gelir',v1:fTL(topla(v1,'gelir','TL')),v2:fTL(topla(v2,'gelir','TL')),delta:topla(v1,'gelir','TL')-topla(v2,'gelir','TL'),fmt:fTL,tip:'gelir'},
     {lbl:'TL Gider',v1:fTL(topla(v1,'gider','TL')),v2:fTL(topla(v2,'gider','TL')),delta:topla(v1,'gider','TL')-topla(v2,'gider','TL'),fmt:fTL,tip:'gider'},
     {lbl:'USD Gelir',v1:fUSD(topla(v1,'gelir','USD')),v2:fUSD(topla(v2,'gelir','USD')),delta:topla(v1,'gelir','USD')-topla(v2,'gelir','USD'),fmt:fUSD,tip:'gelir'},
     {lbl:'USD Gider',v1:fUSD(topla(v1,'gider','USD')),v2:fUSD(topla(v2,'gider','USD')),delta:topla(v1,'gider','USD')-topla(v2,'gider','USD'),fmt:fUSD,tip:'gider'},
   ];
-
   const dHtml=(delta,fmt,tip)=>{
     if(!delta) return '<span style="color:var(--text3)">—</span>';
-    const pos = tip==='gelir'?(delta>0):tip==='gider'?(delta<0):(delta>0);
-    return `<span class="${pos?'delta-pos':'delta-neg'}">${delta>0?'+':''}${fmt(Math.abs(delta))}</span>`;
+    const pos=tip==='gelir'?(delta>0):tip==='gider'?(delta<0):(delta>0);
+    return '<span class="'+(pos?'delta-pos':'delta-neg')+'">'+(delta>0?'+':'')+fmt(Math.abs(delta))+'</span>';
   };
-
-  document.getElementById('karsilastirmaIcerik').innerHTML=`
-    <div class="tbl-wrap"><table>
-      <thead><tr>
-        <th>Kalem</th>
-        <th class="num">${d1?.lbl||aktifKey} <span style="font-size:9px;color:var(--accent)">(güncel)</span></th>
-        <th class="num">${d2?.lbl||key2}</th>
-        <th class="num">Fark</th>
-      </tr></thead>
-      <tbody>${satirlar.map(s=>s.sep
-        ?'<tr><td colspan="4" style="padding:3px;background:var(--bg3)"></td></tr>'
-        :`<tr>
-          <td style="font-size:12px">${s.lbl}</td>
-          <td class="num mono" style="font-size:12px${s.tip==='gelir'?';color:var(--green)':s.tip==='gider'?';color:var(--red)':''}">${s.v1||'—'}</td>
-          <td class="num mono" style="font-size:12px${s.tip==='gelir'?';color:var(--green)':s.tip==='gider'?';color:var(--red)':''}">${s.v2||'—'}</td>
-          <td class="num">${dHtml(s.delta,s.fmt,s.tip)}</td>
-        </tr>`).join('')}</tbody>
-    </table></div>`;
-}
-// ─── TOPLU GEÇMİŞ VERİ GİRİŞİ ───────────────────────────
-function topluVeriGir(){
-  const ov=document.createElement('div');ov.className='modal-ov';
-  const satirlar=DONEMLER.map(d=>{
-    const v=getKasaVeri(d.key);
-    const kap=hesaplaKapanis(d.key);
-    return '<tr>'
-      +'<td style="font-size:12px;white-space:nowrap;padding:6px 8px">'+d.lbl+'</td>'
-      +'<td style="padding:4px"><input class="edit-inp" style="width:90px" type="number" step="0.01" placeholder="₺0" data-key="'+d.key+'" data-tip="ac_TL" value="'+(v.acilis.TL||'')+'"></td>'
-      +'<td style="padding:4px"><input class="edit-inp" style="width:80px" type="number" step="0.01" placeholder="$0" data-key="'+d.key+'" data-tip="ac_USD" value="'+(v.acilis.USD||'')+'"></td>'
-      +'<td style="padding:4px"><input class="edit-inp" style="width:70px" type="number" step="0.01" placeholder="gr" data-key="'+d.key+'" data-tip="ac_ALTIN" value="'+(v.acilis.ALTIN||'')+'"></td>'
-      +'<td style="padding:4px 8px;color:var(--text3);font-size:11px">→</td>'
-      +'<td style="padding:4px"><input class="edit-inp" style="width:90px" type="number" step="0.01" placeholder="₺0" data-key="'+d.key+'" data-tip="kap_TL" value="'+(kap.TL||'')+'"></td>'
-      +'<td style="padding:4px"><input class="edit-inp" style="width:80px" type="number" step="0.01" placeholder="$0" data-key="'+d.key+'" data-tip="kap_USD" value="'+(kap.USD||'')+'"></td>'
-      +'<td style="padding:4px"><input class="edit-inp" style="width:70px" type="number" step="0.01" placeholder="gr" data-key="'+d.key+'" data-tip="kap_ALTIN" value="'+(kap.ALTIN||'')+'"></td>'
-      +'</tr>';
-  }).join('');
-
-  ov.innerHTML='<div class="modal" style="width:min(860px,98vw);max-height:90vh">'
-    +'<h3>📋 Toplu geçmiş veri girişi</h3>'
-    +'<div class="info-box blue" style="margin-bottom:12px">Kapanış girince sonraki ayın açılışı otomatik doldurulur.</div>'
-    +'<div style="overflow:auto;max-height:55vh">'
-    +'<table style="font-size:12px;width:100%;border-collapse:collapse">'
-    +'<thead><tr style="position:sticky;top:0;background:var(--bg3)">'
-    +'<th style="padding:8px;text-align:left">Dönem</th>'
-    +'<th style="padding:8px" colspan="3">Açılış (TL / USD / Altın gr)</th>'
-    +'<th></th>'
-    +'<th style="padding:8px" colspan="3">Kapanış (TL / USD / Altın gr)</th>'
-    +'</tr></thead>'
-    +'<tbody id="toplu_tbody">'+satirlar+'</tbody>'
-    +'</table></div>'
-    +'<div class="modal-footer">'
-    +'<button class="btn" onclick="this.closest(\'.modal-ov\').remove()">İptal</button>'
-    +'<button class="btn btn-primary" onclick="topluKaydet()">✓ Tümünü kaydet</button>'
-    +'</div></div>';
-  document.body.appendChild(ov);
-  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  document.getElementById('karsilastirmaIcerik').innerHTML='<div class="tbl-wrap"><table><thead><tr><th>Kalem</th><th class="num">'+(d1?.lbl||aktifKey)+' <span style="font-size:9px;color:var(--accent)">(güncel)</span></th><th class="num">'+(d2?.lbl||key2)+'</th><th class="num">Fark</th></tr></thead><tbody>'+
+    rows.map(r=>r.sep?'<tr><td colspan="4" style="padding:3px;background:var(--bg3)"></td></tr>':
+      '<tr><td style="font-size:12px">'+r.lbl+'</td><td class="num mono" style="font-size:12px'+(r.tip==='gelir'?';color:var(--green)':r.tip==='gider'?';color:var(--red)':'')+'">'+r.v1+'</td><td class="num mono" style="font-size:12px'+(r.tip==='gelir'?';color:var(--green)':r.tip==='gider'?';color:var(--red)':'')+'">'+r.v2+'</td><td class="num">'+dHtml(r.delta,r.fmt,r.tip)+'</td></tr>').join('')+
+    '</tbody></table></div>';
 }
 
-async function topluKaydet(){
-  const inps=document.querySelectorAll('#toplu_tbody input');
-  const veriler={};
-  inps.forEach(inp=>{
-    const key=inp.dataset.key;
-    const tip=inp.dataset.tip;
-    const val=parseFloat(inp.value)||0;
-    if(!veriler[key]) veriler[key]={ac_TL:null,ac_USD:null,ac_ALTIN:null,kap_TL:null,kap_USD:null,kap_ALTIN:null};
-    if(inp.value!=='') veriler[key][tip]=val;
-  });
-
-  for(const d of DONEMLER){
-    const v=veriler[d.key];
-    if(!v) continue;
-    const veri=getKasaVeri(d.key);
-    if(v.ac_TL!==null) veri.acilis.TL=v.ac_TL;
-    if(v.ac_USD!==null) veri.acilis.USD=v.ac_USD;
-    if(v.ac_ALTIN!==null) veri.acilis.ALTIN=v.ac_ALTIN;
-    if(v.kap_TL!==null||v.kap_USD!==null||v.kap_ALTIN!==null){
-      if(!veri._adminKapanis) veri._adminKapanis={...hesaplaKapanis(d.key)};
-      if(v.kap_TL!==null) veri._adminKapanis.TL=v.kap_TL;
-      if(v.kap_USD!==null) veri._adminKapanis.USD=v.kap_USD;
-      if(v.kap_ALTIN!==null) veri._adminKapanis.ALTIN=v.kap_ALTIN;
-      // Sonraki ayın açılışını güncelle
-      const idx=DONEMLER.findIndex(x=>x.key===d.key);
-      if(idx>=0&&idx<DONEMLER.length-1){
-        const sonrakiVeri=getKasaVeri(DONEMLER[idx+1].key);
-        sonrakiVeri.acilis={...veri._adminKapanis};
-      }
-    }
-  }
-  document.querySelector('.modal-ov')?.remove();
-  renderAll();
-  toast('💾 Drive\'a kaydediliyor…');
-  for(const d of DONEMLER){
-    if(window.KASA[d.key]) await otoDriveKaydet(d.key);
-  }
-  toast('✓ Tüm dönemler kaydedildi');
+function renderGelir(){
+  const v=getKasaVeri(getDonem().key);
+  const items=v.hareketler.filter(x=>x.tur==='gelir');
+  document.getElementById('gelirIcerik').innerHTML=items.length?hareketTablosu(items):'<div class="card"><p style="color:var(--text3);font-size:12px">Gelir kaydı yok.</p></div>';
+}
+function renderGider(){
+  const v=getKasaVeri(getDonem().key);
+  const items=v.hareketler.filter(x=>x.tur==='gider');
+  document.getElementById('giderIcerik').innerHTML=items.length?hareketTablosu(items):'<div class="card"><p style="color:var(--text3);font-size:12px">Gider kaydı yok.</p></div>';
+}
+function renderAvans(){
+  const v=getKasaVeri(getDonem().key);
+  const acik=v.hareketler.filter(x=>x.tur==='avans'&&!x.avansKapali);
+  const kapali=v.hareketler.filter(x=>x.tur==='avans'&&x.avansKapali);
+  document.getElementById('avansIcerik').innerHTML=
+    (acik.length?'<div class="card"><div class="card-title">Açık avanslar</div>'+avansTablosu(acik,true)+'</div>':'<div class="card"><p style="color:var(--text3);font-size:12px">Açık avans yok.</p></div>')+
+    (kapali.length?'<div class="card"><div class="card-title">Kapatılmış avanslar</div>'+avansTablosu(kapali,false)+'</div>':'');
+}
+function avansTablosu(items,acik){
+  return '<div class="tbl-wrap"><table><thead><tr><th>Tarih</th><th>Tür</th><th>Kişi</th><th>Kasa</th><th class="num">Tutar</th>'+(acik?'<th></th>':'')+'</tr></thead><tbody>'+
+    items.map(x=>'<tr'+(acik?'':' style="opacity:.5"')+'><td style="font-size:11px;color:var(--text3)">'+x.tarih+'</td><td><span class="tag tag-avans">'+(x.avansType==='borc'?'Borç':'Hizmet')+'</span></td><td>'+x.avansKisi+'</td><td><span class="tag tag-kapali">'+x.kasaDoviz+'</span></td><td class="num mono">'+x.tutar+'</td>'+(acik?'<td><button class="btn btn-green" style="padding:3px 8px;font-size:11px" onclick="avansKapat(\''+x.id+'\')">Kapat</button></td>':'')+'</tr>').join('')+
+    '</tbody></table></div>';
+}
+function renderDoviz(){
+  const v=getKasaVeri(getDonem().key);
+  const items=v.hareketler.filter(x=>x.tur==='doviz');
+  document.getElementById('dovizIcerik').innerHTML=items.length?'<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Tarih</th><th>İşlem</th><th class="num">Çıkan</th><th class="num">Giren</th><th>Kur</th><th>Not</th></tr></thead><tbody>'+
+    items.map(x=>'<tr><td style="font-size:11px;color:var(--text3)">'+x.tarih+'</td><td><span class="tag tag-doviz">'+x.cinsi+'</span></td><td class="num mono">'+(x.cikanGoster||'—')+'</td><td class="num mono">'+(x.girenGoster||'—')+'</td><td class="mono" style="font-size:11px">'+(x.piyasaKur||'—')+'</td><td style="font-size:11px;color:var(--text3)">'+(x.aciklama||'')+'</td></tr>').join('')+
+    '</tbody></table></div></div>':'<div class="card"><p style="color:var(--text3);font-size:12px">Döviz bozdurma kaydı yok.</p></div>';
+}
+function renderHareketler(){
+  const v=getKasaVeri(getDonem().key);
+  const items=[...v.hareketler].reverse();
+  document.getElementById('hareketlerIcerik').innerHTML=items.length?hareketTablosu(items):'<div class="card"><p style="color:var(--text3);font-size:12px">Kayıt yok.</p></div>';
+}
+function hareketTablosu(items){
+  return '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Tarih</th><th>Tür</th><th>Kategori</th><th>Kasa</th><th class="num">Tutar</th><th>Açıklama</th></tr></thead><tbody>'+
+    items.map(x=>'<tr><td style="font-size:11px;color:var(--text3)">'+x.tarih+'</td><td><span class="tag tag-'+x.tur+'">'+x.tur+'</span></td><td style="font-size:12px">'+x.cinsi+'</td><td><span class="tag tag-kapali">'+x.kasaDoviz+'</span></td><td class="num mono">'+x.tutar+'</td><td style="font-size:11px;color:var(--text3)">'+(x.aciklama||'')+'</td></tr>').join('')+
+    '</tbody></table></div></div>';
 }
 
-// ─── BAKİYE GİR ───────────────────────────────────────────
-function bakiyeGir(tip,kasaId){
-  const veri=getKasaVeri(d.key);
-  const hedef=veri[tip];
-  const tipLbl=tip==='acilis'?'Açılış':'Kapanış';
-
-  const ov=document.createElement('div');ov.className='modal-ov';
-  let formHTML='';
-  if(kasaId==='TL'){
-    formHTML=`<div class="fg fg-full"><label>${tipLbl} TL (₺)</label><input id="bg_TL" type="number" step="0.01" value="${hedef.TL||0}" style="font-family:var(--mono);font-size:16px"></div>`;
-  } else if(kasaId==='USD'){
-    formHTML=`<div class="fg fg-full"><label>${tipLbl} USD ($)</label><input id="bg_USD" type="number" step="0.01" value="${hedef.USD||0}" style="font-family:var(--mono);font-size:16px"></div>`;
-  } else if(kasaId==='EUR'){
-    formHTML=`<div class="fg fg-full"><label>${tipLbl} EUR (€)</label><input id="bg_EUR" type="number" step="0.01" value="${hedef.EUR||0}" style="font-family:var(--mono);font-size:16px"></div>`;
-  } else {
-    formHTML=`
-      <div class="fg"><label>${tipLbl} Altın (gr)</label><input id="bg_ALTIN" type="number" step="0.001" value="${hedef.ALTIN||0}" style="font-family:var(--mono)"></div>
-      <div class="fg"><label>${tipLbl} Gümüş (gr)</label><input id="bg_GUMUS" type="number" step="0.001" value="${hedef.GUMUS||0}" style="font-family:var(--mono)"></div>`;
-  }
-
-  ov.innerHTML=`<div class="modal">
-    <h3>${tipLbl} bakiyesi — ${d.lbl}</h3>
-    <div class="form-grid">${formHTML}</div>
-    <div class="modal-footer">
-      <button class="btn" onclick="this.closest('.modal-ov').remove()">İptal</button>
-      <button class="btn btn-primary" onclick="bakiyeKaydet('${tip}','${kasaId}','${d.key}')">✓ Kaydet</button>
-    </div>
-  </div>`;
-  document.body.appendChild(ov);
-  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
-  setTimeout(()=>{const inp=ov.querySelector('input');if(inp){inp.focus();inp.select();}},50);
-}
-
-function bakiyeKaydet(tip,kasaId,key){
-  const veri=getKasaVeri(key);
-  const g=id=>parseFloat(document.getElementById(id)?.value)||0;
-  if(kasaId==='TL') veri[tip].TL=g('bg_TL');
-  else if(kasaId==='USD') veri[tip].USD=g('bg_USD');
-  else if(kasaId==='EUR') veri[tip].EUR=g('bg_EUR');
-  else { veri[tip].ALTIN=g('bg_ALTIN'); veri[tip].GUMUS=g('bg_GUMUS'); }
-  document.querySelector('.modal-ov')?.remove();
-  renderAll();
-  toast(`✓ ${tip==='acilis'?'Açılış':'Kapanış'} güncellendi`);
-  otoDriveKaydet(key);
-}
-
-// ─── HAREKET MODAL ────────────────────────────────────────
 function hareketModal(tur){
   const d=getDonem();
-  const ov=document.createElement('div');ov.className='modal-ov';
+  const kur=getKur(d.y,d.m);
   const today=new Date().toISOString().substring(0,10);
-  let formHTML='';
-
+  const ov=document.createElement('div');ov.className='modal-ov';
+  let form='';
   if(tur==='gelir'){
-    formHTML=`
-      <div class="fg"><label>Kategori</label><select id="hm_cinsi">${GELIR_TURLERI.map(t=>`<option>${t}</option>`).join('')}</select></div>
-      <div class="fg"><label>Kasa</label><select id="hm_kasa"><option value="TL">TL</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div>
-      <div class="fg"><label>Tutar</label><input id="hm_tutar" type="number" step="0.01" placeholder="0.00"></div>
-      <div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="${today}"></div>
-      <div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text" placeholder="İsteğe bağlı"></div>`;
+    form='<div class="fg"><label>Kategori</label><select id="hm_cinsi">'+GELIR_TURLERI.map(t=>'<option>'+t+'</option>').join('')+'</select></div>'+
+      '<div class="fg"><label>Kasa</label><select id="hm_kasa"><option value="TL">TL</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div>'+
+      '<div class="fg"><label>Tutar</label><input id="hm_tutar" type="number" step="0.01" placeholder="0"></div>'+
+      '<div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="'+today+'"></div>'+
+      '<div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text"></div>';
   } else if(tur==='gider'){
-    formHTML=`
-      <div class="fg"><label>Kategori</label><select id="hm_cinsi">${GIDER_TURLERI.map(t=>`<option>${t}</option>`).join('')}</select></div>
-      <div class="fg"><label>Kasa</label><select id="hm_kasa"><option value="TL">TL</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div>
-      <div class="fg"><label>Tutar</label><input id="hm_tutar" type="number" step="0.01" placeholder="0.00"></div>
-      <div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="${today}"></div>
-      <div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text" placeholder="İsteğe bağlı"></div>`;
+    form='<div class="fg"><label>Kategori</label><select id="hm_cinsi">'+GIDER_TURLERI.map(t=>'<option>'+t+'</option>').join('')+'</select></div>'+
+      '<div class="fg"><label>Kasa</label><select id="hm_kasa"><option value="TL">TL</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div>'+
+      '<div class="fg"><label>Tutar</label><input id="hm_tutar" type="number" step="0.01" placeholder="0"></div>'+
+      '<div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="'+today+'"></div>'+
+      '<div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text"></div>';
   } else if(tur==='avans'){
-    formHTML=`
-      <div class="fg"><label>Avans türü</label><select id="hm_avansType">
-        <option value="borc">Borç avans (geri dönecek)</option>
-        <option value="hizmet">Hizmet avansı (gidere dönüşür)</option>
-      </select></div>
-      <div class="fg"><label>Kişi / Firma</label><input id="hm_avansKisi" type="text" placeholder="Avansı alan"></div>
-      <div class="fg"><label>Kasa</label><select id="hm_kasa"><option value="TL">TL</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div>
-      <div class="fg"><label>Tutar</label><input id="hm_tutar" type="number" step="0.01" placeholder="0.00"></div>
-      <div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="${today}"></div>
-      <div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text" placeholder="İsteğe bağlı"></div>`;
+    form='<div class="fg"><label>Tür</label><select id="hm_avansType"><option value="borc">Borç avans</option><option value="hizmet">Hizmet avansı</option></select></div>'+
+      '<div class="fg"><label>Kişi / Firma</label><input id="hm_avansKisi" type="text"></div>'+
+      '<div class="fg"><label>Kasa</label><select id="hm_kasa"><option value="TL">TL</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div>'+
+      '<div class="fg"><label>Tutar</label><input id="hm_tutar" type="number" step="0.01" placeholder="0"></div>'+
+      '<div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="'+today+'"></div>'+
+      '<div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text"></div>';
   } else if(tur==='doviz'){
-    const kur=getKur(d.y,d.m);
-    formHTML=`
-      <div class="fg fg-full"><label>İşlem türü</label><select id="hm_cinsi" onchange="dovizCinsiDegis(this)">
-        <option value="USD→TL">USD bozd. → TL</option>
-        <option value="TL→USD">TL bozd. → USD</option>
-        <option value="EUR→TL">EUR bozd. → TL</option>
-        <option value="TL→EUR">TL bozd. → EUR</option>
-        <option value="USD→EUR">USD bozd. → EUR</option>
-        <option value="EUR→USD">EUR bozd. → USD</option>
-        <option value="ALTIN_ALIS">Altın alış (TL çıkış, gr giriş)</option>
-        <option value="ALTIN_SATIS">Altın satış (gr çıkış, TL giriş)</option>
-        <option value="GUMUS_ALIS">Gümüş alış (TL çıkış, gr giriş)</option>
-        <option value="GUMUS_SATIS">Gümüş satış (gr çıkış, TL giriş)</option>
-      </select></div>
-      <div class="fg"><label id="hm_cikanLbl">Çıkan (USD)</label><input id="hm_cikan" type="number" step="0.01" placeholder="0.00"></div>
-      <div class="fg"><label id="hm_girenLbl">Giren (TL)</label><input id="hm_giren" type="number" step="0.01" placeholder="0.00"></div>
-      <div class="fg"><label>Piyasa kuru</label><input id="hm_piyasaKur" type="number" step="0.0001" placeholder="${kur.kur.toFixed(4)}" style="font-family:var(--mono)"></div>
-      <div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="${today}"></div>
-      <div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text" placeholder="İsteğe bağlı"></div>
-      <div class="fg fg-full"><div class="info-box">Kur farkı işlenmez. Kasa bakiyeleri kapanış girişiyle güncellenir.</div></div>`;
+    form='<div class="fg fg-full"><label>İşlem türü</label><select id="hm_cinsi">'+
+      ['USD→TL','TL→USD','EUR→TL','TL→EUR','USD→EUR','EUR→USD','ALTIN_ALIS','ALTIN_SATIS','GUMUS_ALIS','GUMUS_SATIS'].map(x=>'<option>'+x+'</option>').join('')+'</select></div>'+
+      '<div class="fg"><label>Çıkan miktar</label><input id="hm_cikan" type="number" step="0.01" placeholder="0"></div>'+
+      '<div class="fg"><label>Giren miktar</label><input id="hm_giren" type="number" step="0.01" placeholder="0"></div>'+
+      '<div class="fg"><label>Piyasa kuru</label><input id="hm_piyasaKur" type="number" step="0.0001" placeholder="'+kur.kur.toFixed(4)+'"></div>'+
+      '<div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="'+today+'"></div>'+
+      '<div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text"></div>';
   }
-
-  const turLbl={gelir:'Gelir ekle',gider:'Gider ekle',avans:'Avans ekle',doviz:'Döviz bozdurma'}[tur];
-  ov.innerHTML=`<div class="modal">
-    <h3>${turLbl} — ${d.lbl}</h3>
-    <div class="form-grid">${formHTML}</div>
-    <div class="modal-footer">
-      <button class="btn" onclick="this.closest('.modal-ov').remove()">İptal</button>
-      <button class="btn btn-primary" onclick="hareketKaydet('${tur}','${d.key}')">✓ Kaydet</button>
-    </div>
-  </div>`;
+  const lblMap={gelir:'Gelir ekle',gider:'Gider ekle',avans:'Avans ekle',doviz:'Döviz bozdurma'};
+  ov.innerHTML='<div class="modal"><h3>'+lblMap[tur]+' — '+d.lbl+'</h3><div class="form-grid">'+form+'</div><div class="modal-footer"><button class="btn" onclick="this.closest(\'.modal-ov\').remove()">İptal</button><button class="btn btn-primary" onclick="hareketKaydet(\''+tur+'\',\''+d.key+'\')">✓ Kaydet</button></div></div>';
   document.body.appendChild(ov);
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
-}
-
-function dovizCinsiDegis(sel){
-  const map={
-    'USD→TL':['Çıkan (USD)','Giren (TL)'],
-    'TL→USD':['Çıkan (TL)','Giren (USD)'],
-    'EUR→TL':['Çıkan (EUR)','Giren (TL)'],
-    'TL→EUR':['Çıkan (TL)','Giren (EUR)'],
-    'USD→EUR':['Çıkan (USD)','Giren (EUR)'],
-    'EUR→USD':['Çıkan (EUR)','Giren (USD)'],
-    'ALTIN_ALIS':['Çıkan (TL)','Giren (gr altın)'],
-    'ALTIN_SATIS':['Çıkan (gr altın)','Giren (TL)'],
-    'GUMUS_ALIS':['Çıkan (TL)','Giren (gr gümüş)'],
-    'GUMUS_SATIS':['Çıkan (gr gümüş)','Giren (TL)'],
-  };
-  const lbls=map[sel.value]||['Çıkan','Giren'];
-  const cl=document.getElementById('hm_cikanLbl');
-  const gl=document.getElementById('hm_girenLbl');
-  if(cl)cl.textContent=lbls[0];
-  if(gl)gl.textContent=lbls[1];
 }
 
 function hareketKaydet(tur,key){
@@ -1071,95 +525,24 @@ function hareketKaydet(tur,key){
   const tutarSay=parseFloat(g('hm_tutar'))||0;
   const kasaDoviz=g('hm_kasa')||'TL';
   const sym={TL:'₺',USD:'$',EUR:'€'}[kasaDoviz]||'';
-
-  let h={
-    id,tur,
-    tarih:g('hm_tarih'),
-    cinsi:tur==='avans'?(g('hm_avansType')==='borc'?'Borç avans':'Hizmet avansı'):g('hm_cinsi'),
-    kasaDoviz,
-    tutar:sym+new Intl.NumberFormat('tr-TR').format(tutarSay),
-    tutarSay,
-    aciklama:g('hm_aciklama'),
-    avansKisi:g('hm_avansKisi'),
-    avansType:g('hm_avansType'),
-    avansKapali:false,
-  };
-
+  let h={id,tur,tarih:g('hm_tarih'),cinsi:g('hm_cinsi'),kasaDoviz,
+    tutar:sym+new Intl.NumberFormat('tr-TR').format(tutarSay),tutarSay,
+    aciklama:g('hm_aciklama'),avansKisi:g('hm_avansKisi'),avansType:g('hm_avansType'),avansKapali:false};
   if(tur==='doviz'){
     const cinsi=g('hm_cinsi');
-    const cikan=parseFloat(g('hm_cikan'))||0;
-    const giren=parseFloat(g('hm_giren'))||0;
-    const piyasaKur=parseFloat(g('hm_piyasaKur'))||null;
-    const symMap={'USD→TL':['$','₺'],'TL→USD':['₺','$'],'EUR→TL':['€','₺'],'TL→EUR':['₺','€'],
-      'USD→EUR':['$','€'],'EUR→USD':['€','$'],
-      'ALTIN_ALIS':['₺','gr'],'ALTIN_SATIS':['gr','₺'],
-      'GUMUS_ALIS':['₺','gr'],'GUMUS_SATIS':['gr','₺']};
+    const ci=parseFloat(g('hm_cikan'))||0;
+    const gi=parseFloat(g('hm_giren'))||0;
+    const pk=parseFloat(g('hm_piyasaKur'))||null;
+    const symMap={'USD→TL':['$','₺'],'TL→USD':['₺','$'],'EUR→TL':['€','₺'],'TL→EUR':['₺','€'],'USD→EUR':['$','€'],'EUR→USD':['€','$'],'ALTIN_ALIS':['₺','gr'],'ALTIN_SATIS':['gr','₺'],'GUMUS_ALIS':['₺','gr'],'GUMUS_SATIS':['gr','₺']};
     const syms=symMap[cinsi]||['',''];
-    h={...h,
-      cinsi,kasaDoviz:'DOVIZ',
-      tutar:`${syms[0]}${cikan} → ${syms[1]}${giren}`,
-      tutarSay:cikan,
-      cikanGoster:`${syms[0]}${cikan.toLocaleString('tr-TR')}`,
-      girenGoster:`${syms[1]}${giren.toLocaleString('tr-TR')}`,
-      piyasaKur:piyasaKur?piyasaKur.toFixed(4):null,
-    };
+    h={...h,cinsi,kasaDoviz:'DOVIZ',tutar:syms[0]+ci+' → '+syms[1]+gi,tutarSay:ci,
+      cikanMiktar:ci,girenMiktar:gi,cikanGoster:syms[0]+ci.toLocaleString('tr-TR'),
+      girenGoster:syms[1]+gi.toLocaleString('tr-TR'),piyasaKur:pk?pk.toFixed(4):null};
   }
-
   veri.hareketler.push(h);
   document.querySelector('.modal-ov')?.remove();
   renderAll();
-  toast(`✓ ${tur} kaydedildi`);
-  // Otomatik Drive kaydet
-  otoDriveKaydet(key);
-}
-
-function adminKapanisGir(kasaId){
-  const d=getDonem();
-  const veri=getKasaVeri(d.key);
-  const mevcut=hesaplaKapanis(d.key);
-  const ov=document.createElement('div');ov.className='modal-ov';
-  let formHTML='';
-  if(kasaId==='TL') formHTML=`<div class="fg fg-full"><label>Override TL Kapanış (₺)</label><input id="ao_val" type="number" step="0.01" value="${mevcut.TL||0}" style="font-family:var(--mono);font-size:16px"></div>`;
-  else if(kasaId==='USD') formHTML=`<div class="fg fg-full"><label>Override USD Kapanış ($)</label><input id="ao_val" type="number" step="0.01" value="${mevcut.USD||0}" style="font-family:var(--mono);font-size:16px"></div>`;
-  else if(kasaId==='EUR') formHTML=`<div class="fg fg-full"><label>Override EUR Kapanış (€)</label><input id="ao_val" type="number" step="0.01" value="${mevcut.EUR||0}" style="font-family:var(--mono);font-size:16px"></div>`;
-  else formHTML=`
-    <div class="fg"><label>Override Altın (gr)</label><input id="ao_altin" type="number" step="0.001" value="${mevcut.ALTIN||0}" style="font-family:var(--mono)"></div>
-    <div class="fg"><label>Override Gümüş (gr)</label><input id="ao_gumus" type="number" step="0.001" value="${mevcut.GUMUS||0}" style="font-family:var(--mono)"></div>`;
-
-  ov.innerHTML=`<div class="modal">
-    <h3>⚠️ Admin Override — ${d.lbl}</h3>
-    <div class="info-box" style="margin-bottom:14px">Bu değer otomatik hesabın üzerine yazılır. Sayım farkı veya düzeltme amaçlıdır.</div>
-    <div class="form-grid">${formHTML}</div>
-    <div class="modal-footer">
-      <button class="btn" onclick="this.closest('.modal-ov').remove()">İptal</button>
-      <button class="btn btn-primary" onclick="adminKapanisKaydet('${kasaId}','${d.key}')">⚠️ Override uygula</button>
-    </div>
-  </div>`;
-  document.body.appendChild(ov);
-  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
-  setTimeout(()=>{const inp=ov.querySelector('input');if(inp){inp.focus();inp.select();}},50);
-}
-
-function adminKapanisKaydet(kasaId, key){
-  const g=id=>parseFloat(document.getElementById(id)?.value)||0;
-  const veri=getKasaVeri(key);
-  if(!veri._adminKapanis) veri._adminKapanis={...hesaplaKapanis(key)};
-  if(kasaId==='TL') veri._adminKapanis.TL=g('ao_val');
-  else if(kasaId==='USD') veri._adminKapanis.USD=g('ao_val');
-  else if(kasaId==='EUR') veri._adminKapanis.EUR=g('ao_val');
-  else { veri._adminKapanis.ALTIN=g('ao_altin'); veri._adminKapanis.GUMUS=g('ao_gumus'); }
-  document.querySelector('.modal-ov')?.remove();
-
-  // Sonraki ayın açılışını güncelle
-  const idx=DONEMLER.findIndex(d=>d.key===key);
-  if(idx>=0&&idx<DONEMLER.length-1){
-    const sonrakiKey=DONEMLER[idx+1].key;
-    const sonrakiVeri=getKasaVeri(sonrakiKey);
-    sonrakiVeri.acilis={...veri._adminKapanis};
-  }
-
-  renderAll();
-  toast('⚠️ Override uygulandı — sonraki ay açılışı güncellendi');
+  toast('✓ '+tur+' kaydedildi');
   otoDriveKaydet(key);
 }
 
@@ -1167,129 +550,173 @@ function avansKapat(hId){
   const d=getDonem();
   const veri=getKasaVeri(d.key);
   const h=veri.hareketler.find(x=>x.id===hId);
-  if(h){
-    h.avansKapali=true;
-    renderAll();
-    toast('✓ Avans kapatıldı');
-    otoDriveKaydet(getDonem().key);
-  }
+  if(h){h.avansKapali=true;renderAll();toast('✓ Avans kapatıldı');otoDriveKaydet(d.key);}
 }
 
-// ─── OTO DRIVE KAYDET ─────────────────────────────────────
-async function otoDriveKaydet(key){
+function bakiyeGir(tip,kasaId){
+  const d=getDonem();
+  const veri=getKasaVeri(d.key);
+  const hedef=tip==='acilis'?veri.acilis:(veri._adminKapanis||hesaplaKapanis(d.key));
+  const tipLbl=tip==='acilis'?'Açılış':'Kapanış';
+  const ov=document.createElement('div');ov.className='modal-ov';
+  let form='';
+  if(kasaId==='TL') form='<div class="fg fg-full"><label>'+tipLbl+' TL (₺)</label><input id="bg_val" type="number" step="0.01" value="'+(hedef.TL||0)+'" style="font-size:16px;font-family:var(--mono)"></div>';
+  else if(kasaId==='USD') form='<div class="fg fg-full"><label>'+tipLbl+' USD ($)</label><input id="bg_val" type="number" step="0.01" value="'+(hedef.USD||0)+'" style="font-size:16px;font-family:var(--mono)"></div>';
+  else if(kasaId==='EUR') form='<div class="fg fg-full"><label>'+tipLbl+' EUR (€)</label><input id="bg_val" type="number" step="0.01" value="'+(hedef.EUR||0)+'" style="font-size:16px;font-family:var(--mono)"></div>';
+  else form='<div class="fg"><label>Altın (gr)</label><input id="bg_altin" type="number" step="0.001" value="'+(hedef.ALTIN||0)+'"></div><div class="fg"><label>Gümüş (gr)</label><input id="bg_gumus" type="number" step="0.001" value="'+(hedef.GUMUS||0)+'"></div>';
+  ov.innerHTML='<div class="modal"><h3>'+tipLbl+' — '+d.lbl+'</h3><div class="form-grid">'+form+'</div><div class="modal-footer"><button class="btn" onclick="this.closest(\'.modal-ov\').remove()">İptal</button><button class="btn btn-primary" onclick="bakiyeKaydet(\''+tip+'\',\''+kasaId+'\',\''+d.key+'\')">✓ Kaydet</button></div></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  setTimeout(()=>{const i=ov.querySelector('input');if(i){i.focus();i.select();}},50);
+}
+
+function bakiyeKaydet(tip,kasaId,key){
   const veri=getKasaVeri(key);
-  const res=await apiSave({
-    action:'setKasa',
-    donemKey:key,
-    acilis:veri.acilis,
-    kapanis:veri.kapanis,
-    hareketler:veri.hareketler,
-    kilitli: !!window.KILITLI_DONEMLER[key],
+  const g=id=>parseFloat(document.getElementById(id)?.value)||0;
+  if(tip==='acilis'){
+    if(kasaId==='TL') veri.acilis.TL=g('bg_val');
+    else if(kasaId==='USD') veri.acilis.USD=g('bg_val');
+    else if(kasaId==='EUR') veri.acilis.EUR=g('bg_val');
+    else{veri.acilis.ALTIN=g('bg_altin');veri.acilis.GUMUS=g('bg_gumus');}
+  }
+  document.querySelector('.modal-ov')?.remove();
+  renderAll();toast('✓ Açılış güncellendi');otoDriveKaydet(key);
+}
+
+function adminKapanisGir(kasaId){
+  const d=getDonem();
+  const veri=getKasaVeri(d.key);
+  if(!veri._adminKapanis) veri._adminKapanis={...hesaplaKapanis(d.key)};
+  const kap=veri._adminKapanis;
+  const ov=document.createElement('div');ov.className='modal-ov';
+  let form='';
+  if(kasaId==='TL') form='<div class="fg fg-full"><label>Override TL Kapanış (₺)</label><input id="ao_val" type="number" step="0.01" value="'+(kap.TL||0)+'" style="font-size:16px;font-family:var(--mono)"></div>';
+  else if(kasaId==='USD') form='<div class="fg fg-full"><label>Override USD Kapanış ($)</label><input id="ao_val" type="number" step="0.01" value="'+(kap.USD||0)+'" style="font-size:16px;font-family:var(--mono)"></div>';
+  else if(kasaId==='EUR') form='<div class="fg fg-full"><label>Override EUR Kapanış (€)</label><input id="ao_val" type="number" step="0.01" value="'+(kap.EUR||0)+'" style="font-size:16px;font-family:var(--mono)"></div>';
+  else form='<div class="fg"><label>Altın (gr)</label><input id="ao_altin" type="number" step="0.001" value="'+(kap.ALTIN||0)+'"></div><div class="fg"><label>Gümüş (gr)</label><input id="ao_gumus" type="number" step="0.001" value="'+(kap.GUMUS||0)+'"></div>';
+  ov.innerHTML='<div class="modal"><h3>⚠️ Admin Override — '+d.lbl+'</h3><div class="info-box" style="margin-bottom:12px">Otomatik hesabın üzerine yazılır. Sayım farkı veya düzeltme amaçlıdır.</div><div class="form-grid">'+form+'</div><div class="modal-footer"><button class="btn" onclick="this.closest(\'.modal-ov\').remove()">İptal</button><button class="btn btn-primary" onclick="adminKaydet(\''+kasaId+'\',\''+d.key+'\')">⚠️ Override uygula</button></div></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  setTimeout(()=>{const i=ov.querySelector('input');if(i){i.focus();i.select();}},50);
+}
+
+function adminKaydet(kasaId,key){
+  const veri=getKasaVeri(key);
+  if(!veri._adminKapanis) veri._adminKapanis={...hesaplaKapanis(key)};
+  const g=id=>parseFloat(document.getElementById(id)?.value)||0;
+  if(kasaId==='TL') veri._adminKapanis.TL=g('ao_val');
+  else if(kasaId==='USD') veri._adminKapanis.USD=g('ao_val');
+  else if(kasaId==='EUR') veri._adminKapanis.EUR=g('ao_val');
+  else{veri._adminKapanis.ALTIN=g('ao_altin');veri._adminKapanis.GUMUS=g('ao_gumus');}
+  // Sonraki ayın açılışını güncelle
+  const idx=DONEMLER.findIndex(d=>d.key===key);
+  if(idx>=0&&idx<DONEMLER.length-1){
+    const sv=getKasaVeri(DONEMLER[idx+1].key);
+    sv.acilis={...veri._adminKapanis};
+  }
+  document.querySelector('.modal-ov')?.remove();
+  renderAll();toast('⚠️ Override uygulandı');otoDriveKaydet(key);
+}
+
+function donemKilitle(key){window.KILITLI_DONEMLER[key]=true;renderAll();toast('🔒 Dönem kilitlendi');otoDriveKaydet(key);}
+function donemKilidinAc(key){delete window.KILITLI_DONEMLER[key];renderAll();toast('🔓 Dönem kilidi açıldı');}
+
+function topluVeriGir(){
+  const ov=document.createElement('div');ov.className='modal-ov';
+  const rows=DONEMLER.map(d=>{
+    const v=getKasaVeri(d.key);
+    const kap=hesaplaKapanis(d.key);
+    return '<tr><td style="font-size:12px;white-space:nowrap;padding:5px 8px">'+d.lbl+'</td>'+
+      '<td style="padding:3px"><input class="edit-inp" style="width:85px" type="number" step="0.01" data-key="'+d.key+'" data-tip="ac_TL" value="'+(v.acilis.TL||'')+'" placeholder="₺0"></td>'+
+      '<td style="padding:3px"><input class="edit-inp" style="width:75px" type="number" step="0.01" data-key="'+d.key+'" data-tip="ac_USD" value="'+(v.acilis.USD||'')+'" placeholder="$0"></td>'+
+      '<td style="padding:3px"><input class="edit-inp" style="width:65px" type="number" step="0.01" data-key="'+d.key+'" data-tip="ac_ALTIN" value="'+(v.acilis.ALTIN||'')+'" placeholder="gr"></td>'+
+      '<td style="padding:3px 10px;color:var(--text3);font-size:11px">→</td>'+
+      '<td style="padding:3px"><input class="edit-inp" style="width:85px" type="number" step="0.01" data-key="'+d.key+'" data-tip="kap_TL" value="'+(kap.TL||'')+'" placeholder="₺0"></td>'+
+      '<td style="padding:3px"><input class="edit-inp" style="width:75px" type="number" step="0.01" data-key="'+d.key+'" data-tip="kap_USD" value="'+(kap.USD||'')+'" placeholder="$0"></td>'+
+      '<td style="padding:3px"><input class="edit-inp" style="width:65px" type="number" step="0.01" data-key="'+d.key+'" data-tip="kap_ALTIN" value="'+(kap.ALTIN||'')+'" placeholder="gr"></td>'+
+      '</tr>';
+  }).join('');
+  ov.innerHTML='<div class="modal" style="width:min(800px,98vw);max-height:90vh"><h3>📋 Toplu geçmiş veri girişi</h3><div class="info-box blue" style="margin-bottom:12px">Kapanış girince sonraki ayın açılışı otomatik oluşur.</div><div style="overflow:auto;max-height:55vh"><table style="font-size:12px;width:100%;border-collapse:collapse"><thead><tr style="position:sticky;top:0;background:var(--bg3)"><th style="padding:6px 8px;text-align:left">Dönem</th><th colspan="3" style="padding:6px 8px">Açılış (TL / USD / Altın)</th><th></th><th colspan="3" style="padding:6px 8px">Kapanış (TL / USD / Altın)</th></tr></thead><tbody id="toplu_tbody">'+rows+'</tbody></table></div><div class="modal-footer"><button class="btn" onclick="this.closest(\'.modal-ov\').remove()">İptal</button><button class="btn btn-primary" onclick="topluKaydet()">✓ Tümünü kaydet</button></div></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+}
+
+async function topluKaydet(){
+  const inps=document.querySelectorAll('#toplu_tbody input');
+  const veriler={};
+  inps.forEach(inp=>{
+    const k=inp.dataset.key,tip=inp.dataset.tip;
+    if(!veriler[k]) veriler[k]={};
+    if(inp.value!=='') veriler[k][tip]=parseFloat(inp.value)||0;
   });
-  if(res?.ok){
-    document.getElementById('statusDot').className='status-dot ok';
-    // Sonraki ayın açılışını güncelle
-    const idx=DONEMLER.findIndex(d=>d.key===key);
-    if(idx>=0&&idx<DONEMLER.length-1){
-      const sonrakiKey=DONEMLER[idx+1].key;
-      const sonrakiVeri=getKasaVeri(sonrakiKey);
-      // Sadece sonraki ayın açılışı 0 ise aktar
-      if(!sonrakiVeri.acilis.TL&&!sonrakiVeri.acilis.USD&&!sonrakiVeri.acilis.EUR){
-        sonrakiVeri.acilis={...veri.kapanis};
-        // Sonraki ayı da kaydet
-        apiSave({action:'setKasa',donemKey:sonrakiKey,
-          acilis:sonrakiVeri.acilis,kapanis:sonrakiVeri.kapanis,
-          hareketler:sonrakiVeri.hareketler});
+  for(const d of DONEMLER){
+    const v=veriler[d.key];if(!v) continue;
+    const veri=getKasaVeri(d.key);
+    if(v.ac_TL!==undefined) veri.acilis.TL=v.ac_TL;
+    if(v.ac_USD!==undefined) veri.acilis.USD=v.ac_USD;
+    if(v.ac_ALTIN!==undefined) veri.acilis.ALTIN=v.ac_ALTIN;
+    if(v.kap_TL!==undefined||v.kap_USD!==undefined||v.kap_ALTIN!==undefined){
+      if(!veri._adminKapanis) veri._adminKapanis={...hesaplaKapanis(d.key)};
+      if(v.kap_TL!==undefined) veri._adminKapanis.TL=v.kap_TL;
+      if(v.kap_USD!==undefined) veri._adminKapanis.USD=v.kap_USD;
+      if(v.kap_ALTIN!==undefined) veri._adminKapanis.ALTIN=v.kap_ALTIN;
+      const idx=DONEMLER.findIndex(x=>x.key===d.key);
+      if(idx>=0&&idx<DONEMLER.length-1){
+        const sv=getKasaVeri(DONEMLER[idx+1].key);
+        sv.acilis={...veri._adminKapanis};
       }
     }
   }
+  document.querySelector('.modal-ov')?.remove();
+  renderAll();toast('💾 Drive\'a kaydediliyor…');
+  for(const d of DONEMLER){if(window.KASA[d.key]) await otoDriveKaydet(d.key);}
+  toast('✓ Tüm dönemler kaydedildi');
 }
 
-// ─── KAPANIŞ KAYDET (DRIVE) ───────────────────────────────
-async function kapanisKaydet(){
-  const d=getDonem();
-  const veri=getKasaVeri(d.key);
-  toast('💾 Drive\'a kaydediliyor…');
-  const res=await apiSave({
-    action:'setKasa',
-    donemKey:d.key,
-    acilis:veri.acilis,
-    kapanis:veri.kapanis,
-    hareketler:veri.hareketler,
-  });
-  if(res?.ok) toast('✓ Kasa Drive\'a kaydedildi');
-  else toast('Drive hatası','err');
+async function otoDriveKaydet(key){
+  const veri=getKasaVeri(key);
+  const res=await apiSave({action:'setKasa',donemKey:key,acilis:veri.acilis,
+    kapanis:veri._adminKapanis||hesaplaKapanis(key),hareketler:veri.hareketler,
+    kilitli:!!window.KILITLI_DONEMLER[key]});
+  if(res?.ok) document.getElementById('statusDot').className='status-dot ok';
 }
 
-// ─── INIT ─────────────────────────────────────────────────
 async function init(){
-  // Dönem seçici
   const sel=document.getElementById('donemSel');
   DONEMLER.forEach((d,i)=>{
     const o=document.createElement('option');
     o.value=i;o.textContent=d.lbl;
-    if(i===aktifDonem)o.selected=true;
+    if(i===aktifDonemIdx) o.selected=true;
     sel.appendChild(o);
   });
-
-  // Mayıs 2026 varsayılan verileri — Drive'dan gelmezse kullan
-  const may26=getKasaVeri('2026-4');
-  if(!may26.kapanis.TL&&!may26.kapanis.USD){
-    may26.acilis={TL:401123,USD:2600,EUR:0,ALTIN:30,GUMUS:0};
-    may26.kapanis={TL:19155,USD:24100,EUR:0,ALTIN:30,GUMUS:0};
-  }
-
   renderAll();
-
-  // Drive'dan yükle
   document.getElementById('statusDot').className='status-dot';
-  const [kurRes,kasaRes]=await Promise.all([
-    apiGet(KUR_API,'getKurlar'),
-    apiGet(KASA_API,'getKasa'),
-  ]);
-
-  if(kurRes?.ok&&kurRes.kurlar){
-    window.KURLAR={...window.KURLAR,...kurRes.kurlar};
-    document.getElementById('statusDot').className='status-dot ok';
-  } else {
-    document.getElementById('statusDot').className='status-dot err';
-  }
-
+  const [kurRes,kasaRes]=await Promise.all([apiGet(KUR_API,'getKurlar'),apiGet(KASA_API,'getKasa')]);
+  if(kurRes?.ok&&kurRes.kurlar){window.KURLAR=kurRes.kurlar;document.getElementById('statusDot').className='status-dot ok';}
+  else document.getElementById('statusDot').className='status-dot err';
   if(kasaRes?.ok&&kasaRes.veri){
-    Object.entries(kasaRes.veri).forEach(([key,v])=>{
-      window.KASA[key]=v;
-    });
-    if(kasaRes.kilitliDonemler){
-      window.KILITLI_DONEMLER = {...kasaRes.kilitliDonemler};
-    }
-    // Drive'dan geldikten sonra Mayıs varsayılanını tekrar kontrol et
-    const m26=getKasaVeri('2026-4');
-    if(!m26.kapanis.TL&&!m26.kapanis.USD){
-      m26.acilis={TL:401123,USD:2600,EUR:0,ALTIN:30,GUMUS:0};
-      m26.kapanis={TL:19155,USD:24100,EUR:0,ALTIN:30,GUMUS:0};
-    }
+    Object.entries(kasaRes.veri).forEach(([k,v])=>{window.KASA[k]=v;});
+    if(kasaRes.kilitliDonemler) window.KILITLI_DONEMLER={...kasaRes.kilitliDonemler};
   }
-
-  // Otomatik açılış aktarımı — Drive yüklendikten sonra
+  // Mayıs 2026 varsayılan
+  const m26=getKasaVeri('2026-4');
+  if(!m26.acilis.TL&&!m26.acilis.USD){
+    m26.acilis={TL:401123,USD:2600,EUR:0,ALTIN:30,GUMUS:0};
+    if(!m26._adminKapanis) m26._adminKapanis={TL:19155,USD:24100,EUR:0,ALTIN:30,GUMUS:0};
+  }
+  // Açılış aktarımı
   DONEMLER.forEach((d,i)=>{
     if(i===0) return;
-    const prev=DONEMLER[i-1];
-    const prevVeri=window.KASA[prev.key];
-    if(!prevVeri||!prevVeri.kapanis) return;
-    const buVeri=getKasaVeri(d.key);
-    // Sadece açılış sıfırsa aktar
-    const acilisBoş = !buVeri.acilis.TL && !buVeri.acilis.USD && 
-                      !buVeri.acilis.EUR && !buVeri.acilis.ALTIN;
-    if(acilisBoş){
-      buVeri.acilis = {...prevVeri.kapanis};
+    const prev=window.KASA[DONEMLER[i-1].key];
+    const cur=getKasaVeri(d.key);
+    if(prev&&(prev._adminKapanis||prev.kapanis)&&!cur.acilis.TL&&!cur.acilis.USD){
+      cur.acilis={...(prev._adminKapanis||prev.kapanis||{})};
     }
   });
-
   renderAll();
   toast('✓ Veri yüklendi');
 }
-
-// fdInit yukarıda çağrıldı
 </script>
-</body>
-</html>
+
+
+</body></html>
