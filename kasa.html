@@ -551,11 +551,21 @@ function renderAvans(){
     (kapali.length?'<div class="card"><div class="card-title">Kapatılmış avanslar</div>'+avansTablosu(kapali,false)+'</div>':'');
 }
 function avansTablosu(items,acik){
-  return '<div class="tbl-wrap"><table><thead><tr><th>Tarih</th><th>Tür</th><th>Kişi</th><th>Kasa</th><th class="num">Tutar</th>'+(acik?'<th></th>':'')+'</tr></thead><tbody>'+
-    items.map(x=>'<tr'+(acik?'':' style="opacity:.5"')+'><td style="font-size:11px;color:var(--text3)">'+x.tarih+'</td><td><span class="tag tag-avans">'+(x.avansType==='borc'?'Borç':'Hizmet')+'</span></td><td>'+x.avansKisi+'</td><td><span class="tag tag-kapali">'+x.kasaDoviz+'</span></td><td class="num mono">'+x.tutar+'</td>'+(acik?'<td><button class="btn btn-green" style="padding:3px 8px;font-size:11px" onclick="avansKapat(\''+x.id+'\')">Kapat</button></td>':'')+'</tr>').join('')+
+  const sym=k=>({TL:'₺',USD:'$',EUR:'€',GBP:'£'}[k]||'');
+  const fmtKalan=x=>{
+    const kalan=x.avansKalan!==undefined?x.avansKalan:x.tutarSay;
+    return sym(x.kasaDoviz)+new Intl.NumberFormat('tr-TR').format(Math.round(kalan));
+  };
+  const kalanStyle=x=>{
+    if(!acik) return 'color:var(--text3)';
+    const kalan=x.avansKalan!==undefined?x.avansKalan:x.tutarSay;
+    const oran=kalan/(x.tutarSay||1);
+    return oran>0.5?'color:var(--amber);font-weight:600':oran>0?'color:var(--red);font-weight:600':'color:var(--text3)';
+  };
+  return '<div class="tbl-wrap"><table><thead><tr><th>Tarih</th><th>Tür</th><th>Kişi</th><th>Kasa</th><th class="num">Toplam</th><th class="num">Kalan</th>'+(acik?'<th></th>':'')+'</tr></thead><tbody>'+
+    items.map(x=>'<tr'+(acik?'':' style="opacity:.5"')+'><td style="font-size:11px;color:var(--text3)">'+x.tarih+'</td><td><span class="tag tag-avans">'+(x.avansType==='borc'?'Borç':'Hizmet')+'</span></td><td>'+x.avansKisi+'</td><td><span class="tag tag-kapali">'+x.kasaDoviz+'</span></td><td class="num mono">'+x.tutar+'</td><td class="num mono" style="'+kalanStyle(x)+'">'+fmtKalan(x)+'</td>'+(acik?'<td><button class="btn btn-green" style="padding:3px 8px;font-size:11px" onclick="avansKapat(\''+x.id+'\')">✔ Kapat</button></td>':'')+'</tr>').join('')+
     '</tbody></table></div>';
 }
-function renderDoviz(){
 function renderDoviz(){
   const d=getDonem();
   const v=getKasaVeri(d.key);
@@ -622,6 +632,7 @@ function dovizDuzenleKaydet(hId,key){
   otoDriveKaydet(key);
 }
 
+function renderHareketler(){
   const v=getKasaVeri(getDonem().key);
   const seciliSirket=document.getElementById('sirketSuzgec')?.value||'Tümü';
   let items=[...v.hareketler].reverse();
@@ -745,13 +756,29 @@ function hareketModal(tur){
       '<div class="fg"><label>Şirket</label><select id="hm_sirket"><option value="IWA">IWA</option><option value="Citi">Citi</option><option value="Ortak">Ortak</option></select></div>'+
       '<div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text"></div>';
   } else if(tur==='gider'){
+    // Açık avansları bul
+    const acikAvanslar=getKasaVeri(d.key).hareketler.filter(x=>x.tur==='avans'&&!x.avansKapali);
+    const avansOpts=acikAvanslar.length
+      ?acikAvanslar.map(a=>'<option value="'+a.id+'">'+a.avansKisi+' — '+a.tutar+' (kalan: '+fTL(a.avansKalan!==undefined?a.avansKalan:a.tutarSay)+')</option>').join('')
+      :'';
+    const avansSecHtml=acikAvanslar.length
+      ?'<div class="fg fg-full" style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:6px;padding:10px">'
+        +'<label style="color:var(--amber)">Avansa say (opsiyonel)</label>'
+        +'<select id="hm_avans_id" style="margin-top:6px">'
+        +'<option value="">— Avansa sayma, normal gider —</option>'
+        +avansOpts
+        +'</select>'
+        +'<div style="font-size:10px;color:var(--amber);margin-top:4px">Seçilirse bu gider seçili avansın bakiyesinden düşer</div>'
+        +'</div>'
+      :'';
     form='<div class="fg"><label>Kategori</label><select id="hm_cinsi" onchange="serbCinsi(this,\'hm_cinsi_serbest\')">'+GIDER_TURLERI.map(t=>'<option>'+t+'</option>').join('')+'<option value="__serbest__">✏️ Serbest giriş…</option></select></div>'+
       '<div class="fg fg-full" id="hm_cinsi_serbest" style="display:none"><label>Kategori adı</label><input id="hm_cinsi_input" type="text" placeholder="Kategori adını yazın"></div>'+
       '<div class="fg"><label>Kasa</label><select id="hm_kasa"><option value="TL">TL</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div>'+
       '<div class="fg"><label>Tutar</label><input id="hm_tutar" type="number" step="0.01" placeholder="0"></div>'+
       '<div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="'+today+'"></div>'+
       '<div class="fg"><label>Şirket</label><select id="hm_sirket"><option value="IWA">IWA</option><option value="Citi">Citi</option><option value="Ortak">Ortak</option></select></div>'+
-      '<div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text"></div>';
+      '<div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text"></div>'+
+      avansSecHtml;
   } else if(tur==='avans'){
     form='<div class="fg"><label>Tür</label><select id="hm_avansType"><option value="borc">Borç avans</option><option value="hizmet">Hizmet avansı</option></select></div>'+
       '<div class="fg"><label>Kişi / Firma</label><input id="hm_avansKisi" type="text"></div>'+
@@ -864,9 +891,31 @@ function hareketKaydet(tur,key){
       piyasaKur:pkRaw?pkRaw.toFixed(4):null};
   }
   veri.hareketler.push(h);
+
+  // Avansa say — gider seçilen avansın bakiyesinden düş
+  if(tur==='gider'){
+    const avansId=document.getElementById('hm_avans_id')?.value;
+    if(avansId){
+      const avans=veri.hareketler.find(x=>x.id===avansId);
+      if(avans){
+        const kalanOnceki=avans.avansKalan!==undefined?avans.avansKalan:avans.tutarSay;
+        avans.avansKalan=Math.max(0,kalanOnceki-tutarSay);
+        h.avansaKarsiId=avansId; // giderin hangi avansa sayıldığı
+        h.avansaKarsiKisi=avans.avansKisi;
+        if(avans.avansKalan<=0){
+          avans.avansKapali=true;
+          toast('✓ Gider kaydedildi — '+avans.avansKisi+' avansı kapandı','ok');
+        } else {
+          const sym={TL:'₺',USD:'$',EUR:'€'}[avans.kasaDoviz]||'';
+          toast('✓ Gider kaydedildi — '+avans.avansKisi+' avans kalan: '+sym+new Intl.NumberFormat('tr-TR').format(Math.round(avans.avansKalan)),'ok');
+        }
+      }
+    }
+  }
+
   document.querySelector('.modal-ov')?.remove();
   renderAll();
-  toast('✓ '+tur+' kaydedildi');
+  if(tur!=='gider'||!document.getElementById('hm_avans_id')?.value) toast('✓ '+tur+' kaydedildi');
   otoDriveKaydet(key);
 }
 
@@ -941,7 +990,15 @@ function adminKaydet(kasaId,key){
   renderAll();toast('⚠️ Override uygulandı');otoDriveKaydet(key);
 }
 
-function donemKilitle(key){window.KILITLI_DONEMLER[key]=true;renderAll();toast('🔒 Dönem kilitlendi');otoDriveKaydet(key);}
+function donemKilitle(key){
+  window.KILITLI_DONEMLER[key]=true;
+  renderAll();
+  toast('🔒 Dönem kilitlendi');
+  otoDriveKaydet(key);
+  // Tüm modül yedeği Drive'a
+  fdApiSave({action:'tumYedekAl',donemKey:key})
+    .then(r=>r?.ok?toast('💾 Drive yedeği alındı'):toast('⚠️ Yedek alınamadı','warn'));
+}
 function donemKilidinAc(key){delete window.KILITLI_DONEMLER[key];renderAll();toast('🔓 Dönem kilidi açıldı');}
 
 function topluVeriGir(){
