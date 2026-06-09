@@ -368,33 +368,22 @@ function renderOzet(){
     if(cAvans>0) extra+='<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--amber);margin-top:2px"><span>− Avanslar</span><span class="mono">'+fmt(cAvans)+'</span></div>';
     if(extra) extra='<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">'+extra+'</div>';
 
-    // ── REEL KASA BÖLÜMÜ (sadece TL, USD, EUR için) ──
+    // ── AVANS ALACAĞI + GERÇEK KASA (sadece TL, USD, EUR için) ──
     let reelHtml='';
     if(editId==='TL'||editId==='USD'||editId==='EUR'){
-      const reel=getReel(d.key);
-      const sayimVal=reel[editId];
-      const hesap=kapSay; // hesaplanan bakiye sayısal
-      let farkHtml='';
-      if(sayimVal!==null&&sayimVal!==''&&!isNaN(sayimVal)){
-        const fark=sayimVal-hesap;
-        if(fark===0) farkHtml='<span class="reel-fark-sifir">= Eşleşiyor</span>';
-        else if(fark>0) farkHtml='<span class="reel-fark-pos">+'+fmt(Math.abs(fark))+' fazla</span>';
-        else farkHtml='<span class="reel-fark-neg">'+fmt(Math.abs(fark))+' eksik</span>';
+      const gercekSay = kapSay - cAvans;
+      reelHtml='<div class="reel-row">';
+      if(cAvans>0){
+        reelHtml+='<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px">'
+          +'<span style="color:var(--amber)">↩ Avans alacağı</span>'
+          +'<span class="mono" style="color:var(--amber)">+'+fmt(cAvans)+'</span>'
+          +'</div>';
       }
-      // Avans alacak satırı
-      const avansAlacakHtml=cAvans>0
-        ? '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--amber);margin-bottom:3px"><span>↩ Avans alacağı</span><span class="mono">'+fmt(cAvans)+'</span></div>'
-        : '';
-      reelHtml='<div class="reel-row">'
-        +avansAlacakHtml
-        +'<div class="reel-lbl">Reel kasa sayımı</div>'
-        +'<div class="reel-input-wrap">'
-        +'<input class="reel-inp" type="number" step="0.01" placeholder="Sayım gir…" '
-        +(sayimVal!==null?'value="'+sayimVal+'"':'')
-        +' onchange="reelSayimGir(\''+d.key+'\',\''+editId+'\',this.value)" />'
-        +farkHtml
-        +'</div>'
+      reelHtml+='<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:5px 0;border-top:1px solid var(--border)">'
+        +'<span style="color:var(--text2);font-weight:600">Gerçek kasa</span>'
+        +'<span class="mono" style="font-weight:600;color:var(--text)">'+fmt(gercekSay)+'</span>'
         +'</div>';
+      reelHtml+='</div>';
     }
 
     return '<div class="kasa-kart '+cls+'">'
@@ -600,10 +589,87 @@ function renderHareketler(){
   if(sel) sel.value=seciliSirket;
 }
 function hareketTablosu(items){
-  return '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Tarih</th><th>Tür</th><th>Kategori</th><th>Şirket</th><th>Kasa</th><th class="num">Tutar</th><th>Açıklama</th></tr></thead><tbody>'+
-    items.map(x=>'<tr><td style="font-size:11px;color:var(--text3)">'+x.tarih+'</td><td><span class="tag tag-'+x.tur+'">'+x.tur+'</span></td><td style="font-size:12px">'+x.cinsi+'</td><td><span class="tag tag-kapali">'+(x.sirket||'—')+'</span></td><td><span class="tag tag-kapali">'+x.kasaDoviz+'</span></td><td class="num mono">'+x.tutar+'</td><td style="font-size:11px;color:var(--text3)">'+(x.aciklama||'')+'</td></tr>').join('')+
+  const adminCol=isAdmin()?'<th style="width:60px"></th>':'';
+  const adminRow=x=>isAdmin()
+    ?'<td><button class="edit-btn" onclick="hareketDuzenle(\''+x.id+'\')" title="Düzenle">✎</button> <button class="edit-btn" style="color:var(--red);border-color:var(--red)" onclick="hareketSil(\''+x.id+'\')" title="Sil">✕</button></td>'
+    :'';
+  return '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Tarih</th><th>Tür</th><th>Kategori</th><th>Şirket</th><th>Kasa</th><th class="num">Tutar</th><th>Açıklama</th>'+adminCol+'</tr></thead><tbody>'+
+    items.map(x=>'<tr><td style="font-size:11px;color:var(--text3)">'+x.tarih+'</td><td><span class="tag tag-'+x.tur+'">'+x.tur+'</span></td><td style="font-size:12px">'+x.cinsi+'</td><td><span class="tag tag-kapali">'+(x.sirket||'—')+'</span></td><td><span class="tag tag-kapali">'+x.kasaDoviz+'</span></td><td class="num mono">'+x.tutar+'</td><td style="font-size:11px;color:var(--text3)">'+(x.aciklama||'')+'</td>'+adminRow(x)+'</tr>').join('')+
     '</tbody></table></div></div>';
 }
+
+function hareketSil(hId){
+  if(!isAdmin()) return;
+  const d=getDonem();
+  const veri=getKasaVeri(d.key);
+  const idx=veri.hareketler.findIndex(x=>x.id===hId);
+  if(idx<0) return;
+  const h=veri.hareketler[idx];
+  const ov=document.createElement('div');ov.className='modal-ov';
+  ov.innerHTML='<div class="modal" style="max-width:380px"><h3>⚠️ Kaydı sil</h3>'
+    +'<div class="info-box" style="margin-bottom:16px">'+h.tarih+' · '+h.cinsi+' · '+h.tutar+'<br>Bu işlem geri alınamaz.</div>'
+    +'<div class="modal-footer"><button class="btn" onclick="this.closest(\'.modal-ov\').remove()">İptal</button>'
+    +'<button class="btn btn-red" onclick="hareketSilOnayla(\''+hId+'\',\''+d.key+'\')"'>✕ Sil</button></div></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+}
+
+function hareketSilOnayla(hId,key){
+  const veri=getKasaVeri(key);
+  veri.hareketler=veri.hareketler.filter(x=>x.id!==hId);
+  document.querySelector('.modal-ov')?.remove();
+  renderAll();
+  toast('✓ Kayıt silindi');
+  otoDriveKaydet(key);
+}
+
+function hareketDuzenle(hId){
+  if(!isAdmin()) return;
+  const d=getDonem();
+  const veri=getKasaVeri(d.key);
+  const h=veri.hareketler.find(x=>x.id===hId);
+  if(!h) return;
+  const ov=document.createElement('div');ov.className='modal-ov';
+  const TURLERI=h.tur==='gelir'?GELIR_TURLERI:GIDER_TURLERI;
+  const katOpts=(h.tur==='gelir'||h.tur==='gider')
+    ?TURLERI.map(t=>'<option'+(t===h.cinsi?' selected':'')+'>'+t+'</option>').join('')+'<option value="__serbest__">✏️ Serbest giriş…</option>'
+    :'<option>'+h.cinsi+'</option>';
+  const kasaOpts=['TL','USD','EUR','GBP'].map(k=>'<option'+(k===h.kasaDoviz?' selected':'')+'>'+k+'</option>').join('');
+  const sirketOpts=['IWA','Citi','Ortak'].map(s=>'<option'+(s===h.sirket?' selected':'')+'>'+s+'</option>').join('');
+  const form='<div class="fg"><label>Kategori</label><select id="ed_cinsi" onchange="serbCinsi(this,\'ed_cinsi_serbest\')">'+(katOpts)+'</select></div>'
+    +'<div class="fg fg-full" id="ed_cinsi_serbest" style="display:none"><label>Kategori adı</label><input id="ed_cinsi_input" type="text" value="'+h.cinsi+'"></div>'
+    +'<div class="fg"><label>Kasa</label><select id="ed_kasa">'+kasaOpts+'</select></div>'
+    +'<div class="fg"><label>Tutar</label><input id="ed_tutar" type="number" step="0.01" value="'+h.tutarSay+'"></div>'
+    +'<div class="fg"><label>Tarih</label><input id="ed_tarih" type="date" value="'+h.tarih+'"></div>'
+    +'<div class="fg"><label>Şirket</label><select id="ed_sirket">'+sirketOpts+'</select></div>'
+    +'<div class="fg fg-full"><label>Açıklama</label><input id="ed_aciklama" type="text" value="'+(h.aciklama||'')+'"></div>';
+  ov.innerHTML='<div class="modal"><h3>✎ Düzenle — '+h.tur+'</h3><div class="form-grid">'+form+'</div>'
+    +'<div class="modal-footer"><button class="btn" onclick="this.closest(\'.modal-ov\').remove()">İptal</button>'
+    +'<button class="btn btn-primary" onclick="hareketDuzenleKaydet(\''+hId+'\',\''+d.key+'\')">✓ Kaydet</button></div></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+}
+
+function hareketDuzenleKaydet(hId,key){
+  const veri=getKasaVeri(key);
+  const h=veri.hareketler.find(x=>x.id===hId);
+  if(!h) return;
+  const g=id=>document.getElementById(id)?.value||'';
+  const rawCinsi=g('ed_cinsi');
+  h.cinsi=rawCinsi==='__serbest__'?(g('ed_cinsi_input')||h.cinsi):rawCinsi;
+  h.kasaDoviz=g('ed_kasa')||h.kasaDoviz;
+  h.tutarSay=parseFloat(g('ed_tutar'))||h.tutarSay;
+  const sym={TL:'₺',USD:'$',EUR:'€',GBP:'£'}[h.kasaDoviz]||'';
+  h.tutar=sym+new Intl.NumberFormat('tr-TR').format(h.tutarSay);
+  h.tarih=g('ed_tarih')||h.tarih;
+  h.sirket=g('ed_sirket')||h.sirket;
+  h.aciklama=g('ed_aciklama');
+  document.querySelector('.modal-ov')?.remove();
+  renderAll();
+  toast('✓ Kayıt güncellendi');
+  otoDriveKaydet(key);
+}
+
 
 function hareketModal(tur){
   const d=getDonem();
