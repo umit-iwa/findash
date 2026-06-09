@@ -609,7 +609,7 @@ function hareketSil(hId){
   ov.innerHTML='<div class="modal" style="max-width:380px"><h3>⚠️ Kaydı sil</h3>'
     +'<div class="info-box" style="margin-bottom:16px">'+h.tarih+' · '+h.cinsi+' · '+h.tutar+'<br>Bu işlem geri alınamaz.</div>'
     +'<div class="modal-footer"><button class="btn" onclick="this.closest(\'.modal-ov\').remove()">İptal</button>'
-    +'<button class="btn btn-red" onclick="hareketSilOnayla(\''+hId+'\',\''+d.key+'\')"'>✕ Sil</button></div></div>';
+    +'<button class="btn btn-red" onclick="hareketSilOnayla(\''+hId+'\',\''+d.key+'\')">✕ Sil</button></div></div>';
   document.body.appendChild(ov);
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
 }
