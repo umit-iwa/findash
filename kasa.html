@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="auth.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -182,6 +183,34 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <tbody id="ozetTbody"></tbody>
       </table></div>
     </div>
+
+    <!-- GRAFİKLER -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" id="grafik-grid">
+      <div class="card">
+        <div class="card-title">Gelir kırılımı</div>
+        <canvas id="gelirGrafik" height="220"></canvas>
+        <div id="gelirLegend" style="margin-top:10px;font-size:11px"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Gider kırılımı</div>
+        <canvas id="giderGrafik" height="220"></canvas>
+        <div id="giderLegend" style="margin-top:10px;font-size:11px"></div>
+      </div>
+    </div>
+
+    <!-- DÖNEM KARŞILAŞTIRMA -->
+    <div class="card" id="karsilastirmaCard">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+        <div class="card-title" style="margin:0">Dönem karşılaştırma</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="karsiDonem1" onchange="renderKarsilastirma()" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font)"></select>
+          <span style="color:var(--text3);font-size:12px">vs</span>
+          <select id="karsiDonem2" onchange="renderKarsilastirma()" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font)"></select>
+        </div>
+      </div>
+      <div id="karsilastirmaIcerik"></div>
+    </div>
+
     <div class="toolbar" id="kasaToolbar"></div>
   </div>
 
@@ -427,6 +456,12 @@ function renderPanel(id){
   else if(id==='avans') renderAvans();
   else if(id==='doviz') renderDoviz();
   else if(id==='hareketler') renderHareketler();
+  // Grafikler ve karşılaştırma
+  setTimeout(()=>{
+    renderGrafikler();
+    if(!document.getElementById('karsiDonem1').options.length) initKarsilastirma();
+    else renderKarsilastirma();
+  },100);
 }
 
 function fTL(v){return '₺'+new Intl.NumberFormat('tr-TR').format(Math.round(v));}
@@ -450,14 +485,15 @@ function renderOzet(){
     <div class="item"><div class="d-lbl">EUR (≈USD)</div><div class="d-val">${fUSD(usdDetay.eurUsd)}</div></div>
     <div class="item"><div class="d-lbl">Madenler (≈USD)</div><div class="d-val">${fUSD(usdDetay.altinUsd+usdDetay.gumusUsd)}</div></div>`;
 
+  const hareketler = veri.hareketler||[];
   document.getElementById('kasaKartlar').innerHTML=`
-    ${kasaKart('TL Kasası','tl',fTL(kap.TL||0),fUSD(usdDetay.tlUsd),fTL(ac.TL||0),'TL')}
-    ${kasaKart('USD Kasası','usd',fUSD(kap.USD||0),fUSD(usdDetay.usd),fUSD(ac.USD||0),'USD')}
-    ${kasaKart('EUR Kasası','eur',fEUR(kap.EUR||0),fUSD(usdDetay.eurUsd),fEUR(ac.EUR||0),'EUR')}
+    ${kasaKart('TL Kasası','tl',fTL(kap.TL||0),fUSD(usdDetay.tlUsd),fTL(ac.TL||0),'TL',hareketler,'TL')}
+    ${kasaKart('USD Kasası','usd',fUSD(kap.USD||0),fUSD(usdDetay.usd),fUSD(ac.USD||0),'USD',hareketler,'USD')}
+    ${kasaKart('EUR Kasası','eur',fEUR(kap.EUR||0),fUSD(usdDetay.eurUsd),fEUR(ac.EUR||0),'EUR',hareketler,'EUR')}
     ${kasaKart('Değerli Madenler','maden',
       (kap.ALTIN||0)+' gr Altın / '+(kap.GUMUS||0)+' gr Gümüş',
       fUSD(usdDetay.altinUsd+usdDetay.gumusUsd),
-      (ac.ALTIN||0)+' gr Altın / '+(ac.GUMUS||0)+' gr Gümüş','ALTIN+GUMUS')}`;
+      (ac.ALTIN||0)+' gr Altın / '+(ac.GUMUS||0)+' gr Gümüş','ALTIN+GUMUS',hareketler,'ALTIN')}`;
 
   // Toolbar
   const toolbar = document.getElementById('kasaToolbar');
@@ -504,16 +540,32 @@ function renderOzet(){
   }).join('');
 }
 
-function kasaKart(baslik,cls,kapanis,usdKarsi,acilis,editId){
+function kasaKart(baslik,cls,kapanis,usdKarsi,acilis,editId,hareketler,dovizKey){
+  // Hareketlerden giren/çıkan hesapla
+  const giren = hareketler.filter(h=>h.tur==='gelir'&&h.kasaDoviz===dovizKey).reduce((s,h)=>s+(h.tutarSay||0),0);
+  const cikanGider = hareketler.filter(h=>h.tur==='gider'&&h.kasaDoviz===dovizKey).reduce((s,h)=>s+(h.tutarSay||0),0);
+  const cikanAvans = hareketler.filter(h=>h.tur==='avans'&&!h.avansKapali&&h.kasaDoviz===dovizKey).reduce((s,h)=>s+(h.tutarSay||0),0);
+
+  const sym = {TL:'₺',USD:'$',EUR:'€',ALTIN:'gr',GUMUS:'gr'}[dovizKey]||'';
+  const fNum = v => sym+new Intl.NumberFormat('tr-TR',{minimumFractionDigits:0,maximumFractionDigits:2}).format(v);
+
+  const girenHTML = giren>0 ? `<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--green)"><span>+ Gelirler</span><span class="mono">${fNum(giren)}</span></div>` : '';
+  const giderHTML = cikanGider>0 ? `<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--red)"><span>− Giderler</span><span class="mono">${fNum(cikanGider)}</span></div>` : '';
+  const avansHTML = cikanAvans>0 ? `<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--amber)"><span>− Avanslar</span><span class="mono">${fNum(cikanAvans)}</span></div>` : '';
+  const hareketlerVar = giren>0||cikanGider>0||cikanAvans>0;
+
   const adminBtnler = isAdmin()
     ? '<button class="edit-btn" onclick="bakiyeGir(\'acilis\',\''+editId+'\')">Açılış ✎</button>'
       +'<button class="edit-btn" onclick="adminKapanisGir(\''+editId+'\')">Override ✎</button>'
     : '';
+
   return '<div class="kasa-kart '+cls+'">'
     +'<div class="ust"><div><div class="doviz">'+baslik+'</div></div>'
     +'<div style="display:flex;gap:6px">'+adminBtnler+'</div></div>'
     +'<div class="kapanis">'+kapanis+'</div>'
     +'<div class="usd-karsi">≈ '+usdKarsi+'</div>'
+    +(hareketlerVar?'<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:4px">'
+      +girenHTML+giderHTML+avansHTML+'</div>':'')
     +'<div class="acilis-row"><span class="acilis-lbl">Açılış</span><span class="acilis-val">'+acilis+'</span></div>'
     +'</div>';
 }
@@ -638,7 +690,154 @@ function hareketTablosu(hareketler,tur){
     </table></div></div>`;
 }
 
-// ─── BAKİYE GİR ───────────────────────────────────────────
+// ─── GRAFİKLER ────────────────────────────────────────────
+let gelirChart = null, giderChart = null;
+
+const GRAFIK_RENKLER = [
+  '#4f9cf9','#2ecc8a','#f0a030','#e05555','#a78bfa',
+  '#f59e0b','#10b981','#ef4444','#3b82f6','#ec4899',
+  '#8b5cf6','#14b8a6','#f97316','#06b6d4','#84cc16','#6366f1'
+];
+
+function renderGrafikler(){
+  const d=getDonem();
+  const veri=getKasaVeri(d.key);
+  const hareketler=veri.hareketler||[];
+
+  // Gelir kırılımı
+  const gelirGrup={};
+  hareketler.filter(h=>h.tur==='gelir').forEach(h=>{
+    const k=h.cinsi||'Diğer';
+    gelirGrup[k]=(gelirGrup[k]||0)+(h.tutarSay||0);
+  });
+
+  // Gider kırılımı
+  const giderGrup={};
+  hareketler.filter(h=>h.tur==='gider').forEach(h=>{
+    const k=h.cinsi||'Diğer';
+    giderGrup[k]=(giderGrup[k]||0)+(h.tutarSay||0);
+  });
+
+  // Gelir grafik
+  const gelirCanvas=document.getElementById('gelirGrafik');
+  const gelirLegend=document.getElementById('gelirLegend');
+  if(gelirChart){gelirChart.destroy();gelirChart=null;}
+  if(Object.keys(gelirGrup).length>0){
+    const labels=Object.keys(gelirGrup);
+    const data=Object.values(gelirGrup);
+    const toplam=data.reduce((a,b)=>a+b,0);
+    gelirChart=new Chart(gelirCanvas,{
+      type:'doughnut',
+      data:{labels,datasets:[{data,backgroundColor:GRAFIK_RENKLER,borderWidth:0,hoverOffset:4}]},
+      options:{plugins:{legend:{display:false}},cutout:'65%',responsive:true,maintainAspectRatio:false}
+    });
+    gelirLegend.innerHTML=labels.map((l,i)=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="width:10px;height:10px;border-radius:50%;background:${GRAFIK_RENKLER[i]};display:inline-block;flex-shrink:0"></span>
+          <span style="color:var(--text2)">${l}</span>
+        </div>
+        <span style="color:var(--text);font-family:var(--mono)">${((data[i]/toplam)*100).toFixed(0)}%</span>
+      </div>`).join('');
+  } else {
+    gelirCanvas.style.display='none';
+    gelirLegend.innerHTML='<p style="color:var(--text3);font-size:12px">Gelir kaydı yok</p>';
+  }
+
+  // Gider grafik
+  const giderCanvas=document.getElementById('giderGrafik');
+  const giderLegend=document.getElementById('giderLegend');
+  if(giderChart){giderChart.destroy();giderChart=null;}
+  if(Object.keys(giderGrup).length>0){
+    const labels=Object.keys(giderGrup);
+    const data=Object.values(giderGrup);
+    const toplam=data.reduce((a,b)=>a+b,0);
+    giderChart=new Chart(giderCanvas,{
+      type:'doughnut',
+      data:{labels,datasets:[{data,backgroundColor:GRAFIK_RENKLER,borderWidth:0,hoverOffset:4}]},
+      options:{plugins:{legend:{display:false}},cutout:'65%',responsive:true,maintainAspectRatio:false}
+    });
+    giderLegend.innerHTML=labels.map((l,i)=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="width:10px;height:10px;border-radius:50%;background:${GRAFIK_RENKLER[i]};display:inline-block;flex-shrink:0"></span>
+          <span style="color:var(--text2)">${l}</span>
+        </div>
+        <span style="color:var(--text);font-family:var(--mono)">${((data[i]/toplam)*100).toFixed(0)}%</span>
+      </div>`).join('');
+  } else {
+    giderCanvas.style.display='none';
+    giderLegend.innerHTML='<p style="color:var(--text3);font-size:12px">Gider kaydı yok</p>';
+  }
+}
+
+// ─── DÖNEM KARŞILAŞTIRMA ──────────────────────────────────
+function initKarsilastirma(){
+  const sel1=document.getElementById('karsiDonem1');
+  const sel2=document.getElementById('karsiDonem2');
+  if(!sel1||!sel2) return;
+  sel1.innerHTML=''; sel2.innerHTML='';
+  [...DONEMLER].reverse().forEach((d,i)=>{
+    sel1.innerHTML+=`<option value="${d.key}">${d.lbl}</option>`;
+    sel2.innerHTML+=`<option value="${d.key}">${d.lbl}</option>`;
+  });
+  // Varsayılan: aktif dönem vs önceki ay
+  const aktifIdx=DONEMLER.findIndex(d=>d.key===getDonem().key);
+  sel1.value=getDonem().key;
+  sel2.value=aktifIdx>0?DONEMLER[aktifIdx-1].key:DONEMLER[0].key;
+  renderKarsilastirma();
+}
+
+function renderKarsilastirma(){
+  const key1=document.getElementById('karsiDonem1')?.value;
+  const key2=document.getElementById('karsiDonem2')?.value;
+  if(!key1||!key2) return;
+  const d1=DONEMLER.find(d=>d.key===key1);
+  const d2=DONEMLER.find(d=>d.key===key2);
+  const v1=getKasaVeri(key1);
+  const v2=getKasaVeri(key2);
+  const kap1=hesaplaKapanis(key1);
+  const kap2=hesaplaKapanis(key2);
+  const kur=getKur(getDonem().y,getDonem().m);
+
+  // Gelir/gider toplamları
+  const topla=(veri,tur,doviz)=>veri.hareketler.filter(h=>h.tur===tur&&(doviz?h.kasaDoviz===doviz:true)).reduce((s,h)=>s+(h.tutarSay||0),0);
+
+  const satirlar=[
+    {lbl:'TL Kapanış',v1:fTL(kap1.TL||0),v2:fTL(kap2.TL||0),delta:(kap1.TL||0)-(kap2.TL||0),fmt:fTL},
+    {lbl:'USD Kapanış',v1:fUSD(kap1.USD||0),v2:fUSD(kap2.USD||0),delta:(kap1.USD||0)-(kap2.USD||0),fmt:fUSD},
+    {lbl:'EUR Kapanış',v1:fEUR(kap1.EUR||0),v2:fEUR(kap2.EUR||0),delta:(kap1.EUR||0)-(kap2.EUR||0),fmt:fEUR},
+    {lbl:'Altın',v1:(kap1.ALTIN||0)+' gr',v2:(kap2.ALTIN||0)+' gr',delta:(kap1.ALTIN||0)-(kap2.ALTIN||0),fmt:v=>v+' gr'},
+    {lbl:'',v1:'',v2:'',sep:true},
+    {lbl:'TL Gelir',v1:fTL(topla(v1,'gelir','TL')),v2:fTL(topla(v2,'gelir','TL')),delta:topla(v1,'gelir','TL')-topla(v2,'gelir','TL'),fmt:fTL,gelir:true},
+    {lbl:'TL Gider',v1:fTL(topla(v1,'gider','TL')),v2:fTL(topla(v2,'gider','TL')),delta:topla(v1,'gider','TL')-topla(v2,'gider','TL'),fmt:fTL,gider:true},
+    {lbl:'USD Gelir',v1:fUSD(topla(v1,'gelir','USD')),v2:fUSD(topla(v2,'gelir','USD')),delta:topla(v1,'gelir','USD')-topla(v2,'gelir','USD'),fmt:fUSD,gelir:true},
+    {lbl:'USD Gider',v1:fUSD(topla(v1,'gider','USD')),v2:fUSD(topla(v2,'gider','USD')),delta:topla(v1,'gider','USD')-topla(v2,'gider','USD'),fmt:fUSD,gider:true},
+  ];
+
+  const deltaHtml=(delta,fmt,gelir,gider)=>{
+    if(delta===0) return '<span style="color:var(--text3)">—</span>';
+    const pos = gelir?(delta>0):(gider?(delta<0):(delta>0));
+    const cls = pos?'delta-pos':'delta-neg';
+    return `<span class="${cls}">${delta>0?'+':''}${fmt(delta)}</span>`;
+  };
+
+  document.getElementById('karsilastirmaIcerik').innerHTML=`
+    <div class="tbl-wrap"><table>
+      <thead><tr>
+        <th>Kalem</th>
+        <th class="num">${d1?.lbl||key1}</th>
+        <th class="num">${d2?.lbl||key2}</th>
+        <th class="num">Fark</th>
+      </tr></thead>
+      <tbody>${satirlar.map(s=>s.sep?'<tr><td colspan="4" style="padding:4px;background:var(--bg3)"></td></tr>':`<tr>
+        <td style="font-size:12px">${s.lbl}</td>
+        <td class="num mono" style="font-size:12px${s.gelir?';color:var(--green)':s.gider?';color:var(--red)':''}">${s.v1||'—'}</td>
+        <td class="num mono" style="font-size:12px${s.gelir?';color:var(--green)':s.gider?';color:var(--red)':''}">${s.v2||'—'}</td>
+        <td class="num">${deltaHtml(s.delta,s.fmt,s.gelir,s.gider)}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+}
 function bakiyeGir(tip,kasaId){
   const d=getDonem();
   const veri=getKasaVeri(d.key);
@@ -862,6 +1061,8 @@ function adminKapanisKaydet(kasaId, key){
   toast('⚠️ Override uygulandı');
   otoDriveKaydet(key);
 }
+
+function avansKapat(hId){
   const d=getDonem();
   const veri=getKasaVeri(d.key);
   const h=veri.hareketler.find(x=>x.id===hId);
