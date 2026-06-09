@@ -476,12 +476,35 @@ function renderDoviz(){
 }
 function renderHareketler(){
   const v=getKasaVeri(getDonem().key);
-  const items=[...v.hareketler].reverse();
-  document.getElementById('hareketlerIcerik').innerHTML=items.length?hareketTablosu(items):'<div class="card"><p style="color:var(--text3);font-size:12px">Kayıt yok.</p></div>';
+  const seciliSirket=document.getElementById('sirketSuzgec')?.value||'Tümü';
+  let items=[...v.hareketler].reverse();
+  if(seciliSirket!=='Tümü') items=items.filter(x=>x.sirket===seciliSirket);
+
+  // Toplamlar
+  const gelirTop=items.filter(x=>x.tur==='gelir').reduce((s,x)=>s+(x.tutarSay||0),0);
+  const giderTop=items.filter(x=>x.tur==='gider').reduce((s,x)=>s+(x.tutarSay||0),0);
+  const avansTop=items.filter(x=>x.tur==='avans'&&!x.avansKapali).reduce((s,x)=>s+(x.tutarSay||0),0);
+
+  const ozet='<div class="card" style="margin-bottom:12px"><div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center">'+
+    '<div style="display:flex;gap:8px;align-items:center">'+
+    '<label style="font-size:11px;color:var(--text2)">Şirket</label>'+
+    '<select id="sirketSuzgec" onchange="renderHareketler()" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font)">'+
+    '<option value="Tümü">Tümü</option><option value="IWA">IWA</option><option value="Citi">Citi</option><option value="Ortak">Ortak</option>'+
+    '</select></div>'+
+    '<div style="display:flex;gap:16px;margin-left:auto">'+
+    '<div><span style="font-size:11px;color:var(--text3)">Toplam Gelir </span><span style="font-family:var(--mono);color:var(--green);font-size:13px">'+fTL(gelirTop)+'</span></div>'+
+    '<div><span style="font-size:11px;color:var(--text3)">Toplam Gider </span><span style="font-family:var(--mono);color:var(--red);font-size:13px">'+fTL(giderTop)+'</span></div>'+
+    (avansTop>0?'<div><span style="font-size:11px;color:var(--text3)">Açık Avans </span><span style="font-family:var(--mono);color:var(--amber);font-size:13px">'+fTL(avansTop)+'</span></div>':'')+
+    '</div></div></div>';
+
+  document.getElementById('hareketlerIcerik').innerHTML=ozet+(items.length?hareketTablosu(items):'<div class="card"><p style="color:var(--text3);font-size:12px">Kayıt yok.</p></div>');
+  // Seçili değeri koru
+  const sel=document.getElementById('sirketSuzgec');
+  if(sel) sel.value=seciliSirket;
 }
 function hareketTablosu(items){
-  return '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Tarih</th><th>Tür</th><th>Kategori</th><th>Kasa</th><th class="num">Tutar</th><th>Açıklama</th></tr></thead><tbody>'+
-    items.map(x=>'<tr><td style="font-size:11px;color:var(--text3)">'+x.tarih+'</td><td><span class="tag tag-'+x.tur+'">'+x.tur+'</span></td><td style="font-size:12px">'+x.cinsi+'</td><td><span class="tag tag-kapali">'+x.kasaDoviz+'</span></td><td class="num mono">'+x.tutar+'</td><td style="font-size:11px;color:var(--text3)">'+(x.aciklama||'')+'</td></tr>').join('')+
+  return '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Tarih</th><th>Tür</th><th>Kategori</th><th>Şirket</th><th>Kasa</th><th class="num">Tutar</th><th>Açıklama</th></tr></thead><tbody>'+
+    items.map(x=>'<tr><td style="font-size:11px;color:var(--text3)">'+x.tarih+'</td><td><span class="tag tag-'+x.tur+'">'+x.tur+'</span></td><td style="font-size:12px">'+x.cinsi+'</td><td><span class="tag tag-kapali">'+(x.sirket||'—')+'</span></td><td><span class="tag tag-kapali">'+x.kasaDoviz+'</span></td><td class="num mono">'+x.tutar+'</td><td style="font-size:11px;color:var(--text3)">'+(x.aciklama||'')+'</td></tr>').join('')+
     '</tbody></table></div></div>';
 }
 
@@ -497,6 +520,7 @@ function hareketModal(tur){
       '<div class="fg"><label>Kasa</label><select id="hm_kasa"><option value="TL">TL</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div>'+
       '<div class="fg"><label>Tutar</label><input id="hm_tutar" type="number" step="0.01" placeholder="0"></div>'+
       '<div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="'+today+'"></div>'+
+      '<div class="fg"><label>Şirket</label><select id="hm_sirket"><option value="IWA">IWA</option><option value="Citi">Citi</option><option value="Ortak">Ortak</option></select></div>'+
       '<div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text"></div>';
   } else if(tur==='gider'){
     form='<div class="fg"><label>Kategori</label><select id="hm_cinsi" onchange="serbCinsi(this,\'hm_cinsi_serbest\')">'+GIDER_TURLERI.map(t=>'<option>'+t+'</option>').join('')+'<option value="__serbest__">✏️ Serbest giriş…</option></select></div>'+
@@ -504,6 +528,7 @@ function hareketModal(tur){
       '<div class="fg"><label>Kasa</label><select id="hm_kasa"><option value="TL">TL</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div>'+
       '<div class="fg"><label>Tutar</label><input id="hm_tutar" type="number" step="0.01" placeholder="0"></div>'+
       '<div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="'+today+'"></div>'+
+      '<div class="fg"><label>Şirket</label><select id="hm_sirket"><option value="IWA">IWA</option><option value="Citi">Citi</option><option value="Ortak">Ortak</option></select></div>'+
       '<div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text"></div>';
   } else if(tur==='avans'){
     form='<div class="fg"><label>Tür</label><select id="hm_avansType"><option value="borc">Borç avans</option><option value="hizmet">Hizmet avansı</option></select></div>'+
@@ -511,6 +536,7 @@ function hareketModal(tur){
       '<div class="fg"><label>Kasa</label><select id="hm_kasa"><option value="TL">TL</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div>'+
       '<div class="fg"><label>Tutar</label><input id="hm_tutar" type="number" step="0.01" placeholder="0"></div>'+
       '<div class="fg"><label>Tarih</label><input id="hm_tarih" type="date" value="'+today+'"></div>'+
+      '<div class="fg"><label>Şirket</label><select id="hm_sirket"><option value="IWA">IWA</option><option value="Citi">Citi</option><option value="Ortak">Ortak</option></select></div>'+
       '<div class="fg fg-full"><label>Açıklama</label><input id="hm_aciklama" type="text"></div>';
   } else if(tur==='doviz'){
     form='<div class="fg fg-full"><label>İşlem türü</label><select id="hm_cinsi">'+
@@ -543,7 +569,7 @@ function hareketKaydet(tur,key){
   const sym={TL:'₺',USD:'$',EUR:'€'}[kasaDoviz]||'';
   let h={id,tur,tarih:g('hm_tarih'),cinsi:cinsiVal,kasaDoviz,
     tutar:sym+new Intl.NumberFormat('tr-TR').format(tutarSay),tutarSay,
-    aciklama:g('hm_aciklama'),avansKisi:g('hm_avansKisi'),avansType:g('hm_avansType'),avansKapali:false};
+    aciklama:g('hm_aciklama'),sirket:g('hm_sirket')||'IWA',avansKisi:g('hm_avansKisi'),avansType:g('hm_avansType'),avansKapali:false};
   if(tur==='doviz'){
     const cinsi=g('hm_cinsi');
     const ci=parseFloat(g('hm_cikan'))||0;
