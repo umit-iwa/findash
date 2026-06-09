@@ -501,13 +501,13 @@ function renderOzet(){
       toolbar.innerHTML = '<div class="info-box blue" style="margin:0;flex:1">🔒 <strong>Kilitli dönem</strong> — Değişiklik yapılamaz.</div>'
         +(isAdmin()?'<button class="btn" style="margin-left:8px" onclick="donemKilidinAc(\''+d.key+'\')">🔓 Kilidi aç</button>':'');
     } else {
-      toolbar.innerHTML = `
-        <button class="btn btn-green" onclick="hareketModal('gelir')">+ Gelir ekle</button>
-        <button class="btn btn-red" onclick="hareketModal('gider')">− Gider ekle</button>
-        <button class="btn btn-amber" onclick="hareketModal('avans')">↕ Avans ekle</button>
-        <button class="btn" onclick="hareketModal('doviz')">⇄ Döviz bozdurma</button>
-        ${isAdmin()?'<button class="btn" style="margin-left:auto" onclick="donemKilitle(\''+d.key+'\')">🔒 Dönemi kilitle</button>':''}
-        ${isAdmin()?'<button class="btn" onclick="topluVeriGir()">📋 Toplu geçmiş giriş</button>':''}` ;
+      toolbar.innerHTML = 
+        '<button class="btn btn-green" onclick="hareketModal('gelir')">+ Gelir ekle</button>'
+        +'<button class="btn btn-red" onclick="hareketModal('gider')">− Gider ekle</button>'
+        +'<button class="btn btn-amber" onclick="hareketModal('avans')">↕ Avans ekle</button>'
+        +'<button class="btn" onclick="hareketModal('doviz')">⇄ Döviz bozdurma</button>'
+        +(isAdmin()?'<button class="btn" style="margin-left:auto" onclick="donemKilitle(''+d.key+'')">🔒 Dönemi kilitle</button>':'')
+        +(isAdmin()?'<button class="btn" onclick="topluVeriGir()">📋 Toplu geçmiş giriş</button>':'');
     }
   }
   const kasalar=[
