@@ -72,6 +72,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .tag-avans{background:var(--amber-bg);color:var(--amber)}
 .tag-doviz{background:rgba(79,156,249,.1);color:var(--accent)}
 .tag-kapali{background:var(--bg3);color:var(--text3)}
+.tag-iade{background:rgba(79,156,249,.1);color:var(--accent)}
 .modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
 .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:28px;width:min(520px,100%);max-height:90vh;overflow-y:auto}
 .modal h3{font-size:16px;font-weight:600;margin-bottom:20px}
@@ -312,6 +313,8 @@ function hesaplaKapanis(key){
       else if(cin==='GBP→TL'){kap.GBP-=ci;kap.TL+=gi;}
       else if(cin==='TL→GBP'){kap.TL-=ci;kap.GBP+=gi;}
     }
+    // İade: kasaya geri dönen avans tutarı
+    if(x.tur==='iade'){const k=x.kasaDoviz;if(k==='TL')kap.TL+=t;else if(k==='USD')kap.USD+=t;else if(k==='EUR')kap.EUR+=t;else if(k==='GBP')kap.GBP+=t;}
   });
   return kap;
 }
@@ -604,7 +607,7 @@ function avansTablosu(items,acik){
     return oran>0.5?'color:var(--amber);font-weight:600':oran>0?'color:var(--red);font-weight:600':'color:var(--text3)';
   };
   return '<div class="tbl-wrap"><table><thead><tr><th>Tarih</th><th>Tür</th><th>Kişi</th><th>Kasa</th><th class="num">Toplam</th><th class="num">Kalan</th>'+(acik?'<th></th>':'')+'</tr></thead><tbody>'+
-    items.map(x=>'<tr'+(acik?'':' style="opacity:.5"')+'><td style="font-size:11px;color:var(--text3)">'+x.tarih+'</td><td><span class="tag tag-avans">'+(x.avansType==='borc'?'Borç':'Hizmet')+'</span></td><td>'+x.avansKisi+'</td><td><span class="tag tag-kapali">'+x.kasaDoviz+'</span></td><td class="num mono">'+x.tutar+'</td><td class="num mono" style="'+kalanStyle(x)+'">'+fmtKalan(x)+'</td>'+(acik?'<td><button class="btn btn-green" style="padding:3px 8px;font-size:11px" onclick="avansKapat(\''+x.id+'\')">✔ Kapat</button></td>':'')+'</tr>').join('')+
+    items.map(x=>'<tr'+(acik?'':' style="opacity:.5"')+'><td style="font-size:11px;color:var(--text3)">'+x.tarih+'</td><td><span class="tag tag-avans">'+(x.avansType==='borc'?'Borç':'Hizmet')+'</span></td><td>'+x.avansKisi+'</td><td><span class="tag tag-kapali">'+x.kasaDoviz+'</span></td><td class="num mono">'+x.tutar+'</td><td class="num mono" style="'+kalanStyle(x)+'">'+fmtKalan(x)+'</td>'+(acik?'<td style="display:flex;gap:4px"><button class="btn btn-green" style="padding:3px 8px;font-size:11px" onclick="avansIadeModal(\''+x.id+'\')">↩ İade</button><button class="btn" style="padding:3px 8px;font-size:11px" onclick="avansKapat(\''+x.id+'\')">✔ Kapat</button></td>':'')+'</tr>').join('')+
     '</tbody></table></div>';
 }
 function renderDoviz(){
@@ -682,6 +685,7 @@ function renderHareketler(){
   const gelirTop=items.filter(x=>x.tur==='gelir').reduce((s,x)=>s+(x.tutarSay||0),0);
   const giderTop=items.filter(x=>x.tur==='gider').reduce((s,x)=>s+(x.tutarSay||0),0);
   const avansTop=items.filter(x=>x.tur==='avans'&&!x.avansKapali).reduce((s,x)=>s+avansEtkin(x),0);
+  const iadeTop=items.filter(x=>x.tur==='iade').reduce((s,x)=>s+(x.tutarSay||0),0);
 
   const ozet='<div class="card" style="margin-bottom:12px"><div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center">'+
     '<div style="display:flex;gap:8px;align-items:center">'+
@@ -692,6 +696,7 @@ function renderHareketler(){
     '<div style="display:flex;gap:16px;margin-left:auto">'+
     '<div><span style="font-size:11px;color:var(--text3)">Toplam Gelir </span><span style="font-family:var(--mono);color:var(--green);font-size:13px">'+fTL(gelirTop)+'</span></div>'+
     '<div><span style="font-size:11px;color:var(--text3)">Toplam Gider </span><span style="font-family:var(--mono);color:var(--red);font-size:13px">'+fTL(giderTop)+'</span></div>'+
+    (iadeTop>0?'<div><span style="font-size:11px;color:var(--text3)">↩ İadeler </span><span style="font-family:var(--mono);color:var(--accent);font-size:13px">'+fTL(iadeTop)+'</span></div>':'')+
     (avansTop>0?'<div><span style="font-size:11px;color:var(--text3)">Açık Avans </span><span style="font-family:var(--mono);color:var(--amber);font-size:13px">'+fTL(avansTop)+'</span></div>':'')+
     '</div></div></div>';
 
@@ -705,7 +710,7 @@ function hareketTablosu(items){
     ?'<td><button class="edit-btn" onclick="hareketDuzenle(\''+x.id+'\')" title="Düzenle">✎</button> <button class="edit-btn" style="color:var(--red);border-color:var(--red)" onclick="hareketSil(\''+x.id+'\')" title="Sil">✕</button></td>'
     :'';
   return '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Tarih</th><th>Tür</th><th>Kategori</th><th>Şirket</th><th>Kasa</th><th class="num">Tutar</th><th>Açıklama</th>'+adminCol+'</tr></thead><tbody>'+
-    items.map(x=>'<tr><td style="font-size:11px;color:var(--text3)">'+x.tarih+'</td><td><span class="tag tag-'+x.tur+'">'+x.tur+'</span></td><td style="font-size:12px">'+x.cinsi+'</td><td><span class="tag tag-kapali">'+(x.sirket||'—')+'</span></td><td><span class="tag tag-kapali">'+x.kasaDoviz+'</span></td><td class="num mono">'+x.tutar+'</td><td style="font-size:11px;color:var(--text3)">'+(x.aciklama||'')+'</td>'+adminRow(x)+'</tr>').join('')+
+    items.map(x=>'<tr><td style="font-size:11px;color:var(--text3)">'+x.tarih+'</td><td><span class="tag tag-'+(x.tur==='iade'?'iade':x.tur)+'">'+( x.tur==='iade'?'↩ İade':x.tur)+'</span></td><td style="font-size:12px">'+x.cinsi+'</td><td><span class="tag tag-kapali">'+(x.sirket||'—')+'</span></td><td><span class="tag tag-kapali">'+x.kasaDoviz+'</span></td><td class="num mono">'+x.tutar+'</td><td style="font-size:11px;color:var(--text3)">'+(x.aciklama||'')+'</td>'+adminRow(x)+'</tr>').join('')+
     '</tbody></table></div></div>';
 }
 
@@ -977,6 +982,78 @@ function hareketKaydet(tur,key){
   document.querySelector('.modal-ov')?.remove();
   renderAll();
   if(tur!=='gider'||!document.getElementById('hm_avans_id')?.value) toast('✓ '+tur+' kaydedildi');
+  otoDriveKaydet(key);
+}
+
+function avansIadeModal(avansId){
+  const d=getDonem();
+  const veri=getKasaVeri(d.key);
+  const avans=veri.hareketler.find(x=>x.id===avansId);
+  if(!avans) return;
+  const kalan=avansEtkin(avans);
+  const sym={TL:'₺',USD:'$',EUR:'€',GBP:'£'}[avans.kasaDoviz]||'';
+  const fmt=v=>sym+new Intl.NumberFormat('tr-TR').format(Math.round(v));
+  const ov=document.createElement('div');ov.className='modal-ov';
+  const today=new Date().toISOString().substring(0,10);
+  ov.innerHTML='<div class="modal"><h3>↩ İade alındı — '+avans.avansKisi+'</h3>'
+    +'<div class="info-box blue" style="margin-bottom:16px">'
+    +'Avans toplam: <strong>'+avans.tutar+'</strong><br>'
+    +'Kalan alacak: <strong>'+fmt(kalan)+'</strong>'
+    +'</div>'
+    +'<div class="form-grid">'
+    +'<div class="fg fg-full"><label>İade tutarı ('+avans.kasaDoviz+')</label>'
+    +'<input id="iade_tutar" type="number" step="0.01" max="'+kalan+'" value="'+kalan+'" style="font-size:16px;font-family:var(--mono)">'
+    +'<div style="font-size:10px;color:var(--text3);margin-top:4px">Tam iade için boş bırakabilirsin — kalan tutar otomatik girildi</div>'
+    +'</div>'
+    +'<div class="fg"><label>Tarih</label><input id="iade_tarih" type="date" value="'+today+'"></div>'
+    +'<div class="fg"><label>Açıklama</label><input id="iade_aciklama" type="text" placeholder="Opsiyonel"></div>'
+    +'</div>'
+    +'<div class="modal-footer">'
+    +'<button class="btn" onclick="this.closest(\'.modal-ov\').remove()">İptal</button>'
+    +'<button class="btn btn-green" onclick="avansIadeKaydet(\''+avansId+'\'\,\''+d.key+'\')">↩ İadeyi kaydet</button>'
+    +'</div></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  setTimeout(()=>{const inp=ov.querySelector('#iade_tutar');if(inp){inp.focus();inp.select();}},50);
+}
+
+function avansIadeKaydet(avansId, key){
+  const veri=getKasaVeri(key);
+  const avans=veri.hareketler.find(x=>x.id===avansId);
+  if(!avans) return;
+  const g=id=>document.getElementById(id)?.value||'';
+  const iadeTutar=parseFloat(g('iade_tutar'))||0;
+  if(iadeTutar<=0){toast('⚠️ Tutar girilmedi','warn');return;}
+  const kalanOnceki=avansEtkin(avans);
+  if(iadeTutar>kalanOnceki+0.01){toast('⚠️ İade tutarı kalandan fazla olamaz','warn');return;}
+
+  const sym={TL:'₺',USD:'$',EUR:'€',GBP:'£'}[avans.kasaDoviz]||'';
+  const id='h'+String(hareketSay++).padStart(4,'0');
+
+  // İade hareketi — tur:'iade', kasaya girer, gelir/gider tablosuna girmez
+  veri.hareketler.push({
+    id, tur:'iade',
+    tarih:g('iade_tarih'),
+    cinsi:avans.avansKisi+' avans iadesi',
+    kasaDoviz:avans.kasaDoviz,
+    tutar:sym+new Intl.NumberFormat('tr-TR').format(iadeTutar),
+    tutarSay:iadeTutar,
+    aciklama:g('iade_aciklama')||'',
+    sirket:avans.sirket||'',
+    avansRef:avansId,  // hangi avanstan iade
+  });
+
+  // Avans kalanını güncelle
+  avans.avansKalan=Math.max(0,kalanOnceki-iadeTutar);
+  if(avans.avansKalan<0.01){
+    avans.avansKapali=true;
+    toast('✔ İade kaydedildi — '+avans.avansKisi+' avansı tamamen kapandı');
+  } else {
+    const fmt=v=>sym+new Intl.NumberFormat('tr-TR').format(Math.round(v));
+    toast('✔ İade kaydedildi — kalan: '+fmt(avans.avansKalan));
+  }
+  document.querySelector('.modal-ov')?.remove();
+  renderAll();
   otoDriveKaydet(key);
 }
 
