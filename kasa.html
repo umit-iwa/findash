@@ -193,15 +193,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <tbody id="ozetTbody"></tbody>
       </table></div>
     </div>
-    <div class="toolbar">
-      ${!donemKilitliMi(d.y,d.m)?`
-      <button class="btn btn-green" onclick="hareketModal('gelir')">+ Gelir ekle</button>
-      <button class="btn btn-red" onclick="hareketModal('gider')">− Gider ekle</button>
-      <button class="btn btn-amber" onclick="hareketModal('avans')">↕ Avans ekle</button>
-      <button class="btn" onclick="hareketModal('doviz')">⇄ Döviz bozdurma</button>
-      <button class="btn btn-primary" style="margin-left:auto" onclick="kapanisKaydet()">💾 Kapanışı kaydet</button>
-      `:`<div class="info-box blue" style="margin:0"><strong>🔒 Kilitli dönem</strong> — Bu dönem muhasebe tarafından onaylanmıştır. Değişiklik yapılamaz.</div>`}
-    </div>
+    <div class="toolbar" id="kasaToolbar"></div>
   </div>
 
   <!-- GELİRLER -->
@@ -280,12 +272,25 @@ const now = new Date();
 let aktifDonem = DONEMLER.findIndex(d=>d.y===now.getFullYear()&&d.m===now.getMonth());
 if(aktifDonem<0) aktifDonem = DONEMLER.length-1;
 
-// Dönem kilitli mi? (Mayıs 2026 = 2026-4 ve öncesi kilitli — sadece görüntüleme)
-const KILIT_DONEM = {y:2026, m:4}; // Bu dönem ve öncesi kilitli (muhasebe onaylı)
+// Kilitli dönemler — kullanıcı tarafından kilitlenen dönemler
+window.KILITLI_DONEMLER = {};
+
 function donemKilitliMi(y,m){
-  if(y < KILIT_DONEM.y) return true;
-  if(y === KILIT_DONEM.y && m <= KILIT_DONEM.m) return true;
-  return false;
+  return !!window.KILITLI_DONEMLER[y+'-'+m];
+}
+
+function donemKilitle(key){
+  window.KILITLI_DONEMLER[key] = true;
+  renderAll();
+  toast('🔒 Dönem kilitlendi');
+  otoDriveKaydet(key);
+}
+
+function donemKilidinAc(key){
+  delete window.KILITLI_DONEMLER[key];
+  renderAll();
+  toast('🔓 Dönem kilidi açıldı');
+  otoDriveKaydet(key);
 }
 const GELIR_TURLERI = [
   'Yurtdışı Kargo','Yurtiçi Kargo','Döviz Bozdurma (TL geliri)',
@@ -422,7 +427,22 @@ function renderOzet(){
       fUSD(usdDetay.altinUsd+usdDetay.gumusUsd),
       `${ac.ALTIN||0} gr Altın / ${ac.GUMUS||0} gr Gümüş`,'MADEN','ALTIN+GUMUS')}`;
 
-  // Özet tablosu
+  // Toolbar
+  const toolbar = document.getElementById('kasaToolbar');
+  if(toolbar){
+    if(donemKilitliMi(d.y,d.m)){
+      toolbar.innerHTML = '<div class="info-box blue" style="margin:0;flex:1">🔒 <strong>Kilitli dönem</strong> — Değişiklik yapılamaz.</div>'
+        +'<button class="btn" style="margin-left:8px" onclick="donemKilidinAc(\''+d.key+'\')">🔓 Kilidi aç</button>';
+    } else {
+      toolbar.innerHTML = `
+        <button class="btn btn-green" onclick="hareketModal('gelir')">+ Gelir ekle</button>
+        <button class="btn btn-red" onclick="hareketModal('gider')">− Gider ekle</button>
+        <button class="btn btn-amber" onclick="hareketModal('avans')">↕ Avans ekle</button>
+        <button class="btn" onclick="hareketModal('doviz')">⇄ Döviz bozdurma</button>
+        <button class="btn" style="margin-left:auto" onclick="donemKilitle('${d.key}')">🔒 Dönemi kilitle</button>
+        <button class="btn btn-primary" onclick="kapanisKaydet()">💾 Kapanışı kaydet</button>`;
+    }
+  }
   const kasalar=[
     {lbl:'TL',ac:ac.TL||0,kap:kap.TL||0,fmt:fTL},
     {lbl:'USD',ac:ac.USD||0,kap:kap.USD||0,fmt:fUSD},
@@ -791,6 +811,7 @@ async function otoDriveKaydet(key){
     acilis:veri.acilis,
     kapanis:veri.kapanis,
     hareketler:veri.hareketler,
+    kilitli: !!window.KILITLI_DONEMLER[key],
   });
   if(res?.ok){
     document.getElementById('statusDot').className='status-dot ok';
@@ -865,6 +886,9 @@ async function init(){
     Object.entries(kasaRes.veri).forEach(([key,v])=>{
       window.KASA[key]=v;
     });
+    if(kasaRes.kilitliDonemler){
+      window.KILITLI_DONEMLER = {...kasaRes.kilitliDonemler};
+    }
     // Drive'dan geldikten sonra Mayıs varsayılanını tekrar kontrol et
     const m26=getKasaVeri('2026-4');
     if(!m26.kapanis.TL&&!m26.kapanis.USD){
