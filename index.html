@@ -273,7 +273,7 @@ function checkPass(){
   <div class="nav-item" onclick="navTo('p_yurtdisi',this)"><i class="ti ti-world"></i> 2 Finansal detay</div>
   <div class="nav-divider"></div>
   <div class="nav-section">Yurtiçi</div>
-  <div class="nav-item" onclick="acBanktr()" id="nav_banktr"><i class="ti ti-building-bank"></i> 3 Yurtiçi bankalar</div>
+  <div class="nav-item" onclick="navTo('p_yurtici',this)"><i class="ti ti-building-bank"></i> 3 Yurtiçi bankalar</div>
   <div class="nav-item" onclick="navTo('p_kasa',this)"><i class="ti ti-cash"></i> 4 Nakit kasa</div>
   <div class="nav-divider"></div>
   <div class="nav-section">Ayarlar</div>
@@ -457,19 +457,38 @@ function checkPass(){
 
 <!-- ── SEKME 3 YURTİÇİ ── -->
 <div class="page" id="p_yurtici">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-    <div>
-      <h2 style="font-size:20px;font-weight:500;letter-spacing:-.02em">Yurtiçi Bankalar</h2>
-      <p style="font-size:12px;color:var(--text3);margin-top:3px">IWA Concept · Citi Global · Serkan Gürkan · Sebahattin Demirci</p>
-    </div>
-    <a href="banktr.html" target="_blank" style="font-size:11px;color:var(--text3);text-decoration:none;display:flex;align-items:center;gap:4px;padding:5px 10px;border:1px solid var(--border);border-radius:6px">
-      <i class="ti ti-external-link"></i> Tam ekran
-    </a>
+  <div class="page-hdr"><h2>Yurtiçi bankalar</h2><p>IWA · Citi Global · Diğer — dönemsel kapanış bakiyeleri</p></div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+    <span style="font-size:11px;color:var(--text3)">Dönem:</span>
+    <select id="yiDonem" onchange="renderYurtici()" style="font-size:12px;padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:var(--font-main)"></select>
+    <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="yiBakiyeGir()"><i class="ti ti-pencil"></i> Bakiye gir</button>
   </div>
-  <iframe id="banktr-frame" src="banktr.html"
-    style="width:100%;height:calc(100vh - 120px);border:none;border-radius:10px;background:#0F0A0B"
-    allow="same-origin">
-  </iframe>
+  <div class="sub-tabs">
+    <div class="sub-tab active" onclick="subTab('yi','hulasa',this)">3-1 Hülasa</div>
+    <div class="sub-tab" onclick="subTab('yi','iwa',this)">3-2 IWA</div>
+    <div class="sub-tab" onclick="subTab('yi','citi',this)">3-3 Citi</div>
+    <div class="sub-tab" onclick="subTab('yi','diger',this)">3-4 Diğer</div>
+  </div>
+
+  <!-- 3-1 Hülasa -->
+  <div class="sub-panel active" id="yi_hulasa">
+    <div id="yi_hulasa_content"></div>
+  </div>
+
+  <!-- 3-2 IWA -->
+  <div class="sub-panel" id="yi_iwa">
+    <div id="yi_iwa_content"></div>
+  </div>
+
+  <!-- 3-3 Citi -->
+  <div class="sub-panel" id="yi_citi">
+    <div id="yi_citi_content"></div>
+  </div>
+
+  <!-- 3-4 Diğer -->
+  <div class="sub-panel" id="yi_diger">
+    <div id="yi_diger_content"></div>
+  </div>
 </div>
 
 <!-- ── SEKME 4 KASA ── -->
@@ -701,19 +720,6 @@ function kurInlineEdit(key,mevcut){
 }
 
 // NAV
-function acBanktr() {
-  // banktr'ı p_yurtici içinde göster
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('p_yurtici').classList.add('active');
-  document.getElementById('nav_banktr').classList.add('active');
-  // iframe src'yi SSO session ile set et
-  var frame = document.getElementById('banktr-frame');
-  if (frame && frame.src === '' ) {
-    frame.src = 'banktr.html';
-  }
-}
-
 function navTo(pageId,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
