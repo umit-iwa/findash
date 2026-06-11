@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0047)file:///Users/umitmaden/Downloads/banktr_4.html -->
+<!-- saved from url=(0047)file:///Users/umitmaden/Downloads/banktr_5.html -->
 <html lang="tr" data-theme="dark"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -526,25 +526,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 <script>
 // ─── FinDash Auth Entegrasyonu ────────────────────────────────
 function fdOnGiris() {
-  // Giriş başarılı - tema ve kullanıcı bilgisi sync
-  if (window.FD_SESSION && window.FD_SESSION.kadi) {
-    // Portal temasını uygula
-    var savedTheme = localStorage.getItem('banktr-theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  }
+  var savedTheme = localStorage.getItem('banktr-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  var tbtn = document.getElementById('theme-toggle');
+  if(tbtn) tbtn.textContent = savedTheme === 'dark' ? '☀ Aydınlık' : '☽ Karanlık';
 }
 
 // Standalone fallback (auth.js yoksa)
 if (typeof fdInit === 'undefined') {
   window.FD_SESSION = { rol: 'admin', adSoyad: 'Admin', kadi: 'admin' };
-  function fdInit() {}
+  function fdInit(a,b,c) {
+    document.addEventListener('DOMContentLoaded', function() {
+      var app = document.getElementById('app');
+      if(app) app.style.display = 'block';
+      if(typeof fdOnGiris === 'function') fdOnGiris();
+    });
+  }
   function fdApplyYetkiler() {}
-  function fdToast(msg) { console.log(msg); }
+  function fdToast(msg,t) { console.log(msg); }
   function fdTemaDegistir() {}
-  document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('app').style.display = 'block';
-    init_banktr();
-  });
+  function fdApiGet(action) { return Promise.resolve(null); }
+  function fdApiSave(body) { return Promise.resolve(null); }
 }
 
 (function(){
