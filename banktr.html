@@ -833,6 +833,8 @@ if (typeof fdInit === 'undefined') {
   function fdInit(a,b,c) {
     document.addEventListener('DOMContentLoaded', function() {
       var app = document.getElementById('app');
+      var lock = document.getElementById('fd-lock');
+      if(lock) lock.style.display = 'none';
       if(app) app.style.display = 'block';
       if(typeof fdOnGiris === 'function') fdOnGiris();
     });
@@ -1082,6 +1084,7 @@ function dsInitBar(pre,onChangeFn){
   if(monthSel){
     /* Varsayılan: en son ay */
     monthSel.value=monthSel.options[monthSel.options.length-1].value;
+    DS_STATE[pre].customOn=false; /* varsayılan aktif */
     monthSel.addEventListener('change',function(){
       if(monthSel.value){
         DS_STATE[pre].customOn=false;
