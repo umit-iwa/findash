@@ -1869,3 +1869,17 @@ document.getElementById('up-send-btn').addEventListener('click',function(){
 
 })();
 </script>
+</div>
+<!-- /app -->
+<script>
+window.addEventListener('load',function(){
+  if(typeof fdInit==='function'){
+    fdInit('yurtici','Yurtici Bankalar','🏦');
+  } else {
+    var app=document.getElementById('app');
+    if(app)app.style.display='block';
+  }
+});
+</script>
+</body>
+</html>
