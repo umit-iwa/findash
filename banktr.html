@@ -1663,129 +1663,82 @@ document.querySelectorAll('.tab-btn').forEach(function(btn){
 });
 document.getElementById('yat-kaydet-btn').addEventListener('click',yatKaydet);
 
-/* ── DOSYA YÜKLEME ── */
-var UP_PARSED = [];
+/* -- DOSYA YUKLEME -- */
+var UP_PARSED=[];
+var UP_BANKS={iwa:['Akbank','Garanti','Vakifbank'],citi:['Akbank','Garanti'],serkan:['Garanti'],sebah:['Denizbank']};
+var UP_ACC={'iwa-Akbank':['TL','USD'],'iwa-Garanti':['TL','USD','EUR','GBP'],'iwa-Vakifbank':['TL','USD','EUR','GBP'],'citi-Akbank':['TL'],'citi-Garanti':['TL','USD'],'serkan-Garanti':['TL'],'sebah-Denizbank':['TL']};
+var UP_IBANS=['TR860004600603888000208614','TR710004600603001000209069','TR210004600603036000209070','TR610004600603003000213546','TR700006200048100006289446','TR630006200048100009078128','TR090006200048100009078130','TR360006200048100009078129','TR370001500158007355701821','TR190001500158048025088085','TR410001500158048025088174','TR900001500158048025128517','TR460001500158048025088181','TR890004600603888000209627','TR580004600603001000209691','TR960004600603001000212693','TR460004600603036000212694','TR370006200048100006288585','TR410006200048100009076002','TR680006200048100009076001','TR950006200048100009076000'];
 
-// Banka seçenekleri
-var UP_BANKS = {
-  iwa:    ['Akbank','Garanti','Vakıfbank'],
-  citi:   ['Akbank','Garanti'],
-  serkan: ['Garanti'],
-  sebah:  ['Denizbank']
-};
-var UP_ACCOUNTS = {
-  'iwa-Akbank':    ['TL','USD'],
-  'iwa-Garanti':   ['TL','USD','EUR','GBP'],
-  'iwa-Vakıfbank': ['TL','USD','EUR','GBP'],
-  'citi-Akbank':   ['TL'],
-  'citi-Garanti':  ['TL','USD'],
-  'serkan-Garanti':['TL'],
-  'sebah-Denizbank':['TL']
-};
+function upN(s){return s.toUpperCase().replace(/\u0130/g,'I').replace(/\u00d6/g,'O').replace(/\u00dc/g,'U').replace(/\u015e/g,'S').replace(/\u00c7/g,'C').replace(/\u011e/g,'G').replace(/ /g,'');}
+
+function upIsInt(d){var n=upN(d);for(var i=0;i<UP_IBANS.length;i++){if(n.indexOf(upN(UP_IBANS[i]))>=0)return true;}return n.indexOf('KENDIHESAB')>=0||n.indexOf('VIRMANDOVIZ')>=0||(n.indexOf('IHRACAT')>=0&&n.indexOf('TCMB')>=0);}
+
+function upBirlesik(u){if(u.indexOf('BIRLESIK ODEME')>=0||u.indexOf('MOKAUNIT')>=0){if(u.indexOf('TRW')>=0)return 'Yurtdisi Ihracat';if(u.indexOf('VIS')>=0)return 'Trendyol Yurtdisi';return 'Yurtdisi Ihracat';}return null;}
+
+function upKatGelir(d){var u=d.toUpperCase();var n=upN(d);
+  if(upIsInt(d))return '__int__';
+  if(n.indexOf('SERKANGURKAN')>=0||n.indexOf('SEBAHATTIN')>=0||n.indexOf('CITIGLOBAL')>=0||n.indexOf('IWACONCEPT')>=0)return '__partner__';
+  var b=upBirlesik(u);if(b)return b;
+  if(u.indexOf('WORLD FIRST')>=0||u.indexOf('PAYONEER')>=0||u.indexOf('SENDER')>=0||u.indexOf('JPMORGAN')>=0)return 'Avrupa Ihracat';
+  if(u.indexOf('SHUKRAN')>=0||u.indexOf('UMS OFFICIAL')>=0||u.indexOf('MDN')>=0||u.indexOf('NATURALSTUFF')>=0)return 'Yurtdisi Ihracat';
+  if(u.indexOf('PAYTR')>=0||u.indexOf('DSM GRUP')>=0)return 'Site Satisi';
+  if(u.indexOf('TRENDYOL')>=0)return 'Trendyol';
+  if(u.indexOf('D-MARKET')>=0||u.indexOf('DMARKET')>=0)return 'Hepsiburada';
+  if(n.indexOf('DFIF')>=0||n.indexOf('KOSGEB')>=0||n.indexOf('IBKB')>=0)return 'Devlet Tesviki';
+  return 'Diger';
+}
+
+function upKatGider(d){var u=d.toUpperCase();var n=upN(d);
+  if(upIsInt(d))return '__int__';
+  if(n.indexOf('SERKANGURKAN')>=0||n.indexOf('SEBAHATTIN')>=0||n.indexOf('CITIGLOBAL')>=0||n.indexOf('IWACONCEPT')>=0)return '__partner__';
+  if(n.indexOf('MAAS')>=0||n.indexOf('KIDEM')>=0||n.indexOf('IHBAR')>=0||n.indexOf('ICRA')>=0)return 'Personel';
+  if(u.indexOf('SGK')>=0)return 'SGK';
+  if(n.indexOf('ALLIANZ')>=0||n.indexOf('TSS')>=0)return 'Sigorta';
+  if(u.indexOf('FEDEX')>=0||u.indexOf('DHL')>=0||u.indexOf('UPS')>=0||u.indexOf('KARGO')>=0)return 'Kargo/Lojistik';
+  if(n.indexOf('KAYGISIZ')>=0||u.indexOf('19408 ADA')>=0||u.indexOf('KIRA')>=0)return 'Kira';
+  if(u.indexOf('OSB')>=0||u.indexOf('OSTIM')>=0||u.indexOf('ANKORG')>=0)return 'OSB/Aidat';
+  if(n.indexOf('WOODPARADISE')>=0||n.indexOf('SOMAHSAP')>=0||n.indexOf('ARMAGANORMAN')>=0)return 'Masif Ahsap';
+  if(n.indexOf('YUSUFCEVIK')>=0||n.indexOf('TIMAS')>=0||n.indexOf('SIOENDUSTRIYEL')>=0)return 'Ambalaj';
+  if(u.indexOf('GOOGLE')>=0)return 'Reklam';
+  if(n.indexOf('VERGI')>=0||u.indexOf('KDV')>=0||u.indexOf('BSMV')>=0||n.indexOf('MASRAF')>=0)return 'Vergi/Masraf';
+  if(n.indexOf('ELEKTRIK')>=0||n.indexOf('ASKI')>=0)return 'Elektrik/Su';
+  return 'Diger';
+}
 
 document.getElementById('up-company').addEventListener('change',function(){
   var co=this.value;
   var bSel=document.getElementById('up-bank');
-  bSel.innerHTML='<option value="">Seçiniz...</option>';
-  (UP_BANKS[co]||[]).forEach(function(b){
-    bSel.innerHTML+='<option value="'+b+'">'+b+'</option>';
-  });
-  document.getElementById('up-account').innerHTML='<option value="">Önce banka seçin</option>';
+  bSel.innerHTML='<option value="">Secинiz...</option>';
+  (UP_BANKS[co]||[]).forEach(function(b){bSel.innerHTML+='<option value="'+b+'">'+b+'</option>';});
+  document.getElementById('up-account').innerHTML='<option value="">Once banka secin</option>';
 });
 
 document.getElementById('up-bank').addEventListener('change',function(){
   var co=document.getElementById('up-company').value;
   var bk=this.value;
   var aSel=document.getElementById('up-account');
-  aSel.innerHTML='<option value="">Seçiniz...</option>';
-  (UP_ACCOUNTS[co+'-'+bk]||[]).forEach(function(a){
-    var label={TL:'TL Hesabı',USD:'USD Hesabı',EUR:'EUR Hesabı',GBP:'GBP Hesabı'}[a]||a;
-    aSel.innerHTML+='<option value="'+a+'">'+label+'</option>';
+  aSel.innerHTML='<option value="">Secинiz...</option>';
+  (UP_ACC[co+'-'+bk]||[]).forEach(function(a){
+    var lbl={TL:'TL Hesabi',USD:'USD Hesabi',EUR:'EUR Hesabi',GBP:'GBP Hesabi'}[a]||a;
+    aSel.innerHTML+='<option value="'+a+'">'+lbl+'</option>';
   });
 });
 
-// Drag & drop + click
 var dropEl=document.getElementById('upload-drop');
 var inputEl=document.getElementById('upload-input');
-
 dropEl.addEventListener('click',function(){inputEl.click();});
-inputEl.addEventListener('change',function(){if(this.files[0])parseFile(this.files[0]);});
+inputEl.addEventListener('change',function(){if(this.files[0])upParse(this.files[0]);});
 dropEl.addEventListener('dragover',function(e){e.preventDefault();dropEl.style.borderColor='var(--accent)';});
 dropEl.addEventListener('dragleave',function(){dropEl.style.borderColor='';});
-dropEl.addEventListener('drop',function(e){
-  e.preventDefault();dropEl.style.borderColor='';
-  if(e.dataTransfer.files[0])parseFile(e.dataTransfer.files[0]);
-});
+dropEl.addEventListener('drop',function(e){e.preventDefault();dropEl.style.borderColor='';if(e.dataTransfer.files[0])upParse(e.dataTransfer.files[0]);});
 
-function N(s){return s.toUpperCase().replace(/İ/g,'I').replace(/Ö/g,'O').replace(/Ü/g,'U').replace(/Ş/g,'S').replace(/Ç/g,'C').replace(/Ğ/g,'G').replace(/ /g,'');}
-
-// Kategori fonksiyonları
-var UP_IBANS=['TR860004600603888000208614','TR710004600603001000209069','TR210004600603036000209070','TR610004600603003000213546','TR700006200048100006289446','TR630006200048100009078128','TR090006200048100009078130','TR360006200048100009078129','TR370001500158007355701821','TR190001500158048025088085','TR410001500158048025088174','TR900001500158048025128517','TR460001500158048025088181','TR890004600603888000209627','TR580004600603001000209691','TR960004600603001000212693','TR460004600603036000212694','TR370006200048100006288585','TR410006200048100009076002','TR680006200048100009076001','TR950006200048100009076000'];
-
-function isInt(d){
-  var n=N(d);
-  for(var i=0;i<UP_IBANS.length;i++){if(N(UP_IBANS[i])===n.substring(n.indexOf(N(UP_IBANS[i]).slice(0,10)),n.indexOf(N(UP_IBANS[i]).slice(0,10))+26))return true;}
-  for(var i=0;i<UP_IBANS.length;i++){if(n.indexOf(N(UP_IBANS[i]))>=0)return true;}
-  if(n.indexOf('KENDIHESAB')>=0||n.indexOf('VIRMANDOVIZ')>=0)return true;
-  if(n.indexOf('IHRACAT BEDELININ')>=0&&n.indexOf('TCMB')>=0)return true;
-  return false;
-}
-
-function birlesik(u){
-  if(u.indexOf('BİRLEŞİK ÖDEME')>=0||u.indexOf('MOKAUNIT')>=0||u.indexOf('MOKA UNITED')>=0){
-    if(u.indexOf('TRW')>=0)return 'Yurtdışı İhracat';
-    if(u.indexOf('VIS')>=0)return 'Trendyol Yurtdışı';
-    return 'Yurtdışı İhracat';
-  }
-  return null;
-}
-
-function katGelir(d){
-  var u=d.toUpperCase();var n=N(d);
-  if(isInt(d))return '__int__';
-  if(n.indexOf('SERKANGURKAN')>=0||n.indexOf('SEBAHATTIN')>=0||n.indexOf('CITIGLOBAL')>=0||n.indexOf('IWACONCEPT')>=0)return '__partner__';
-  var b=birlesik(u);if(b)return b;
-  if(u.indexOf('WORLD FIRST')>=0||u.indexOf('PAYONEER')>=0||u.indexOf('SENDER')>=0||u.indexOf('JPMORGAN')>=0||u.indexOf('COBADEFF')>=0||u.indexOf('CHASDEF')>=0)return 'Avrupa İhracat';
-  if(u.indexOf('SHUKRAN')>=0||u.indexOf('UMS OFFICIAL')>=0||u.indexOf('MDN')>=0||u.indexOf('NATURALSTUFF')>=0||u.indexOf('UPP SA')>=0)return 'Yurtdışı İhracat';
-  if(u.indexOf('PAYTR')>=0||u.indexOf('DSM GRUP')>=0)return 'Site Satışı';
-  if(u.indexOf('TRENDYOL')>=0)return 'Trendyol';
-  if(u.indexOf('D-MARKET')>=0||u.indexOf('DMARKET')>=0)return 'Hepsiburada';
-  if(u.indexOf('ANADOLU AJANS')>=0||n.indexOf('TUSAS')>=0)return 'Kurumsal Satış';
-  if(n.indexOf('DFIF')>=0||n.indexOf('KOSGEB')>=0||n.indexOf('TCMBDESTEK')>=0||n.indexOf('IBKB')>=0)return 'Devlet Teşviki';
-  return 'Diğer';
-}
-
-function katGider(d){
-  var u=d.toUpperCase();var n=N(d);
-  if(isInt(d))return '__int__';
-  if(n.indexOf('SERKANGURKAN')>=0||n.indexOf('SEBAHATTIN')>=0||n.indexOf('CITIGLOBAL')>=0||n.indexOf('IWACONCEPT')>=0)return '__partner__';
-  if(n.indexOf('MAAS')>=0||n.indexOf('KIDEM')>=0||n.indexOf('IHBAR')>=0||n.indexOf('AVANS')>=0||n.indexOf('LEVENTATES')>=0||n.indexOf('ICRA')>=0)return 'Personel';
-  if(u.indexOf('SGK')>=0)return 'SGK';
-  if(n.indexOf('ALLIANZ')>=0||n.indexOf('TSS')>=0)return 'Sigorta';
-  if(u.indexOf('FEDEX')>=0||u.indexOf('DHL')>=0||u.indexOf('UPS')>=0||u.indexOf('TNT')>=0||u.indexOf('KARGO')>=0||u.indexOf('NAVLUNGO')>=0)return 'Kargo/Lojistik';
-  if(n.indexOf('IDRISCETIN')>=0||n.indexOf('VIZYONGRUP')>=0||n.indexOf('KAYGISIZ')>=0||u.indexOf('19408 ADA')>=0||u.indexOf('KIRA')>=0)return 'Kira';
-  if(u.indexOf('OSB')>=0||u.indexOf('OSTIM')>=0||u.indexOf('ANKORG')>=0)return 'OSB/Aidat';
-  if(n.indexOf('KREDIKARTI')>=0||u.indexOf('AXESS')>=0)return 'Kredi Kartı';
-  if(u.indexOf('SGK MOSIP')>=0||u.indexOf('SGK')>=0)return 'SGK';
-  if(n.indexOf('WOODPARADISE')>=0||n.indexOf('SOMAHSAP')>=0||n.indexOf('ARMAGANORMAN')>=0)return 'Masif Ahşap';
-  if(n.indexOf('YUSUFCEVIK')>=0||n.indexOf('TIMAS')>=0||n.indexOf('SIOENDUSTRIYEL')>=0||n.indexOf('UMITSANCAR')>=0)return 'Ambalaj Malzemesi';
-  if(n.indexOf('OMERFARUKBUDULGAN')>=0)return 'Al-Sat Ürünü';
-  if(u.indexOf('GOOGLE')>=0)return 'Reklam/Pazarlama';
-  if(n.indexOf('VERGI')>=0||u.indexOf('KDV')>=0||u.indexOf('BSMV')>=0||n.indexOf('MASRAF')>=0||n.indexOf('KOMISYON')>=0)return 'Vergi/Masraf';
-  if(n.indexOf('ELEKTRIK')>=0||n.indexOf('ASKI')>=0)return 'Elektrik/Su';
-  if(n.indexOf('PARACEKME')>=0||n.indexOf('ORTAGA')>=0)return 'Ortak Çekimi';
-  return 'Diğer';
-}
-
-function parseFile(file){
+function upParse(file){
   var co=document.getElementById('up-company').value;
   var bk=document.getElementById('up-bank').value;
   var ac=document.getElementById('up-account').value;
-  if(!co||!bk||!ac){
-    document.getElementById('upload-status').textContent='Lütfen şirket, banka ve hesabı seçin.';
-    return;
-  }
-  document.getElementById('upload-status').textContent='Okunuyor...';
+  var st=document.getElementById('upload-status');
+  if(!co||!bk||!ac){st.textContent='Lutfen sirket, banka ve hesabi secin.';return;}
+  st.textContent='Okunuyor...';
   var reader=new FileReader();
   reader.onload=function(e){
     try{
@@ -1793,119 +1746,84 @@ function parseFile(file){
       var ws=wb.Sheets[wb.SheetNames[0]];
       var rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
       var islemler=[];
-      var co_label={iwa:'IWA',citi:'Citi',serkan:'Serkan',sebah:'Sebah'}[co]||co;
-
-      // Format tespiti
       var fmt='unknown';
+      var hr=-1;
+
       for(var i=0;i<Math.min(15,rows.length);i++){
         var r=rows[i];
-        if(r[0]==='Tarih'&&r[2]==='Tutar')fmt='akbank';
-        else if(r[0]==='Tarih'&&r[6]==='TUTAR')fmt='vakifbank';
-        else if(String(r[0]).indexOf('Tarih')>=0&&r[2]==='Tutar'&&r[4]==='Borç/Alacak')fmt='akbank_std';
-        else if(r[6]==='TUTAR'&&r[15]==='B/A')fmt='vakifbank_v2';
+        var r0=String(r[0]).trim();
+        var r2=String(r[2]).trim();
+        if(r0==='Tarih'&&r2==='Tutar'){fmt='akbank';hr=i;break;}
+        if(r2==='HAREKET TARIH'){fmt='vakifbank';hr=i;break;}
+        if(r0==='Tarih'&&r[3]!==undefined&&String(r[4]).trim()==='Bor\u00e7/Alacak'){fmt='garanti';hr=i;break;}
+        if(r0==='Tarih'&&parseFloat(r[3])!==0&&r[3]!==''){fmt='garanti';hr=i;break;}
       }
 
-      // Akbank TL (satır 9=başlık: Tarih,Saat,Tutar,Bakiye,B/A,Açıklama)
-      if(fmt==='akbank'||fmt==='akbank_std'){
-        var hr=-1;
-        for(var i=0;i<rows.length;i++){if(String(rows[i][0]).trim()==='Tarih'){hr=i;break;}}
-        if(hr>=0){
-          for(var i=hr+1;i<rows.length;i++){
-            var r=rows[i];
-            if(!r[0])continue;
-            var tarih=String(r[0]).trim();
-            var tutar=parseFloat(String(r[2]).replace(/[.,]/g,function(m,o,s){return o===s.lastIndexOf('.')||o===s.lastIndexOf(',')?(m==='.'?'.':'.'):''}))||0;
-            // Daha basit: sadece sayı bırak
-            tutar=parseFloat(String(r[2]).replace(/[^0-9,.-]/g,'').replace(',','.'))||0;
-            var tur=String(r[4]).trim()==='A'?'G':'C';
-            var aciklama=String(r[5]).trim();
-            if(isInt(aciklama))continue;
-            var n=N(aciklama);
-            if(n.indexOf('SERKANGURKAN')>=0||n.indexOf('CITIGLOBAL')>=0||n.indexOf('IWACONCEPT')>=0||n.indexOf('SEBAHATTIN')>=0)continue;
-            var kat=tur==='G'?katGelir(aciklama):katGider(aciklama);
-            if(kat==='__int__'||kat==='__partner__')continue;
-            if(tarih.match(/\d{2}\.\d{2}\.\d{4}/)){
-              var p=tarih.split('.');
-              tarih=p[2]+'-'+p[1]+'-'+p[0];
-            }
-            islemler.push({tarih:tarih.slice(0,10),tutar:Math.abs(tutar),tur:tur,kategori:kat,aciklama:aciklama.slice(0,120)});
-          }
+      if(fmt==='akbank'&&hr>=0){
+        for(var i=hr+1;i<rows.length;i++){
+          var r=rows[i];if(!r[0])continue;
+          var tarih=String(r[0]).trim();
+          var tutar=parseFloat(String(r[2]).replace(',','.'))||0;
+          var tur=String(r[4]).trim()==='A'?'G':'C';
+          var aciklama=String(r[5]).trim();
+          if(upIsInt(aciklama))continue;
+          var n=upN(aciklama);
+          if(n.indexOf('SERKANGURKAN')>=0||n.indexOf('CITIGLOBAL')>=0||n.indexOf('IWACONCEPT')>=0||n.indexOf('SEBAHATTIN')>=0)continue;
+          var kat=tur==='G'?upKatGelir(aciklama):upKatGider(aciklama);
+          if(kat==='__int__'||kat==='__partner__')continue;
+          if(tarih.match(/\d{2}\.\d{2}\.\d{4}/)){var p=tarih.split('.');tarih=p[2]+'-'+p[1]+'-'+p[0];}
+          islemler.push({tarih:tarih.slice(0,10),tutar:Math.abs(tutar),tur:tur,kategori:kat,aciklama:aciklama.slice(0,120)});
+        }
+      } else if(fmt==='vakifbank'&&hr>=0){
+        for(var i=hr+1;i<rows.length;i++){
+          var r=rows[i];if(!r[2])continue;
+          var tarih=String(r[2]).trim().slice(0,10);
+          var tutar=parseFloat(r[6])||0;
+          var tur=String(r[15]).trim()==='A'?'G':'C';
+          var aciklama=String(r[16]).trim();
+          if(upIsInt(aciklama))continue;
+          var n=upN(aciklama);
+          if(n.indexOf('SERKANGURKAN')>=0||n.indexOf('CITIGLOBAL')>=0||n.indexOf('IWACONCEPT')>=0||n.indexOf('SEBAHATTIN')>=0)continue;
+          var kat=tur==='G'?upKatGelir(aciklama):upKatGider(aciklama);
+          if(kat==='__int__'||kat==='__partner__')continue;
+          if(tarih.match(/\d{2}\.\d{2}\.\d{4}/)){var p=tarih.split('.');tarih=p[2]+'-'+p[1]+'-'+p[0];}
+          islemler.push({tarih:tarih.slice(0,10),tutar:Math.abs(tutar),tur:tur,kategori:kat,aciklama:aciklama.slice(0,120)});
+        }
+      } else if(hr>=0){
+        for(var i=hr+1;i<rows.length;i++){
+          var r=rows[i];if(!r[0])continue;
+          var tutar=parseFloat(r[3])||0;if(tutar===0)continue;
+          var tarih=String(r[0]).trim();
+          var tur=tutar>0?'G':'C';
+          var aciklama=String(r[1]).trim();
+          if(upIsInt(aciklama))continue;
+          var n=upN(aciklama);
+          if(n.indexOf('SERKANGURKAN')>=0||n.indexOf('CITIGLOBAL')>=0||n.indexOf('IWACONCEPT')>=0||n.indexOf('SEBAHATTIN')>=0)continue;
+          var kat=tur==='G'?upKatGelir(aciklama):upKatGider(aciklama);
+          if(kat==='__int__'||kat==='__partner__')continue;
+          if(tarih.indexOf('/')>=0){var p=tarih.split('/');tarih=p[2]+'-'+p[1]+'-'+p[0];}
+          else if(tarih.indexOf('.')>=0){var p=tarih.split('.');tarih=p[2]+'-'+p[1]+'-'+p[0];}
+          islemler.push({tarih:tarih.slice(0,10),tutar:Math.abs(tutar),tur:tur,kategori:kat,aciklama:aciklama.slice(0,120)});
         }
       }
 
-      // Vakıfbank TL (satır 6=başlık: HESAP NO,FİŞ NO,HAREKET TARİH,İŞLEM TARİHİ,KART NO,İŞLEM,TUTAR,BAKİYE,...,B/A,AÇIKLAMA)
-      else if(fmt==='vakifbank'||fmt==='vakifbank_v2'){
-        var hr=-1;
-        for(var i=0;i<rows.length;i++){
-          var r=rows[i];
-          if(String(r[2]).trim()==='HAREKET TARIH'||String(r[2]).trim()==='Tarih'){hr=i;break;}
-        }
-        if(hr>=0){
-          for(var i=hr+1;i<rows.length;i++){
-            var r=rows[i];
-            if(!r[2])continue;
-            var tarih=String(r[2]).trim().slice(0,10);
-            var tutar=parseFloat(r[6])||0;
-            var tur=String(r[15]).trim()==='A'?'G':'C';
-            var aciklama=String(r[16]).trim();
-            if(isInt(aciklama))continue;
-            var n=N(aciklama);
-            if(n.indexOf('SERKANGURKAN')>=0||n.indexOf('CITIGLOBAL')>=0||n.indexOf('IWACONCEPT')>=0||n.indexOf('SEBAHATTIN')>=0)continue;
-            var kat=tur==='G'?katGelir(aciklama):katGider(aciklama);
-            if(kat==='__int__'||kat==='__partner__')continue;
-            if(tarih.match(/\d{2}\.\d{2}\.\d{4}/)){var p=tarih.split('.');tarih=p[2]+'-'+p[1]+'-'+p[0];}
-            islemler.push({tarih:tarih.slice(0,10),tutar:Math.abs(tutar),tur:tur,kategori:kat,aciklama:aciklama.slice(0,120)});
-          }
-        }
-      }
-
-      // Garanti TL (XLS - benzer Akbank ama farklı kolon)
-      else {
-        // Genel format dene
-        var hr=-1;
-        for(var i=0;i<rows.length;i++){if(String(rows[i][0]).trim()==='Tarih'){hr=i;break;}}
-        if(hr>=0){
-          for(var i=hr+1;i<rows.length;i++){
-            var r=rows[i];
-            if(!r[0])continue;
-            var tutar=parseFloat(r[3])||0;
-            if(tutar===0)continue;
-            var tarih=String(r[0]).trim();
-            var tur=tutar>0?'G':'C';
-            var aciklama=String(r[1]).trim();
-            if(isInt(aciklama))continue;
-            var n=N(aciklama);
-            if(n.indexOf('SERKANGURKAN')>=0||n.indexOf('CITIGLOBAL')>=0||n.indexOf('IWACONCEPT')>=0||n.indexOf('SEBAHATTIN')>=0)continue;
-            var kat=tur==='G'?katGelir(aciklama):katGider(aciklama);
-            if(kat==='__int__'||kat==='__partner__')continue;
-            if(tarih.match(/\d{2}\/\d{2}\/\d{4}/)){var p=tarih.split('/');tarih=p[2]+'-'+p[1]+'-'+p[0];}
-            else if(tarih.match(/\d{2}\.\d{2}\.\d{4}/)){var p=tarih.split('.');tarih=p[2]+'-'+p[1]+'-'+p[0];}
-            islemler.push({tarih:tarih.slice(0,10),tutar:Math.abs(tutar),tur:tur,kategori:kat,aciklama:aciklama.slice(0,120)});
-          }
-        }
-      }
-
-      UP_PARSED = islemler;
+      UP_PARSED=islemler;
+      var coLabel={iwa:'IWA',citi:'Citi',serkan:'Serkan',sebah:'Sebah'}[co]||co;
 
       if(!islemler.length){
-        document.getElementById('upload-status').innerHTML='<span style="color:var(--red)">İşlem bulunamadı. Format tanınamadı veya tüm işlemler iç transfer.</span>';
+        st.innerHTML='<span style="color:var(--red)">Islem bulunamadi. Format: '+fmt+', Baslik: '+hr+'</span>';
         return;
       }
 
-      // Preview göster
-      document.getElementById('upload-status').innerHTML='<span style="color:var(--green)">✓ '+islemler.length+' işlem okundu</span>';
-      document.getElementById('up-preview-title').textContent=co_label+' / '+bk+' / '+ac+' — '+islemler.length+' işlem';
-
-      var gelir=islemler.filter(function(r){return r.tur==='G';});
-      var gider=islemler.filter(function(r){return r.tur==='C';});
-      var tg=gelir.reduce(function(s,r){return s+r.tutar;},0);
-      var tc=gider.reduce(function(s,r){return s+r.tutar;},0);
-      document.getElementById('up-preview-sub').textContent='Gelir: ₺'+Math.round(tg).toLocaleString('tr-TR')+' · Gider: ₺'+Math.round(tc).toLocaleString('tr-TR');
-
+      st.innerHTML='<span style="color:var(--green)">'+islemler.length+' islem okundu</span>';
+      document.getElementById('up-preview-title').textContent=coLabel+' / '+bk+' / '+ac+' - '+islemler.length+' islem';
+      var tg=islemler.filter(function(r){return r.tur==='G';}).reduce(function(s,r){return s+r.tutar;},0);
+      var tc=islemler.filter(function(r){return r.tur==='C';}).reduce(function(s,r){return s+r.tutar;},0);
+      document.getElementById('up-preview-sub').textContent='Gelir: '+Math.round(tg).toLocaleString('tr-TR')+' / Gider: '+Math.round(tc).toLocaleString('tr-TR');
       var tbody=document.getElementById('up-preview-body');
-      tbody.innerHTML=islemler.slice(0,50).map(function(r){
+      tbody.innerHTML=islemler.slice(0,50).map(function(r,idx){
         var clr=r.tur==='G'?'var(--green)':'var(--red)';
-        return '<tr style="border-bottom:1px solid var(--border)">'+
+        return '<tr style="border-bottom:1px solid var(--border);'+(idx%2?'background:var(--bg3)':'')+'">'+
           '<td style="padding:5px 10px;color:var(--text3)">'+r.tarih+'</td>'+
           '<td style="padding:5px 10px;color:var(--text)">'+r.aciklama.slice(0,60)+'</td>'+
           '<td style="padding:5px 10px"><span style="font-size:10px;padding:1px 6px;border-radius:4px;background:var(--bg4);color:var(--text3)">'+r.kategori+'</span></td>'+
@@ -1913,8 +1831,7 @@ function parseFile(file){
           '<td style="padding:5px 10px;text-align:center"><span style="font-size:10px;padding:1px 5px;border-radius:3px;background:'+(r.tur==='G'?'rgba(68,183,106,0.15)':'rgba(220,80,80,0.15)')+';color:'+clr+'">'+r.tur+'</span></td>'+
         '</tr>';
       }).join('');
-      if(islemler.length>50){tbody.innerHTML+='<tr><td colspan="5" style="padding:8px 10px;color:var(--text3);text-align:center">...ve '+(islemler.length-50)+' işlem daha</td></tr>';}
-
+      if(islemler.length>50){tbody.innerHTML+='<tr><td colspan="5" style="padding:8px 10px;color:var(--text3);text-align:center">...ve '+(islemler.length-50)+' islem daha</td></tr>';}
       document.getElementById('upload-preview').style.display='block';
     } catch(err){
       document.getElementById('upload-status').innerHTML='<span style="color:var(--red)">Hata: '+err.message+'</span>';
@@ -1923,45 +1840,29 @@ function parseFile(file){
   reader.readAsBinaryString(file);
 }
 
-// Kaydet butonu
-document.getElementById('up-send-btn').addEventListener('click',async function(){
+document.getElementById('up-send-btn').addEventListener('click',function(){
+  var btn=this;
   if(!UP_PARSED.length)return;
   var co=document.getElementById('up-company').value;
   var bk=document.getElementById('up-bank').value;
   var ac=document.getElementById('up-account').value;
-  var co_label={iwa:'IWA',citi:'Citi',serkan:'Serkan',sebah:'Sebah'}[co]||co;
-
-  // Dönem key: ilk işlemin ayı
+  var coLabel={iwa:'IWA',citi:'Citi',serkan:'Serkan',sebah:'Sebah'}[co]||co;
   var donemKey=UP_PARSED[0].tarih.slice(0,7);
-
-  this.textContent='Kaydediliyor...';
-  this.disabled=true;
-
-  try{
-    var res=await fdApiSave({
-      action:'setBanktrEkstre',
-      sirket:co_label, banka:bk, hesap:ac, doviz:ac,
-      donemKey:donemKey, islemler:UP_PARSED
-    });
+  btn.textContent='Kaydediliyor...';btn.disabled=true;
+  fdApiSave({action:'setBanktrEkstre',sirket:coLabel,banka:bk,hesap:ac,doviz:ac,donemKey:donemKey,islemler:UP_PARSED})
+  .then(function(res){
     if(res&&res.ok){
-      document.getElementById('upload-status').innerHTML='<span style="color:var(--green)">✓ '+UP_PARSED.length+' işlem Google Sheets'e kaydedildi</span>';
-      this.textContent='✓ Kaydedildi';
+      document.getElementById('upload-status').innerHTML='<span style="color:var(--green)">'+UP_PARSED.length+' islem kaydedildi</span>';
+      btn.textContent='Kaydedildi';
     } else {
-      document.getElementById('upload-status').innerHTML='<span style="color:var(--red)">Hata: '+(res&&res.error||'Bilinmeyen hata')+'</span>';
-      this.textContent='Kaydet → Sheets';
-      this.disabled=false;
+      document.getElementById('upload-status').innerHTML='<span style="color:var(--red)">Hata: '+(res&&res.error||'Bilinmeyen')+'</span>';
+      btn.textContent='Kaydet';btn.disabled=false;
     }
-  } catch(err){
-    document.getElementById('upload-status').innerHTML='<span style="color:var(--red)">Bağlantı hatası: '+err.message+'</span>';
-    this.textContent='Kaydet → Sheets';
-    this.disabled=false;
-  }
+  }).catch(function(err){
+    document.getElementById('upload-status').innerHTML='<span style="color:var(--red)">Baglanti hatasi</span>';
+    btn.textContent='Kaydet';btn.disabled=false;
+  });
 });
 
 })();
 </script>
-</div>
-<!-- /app -->
-<script>fdInit("yurtici", "Yurtiçi Bankalar", "🏦");</script>
-</body>
-</html>
