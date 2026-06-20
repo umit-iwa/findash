@@ -3,9 +3,7 @@
 //  Tüm modüller bu dosyayı kullanır
 //  Kullanım: <script src="auth.js"></script>
 // ═══════════════════════════════════════════════════════════════
-
-const FINDASH_API = 'https://script.google.com/macros/s/AKfycby0evX5BZ8_Y2yn-wTsAPX9Lwfk3_KrPv-BTcl9VaP8uvD3TGKCO2fMuCCtSJCa3TZTCg/exec';
-
+const FINDASH_API = 'https://script.google.com/macros/s/AKfycbz94i0KScY3SvLZekMt66n5fuh6sO0a1ekQNltPZW6HR3bc5jI5bVQwqfMHdir40MVsag/exec';
 // Aktif oturum
 window.FD_SESSION = {
   kadi: '',
@@ -15,7 +13,6 @@ window.FD_SESSION = {
   modul: '',     // hangi modülde
   girisZamani: null,
 };
-
 // ─── API ──────────────────────────────────────────────────────
 async function fdApiGet(action) {
   try {
@@ -23,7 +20,6 @@ async function fdApiGet(action) {
     return await r.json();
   } catch(e) { return null; }
 }
-
 async function fdApiSave(body) {
   try {
     const data = encodeURIComponent(JSON.stringify(body));
@@ -31,16 +27,12 @@ async function fdApiSave(body) {
     return await r.json();
   } catch(e) { return null; }
 }
-
 // ─── YETKİ KONTROL ────────────────────────────────────────────
 function fdIsAdmin()    { return window.FD_SESSION.rol === 'admin'; }
 function fdCanEdit()    { return ['admin','duzenle'].includes(window.FD_SESSION.yetki); }
 function fdCanView()    { return window.FD_SESSION.yetki !== 'yok'; }
-
 // Yetki gerektiren elementi göster/gizle
 function fdApplyYetkiler() {
-  // data-yetki="duzenle" → sadece düzenleme yetkisi olanlar görür
-  // data-yetki="admin"   → sadece adminler görür
   document.querySelectorAll('[data-yetki]').forEach(el => {
     const gereken = el.getAttribute('data-yetki');
     let goster = false;
@@ -50,7 +42,6 @@ function fdApplyYetkiler() {
     el.style.display = goster ? '' : 'none';
   });
 }
-
 // ─── GİRİŞ EKRANI HTML ────────────────────────────────────────
 function fdLockHTML(modulAdi, modulEmoji) {
   return `
@@ -79,25 +70,19 @@ function fdLockHTML(modulAdi, modulEmoji) {
     </div>
   </div>`;
 }
-
 // ─── GİRİŞ YAP ────────────────────────────────────────────────
 async function fdGirisYap() {
   const kadi  = document.getElementById('fd-kadi')?.value?.trim();
   const sifre = document.getElementById('fd-sifre')?.value;
   const modul = window.FD_MODUL || '';
-
   if (!kadi || !sifre) return;
-
   document.getElementById('fd-lock-err').style.display = 'none';
   document.getElementById('fd-lock-loading').style.display = 'block';
-
   const res = await fdApiSave({
     action: 'dogrulaKullanici',
     kadi, sifre, modul
   });
-
   document.getElementById('fd-lock-loading').style.display = 'none';
-
   if (res?.ok) {
     window.FD_SESSION = {
       kadi:        res.kadi,
@@ -107,26 +92,16 @@ async function fdGirisYap() {
       modul:       modul,
       girisZamani: new Date(),
     };
-    // Kullanıcı bilgisini header'a yaz
     const userEl = document.getElementById('fd-user-info');
     if (userEl) userEl.textContent = res.adSoyad || res.kadi;
     const rolEl = document.getElementById('fd-user-rol');
     if (rolEl) rolEl.textContent = res.rol === 'admin' ? '👑' : res.yetki === 'duzenle' ? '✏️' : '👁';
-
-    // Kilidi kaldır
     const lock = document.getElementById('fd-lock');
     if (lock) lock.remove();
-
-    // Uygulamayı göster
     const app = document.getElementById('app');
     if (app) app.style.display = 'block';
-
-    // Yetkileri uygula
     fdApplyYetkiler();
-
-    // Modül init fonksiyonunu çağır
     if (typeof fdOnGiris === 'function') fdOnGiris();
-
   } else {
     document.getElementById('fd-lock-err').style.display = 'block';
     document.getElementById('fd-lock-err').textContent = res?.hata || 'Hatalı kullanıcı adı veya şifre';
@@ -134,28 +109,19 @@ async function fdGirisYap() {
     document.getElementById('fd-sifre').focus();
   }
 }
-
 // ─── MODÜL BAŞLATICI ──────────────────────────────────────────
-// Her modül bu fonksiyonu çağırır
-// Örnek: fdInit('kasa', 'Nakit Kasa', '💰')
 function fdInit(modulId, modulAdi, modulEmoji) {
   window.FD_MODUL = modulId;
-
-  // Giriş ekranını oluştur
   document.body.insertAdjacentHTML('afterbegin', fdLockHTML(modulAdi, modulEmoji));
   document.getElementById('fd-kadi')?.focus();
-
-  // App'i gizle
   const app = document.getElementById('app');
   if (app) app.style.display = 'none';
 }
-
 // ─── OTURUM KAPAT ─────────────────────────────────────────────
 function fdCikisYap() {
   window.FD_SESSION = { kadi:'', adSoyad:'', rol:'', yetki:'', modul:'', girisZamani:null };
   location.reload();
 }
-
 // ─── TOAST ────────────────────────────────────────────────────
 function fdToast(msg, type='ok') {
   let t = document.getElementById('fd-toast');
