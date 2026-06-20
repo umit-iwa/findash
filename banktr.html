@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>banktr — Yurtiçi Bankalar · FinDash</title>
-<script src="auth.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 
@@ -959,16 +958,7 @@ upBk.addEventListener("change",function(){
     ACCOUNTS[co][bk].forEach(function(a){var o=document.createElement("option");o.value=a;o.textContent=a+" Hesabı";upAc.appendChild(o);});
   }
 });
-document.getElementById("upload-drop").addEventListener("click",function(){
-  var co=upCo.value,bk=upBk.value,ac=upAc.value;
-  if(!co||!bk||!ac){
-    document.getElementById("upload-status").textContent="Lütfen önce şirket, banka ve hesap seçin.";
-    document.getElementById("upload-status").style.color="var(--red)";
-    return;
-  }
-  document.getElementById("upload-status").textContent=co.toUpperCase()+" / "+bk+" / "+ac+" için dosya seçme hazır — gerçek yükleme entegrasyonu eklenecek.";
-  document.getElementById("upload-status").style.color="var(--green)";
-});
+/* upload-drop click — dosya input veya validasyon */
 
 /* Helpers */
 /* ── DÖNEM SEÇİCİ LOJİĞİ ── */
@@ -1871,6 +1861,7 @@ document.getElementById('up-send-btn').addEventListener('click',function(){
 </script>
 </div>
 <!-- /app -->
+<script src="auth.js"></script>
 <script>
 window.addEventListener('load',function(){
   if(typeof fdInit==='function'){
