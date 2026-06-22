@@ -3,7 +3,7 @@
 //  Tüm modüller bu dosyayı kullanır
 //  Kullanım: <script src="auth.js"></script>
 // ═══════════════════════════════════════════════════════════════
-const FINDASH_API = 'https://script.google.com/macros/s/AKfycbz94i0KScY3SvLZekMt66n5fuh6sO0a1ekQNltPZW6HR3bc5jI5bVQwqfMHdir40MVsag/exec';
+const FINDASH_API = 'https://script.google.com/macros/s/AKfycbyZPgMB9q4OYyRy_4CYOHOViiINWLKBBlYIRH9t1-53uJRaA-eJUY8oKqkHyBpf1LsxHg/exec';
 // Aktif oturum
 window.FD_SESSION = {
   kadi: '',
@@ -42,8 +42,11 @@ async function fdApiGet(action) {
 
 async function fdApiSave(body) {
   try {
-    const data = encodeURIComponent(JSON.stringify(body));
-    return await fdJsonp(`${FINDASH_API}?action=${body.action}&data=${data}`);
+    // Her field'ı ayrı URL parametresi olarak gönder (dogrulaKullanici için gerekli)
+    const params = Object.entries(body)
+      .map(([k,v]) => k + '=' + encodeURIComponent(typeof v === 'object' ? JSON.stringify(v) : v))
+      .join('&');
+    return await fdJsonp(`${FINDASH_API}?${params}`);
   } catch(e) { console.error('fdApiSave error:', e); return null; }
 }
 // ─── YETKİ KONTROL ────────────────────────────────────────────
