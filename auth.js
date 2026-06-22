@@ -13,19 +13,38 @@ window.FD_SESSION = {
   modul: '',     // hangi modülde
   girisZamani: null,
 };
-// ─── API ──────────────────────────────────────────────────────
+// ─── API (JSONP — CORS'u atlar) ───────────────────────────────
+function fdJsonp(url) {
+  return new Promise((resolve, reject) => {
+    const cb = 'fd_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    const script = document.createElement('script');
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('JSONP timeout'));
+    }, 15000);
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cb];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+    window[cb] = function(data) { cleanup(); resolve(data); };
+    script.onerror = function() { cleanup(); reject(new Error('JSONP error')); };
+    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
+    document.head.appendChild(script);
+  });
+}
+
 async function fdApiGet(action) {
   try {
-    const r = await fetch(`${FINDASH_API}?action=${action}`);
-    return await r.json();
-  } catch(e) { return null; }
+    return await fdJsonp(`${FINDASH_API}?action=${action}`);
+  } catch(e) { console.error('fdApiGet error:', e); return null; }
 }
+
 async function fdApiSave(body) {
   try {
     const data = encodeURIComponent(JSON.stringify(body));
-    const r = await fetch(`${FINDASH_API}?action=${body.action}&data=${data}`);
-    return await r.json();
-  } catch(e) { return null; }
+    return await fdJsonp(`${FINDASH_API}?action=${body.action}&data=${data}`);
+  } catch(e) { console.error('fdApiSave error:', e); return null; }
 }
 // ─── YETKİ KONTROL ────────────────────────────────────────────
 function fdIsAdmin()    { return window.FD_SESSION.rol === 'admin'; }
