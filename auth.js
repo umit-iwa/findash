@@ -42,11 +42,13 @@ async function fdApiGet(action) {
 
 async function fdApiSave(body) {
   try {
-    // Her field'ı ayrı URL parametresi olarak gönder (dogrulaKullanici için gerekli)
-    const params = Object.entries(body)
-      .map(([k,v]) => k + '=' + encodeURIComponent(typeof v === 'object' ? JSON.stringify(v) : v))
-      .join('&');
-    return await fdJsonp(`${FINDASH_API}?${params}`);
+    // Şifre gibi özel karakter içeren alanlar için güvenli encode
+    const safe = {};
+    for (const [k,v] of Object.entries(body)) {
+      safe[k] = typeof v === 'object' ? JSON.stringify(v) : String(v);
+    }
+    const data = encodeURIComponent(JSON.stringify(safe));
+    return await fdJsonp(`${FINDASH_API}?action=${encodeURIComponent(body.action)}&data=${data}`);
   } catch(e) { console.error('fdApiSave error:', e); return null; }
 }
 // ─── YETKİ KONTROL ────────────────────────────────────────────
