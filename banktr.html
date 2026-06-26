@@ -833,11 +833,18 @@ async function ekstreYukleVeRender() {
   try {
     var res = await fdApiGet('getBanktrEkstre');
     if (!res || !res.data || !res.data.length) return;
+    if (!window._BANKTR) return;
+
+    var TL = window._BANKTR.getTL();
+    var CTL = window._BANKTR.getCTL();
+    var STL = window._BANKTR.getSTL();
+    var SBL = window._BANKTR.getSBL();
+    var TXNS = window._BANKTR.getTXNS();
 
     // Ekstre verilerini şirket+ay bazında grupla
-    var eksGrup = {}; // key: "IWA_2026-6"
+    var eksGrup = {};
     res.data.forEach(function(r) {
-      var donem = r.tarih.slice(0,7); // "2026-06"
+      var donem = r.tarih.slice(0,7);
       var parts = donem.split('-');
       var y = parseInt(parts[0]);
       var m = parseInt(parts[1]);
@@ -848,7 +855,6 @@ async function ekstreYukleVeRender() {
       else grp.expense[r.kategori] = (grp.expense[r.kategori]||0) + r.tutar;
     });
 
-    // Her grup için ilgili array'i güncelle
     Object.values(eksGrup).forEach(function(grp) {
       var arr = null;
       if (grp.sirket === 'IWA') arr = TL;
@@ -857,45 +863,35 @@ async function ekstreYukleVeRender() {
       else if (grp.sirket === 'Sebah') arr = SBL;
       if (!arr) return;
 
-      // Mevcut ayı bul
       var idx = arr.findIndex(function(d){return d.y===grp.y && d.m===grp.m;});
       if (idx >= 0) {
-        // Mevcut hardcode'un income/expense'ini ekstre ile değiştir
-        arr[idx] = Object.assign({}, arr[idx], {
-          income: grp.income,
-          expense: grp.expense
-        });
+        arr[idx] = Object.assign({}, arr[idx], {income: grp.income, expense: grp.expense});
       } else {
-        // Yeni ay ekle
         var prev = arr[arr.length-1];
         arr.push({
-          y: grp.y, m: grp.m,
+          y:grp.y, m:grp.m,
           opening: prev ? prev.closing : 0,
           closing: 0,
-          income: grp.income,
-          expense: grp.expense,
-          ic_in: 0, ic_out: 0, saglama: 0, fark: 0
+          income: grp.income, expense: grp.expense,
+          ic_in:0, ic_out:0, saglama:0, fark:0
         });
         arr.sort(function(a,b){ return (a.y*100+a.m)-(b.y*100+b.m); });
       }
 
-      // TXNS'ten bu ay+şirkete ait eski işlemleri sil, ekstre verisiyle yenile
-      var d1 = grp.y + '-' + (grp.m<10?'0':'') + grp.m + '-01';
+      // TXNS'i güncelle
+      var d1 = grp.y+'-'+(grp.m<10?'0':'')+grp.m+'-01';
       var lastDay = new Date(grp.y, grp.m, 0).getDate();
-      var d2 = grp.y + '-' + (grp.m<10?'0':'') + grp.m + '-' + lastDay;
-      TXNS = TXNS.filter(function(t){
-        return !(t.s === grp.sirket && t.d >= d1 && t.d <= d2);
-      });
-      // Ekstre işlemlerini TXNS'e ekle
+      var d2 = grp.y+'-'+(grp.m<10?'0':'')+grp.m+'-'+lastDay;
+      TXNS = TXNS.filter(function(t){ return !(t.s===grp.sirket && t.d>=d1 && t.d<=d2); });
       res.data.filter(function(r){
-        return r.sirket === grp.sirket && r.tarih.slice(0,7) === (grp.y+'-'+(grp.m<10?'0':'')+grp.m);
+        return r.sirket===grp.sirket && r.tarih.slice(0,7)===(grp.y+'-'+(grp.m<10?'0':'')+grp.m);
       }).forEach(function(r){
         TXNS.push({d:r.tarih, a:r.tutar, t:r.tur, k:r.kategori, s:grp.sirket});
       });
     });
 
-    // Render'ı yenile
-    if (typeof renderOzet === 'function') renderOzet();
+    window._BANKTR.setTXNS(TXNS);
+    window._BANKTR.renderOzet();
 
   } catch(e) {
     console.warn('Ekstre yükleme hatası:', e);
@@ -1937,6 +1933,17 @@ document.getElementById('up-send-btn').addEventListener('click',function(){
     btn.textContent='Kaydet';btn.disabled=false;
   });
 });
+
+  // Global erişim için expose et
+  window._BANKTR = {
+    getTL: function(){ return TL; },
+    getCTL: function(){ return CTL; },
+    getSTL: function(){ return STL; },
+    getSBL: function(){ return SBL; },
+    getTXNS: function(){ return TXNS; },
+    setTXNS: function(v){ TXNS = v; },
+    renderOzet: renderOzet
+  };
 
 })();
 </script>
