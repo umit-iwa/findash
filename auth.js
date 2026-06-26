@@ -42,13 +42,23 @@ async function fdApiGet(action) {
 
 async function fdApiSave(body) {
   try {
-    // Şifre gibi özel karakter içeren alanlar için güvenli encode
-    const safe = {};
-    for (const [k,v] of Object.entries(body)) {
-      safe[k] = typeof v === 'object' ? JSON.stringify(v) : String(v);
+    const action = body.action;
+    const inner = body.data;
+    let url = `${FINDASH_API}?action=${encodeURIComponent(action)}`;
+    if (inner && typeof inner === 'object' && !Array.isArray(inner)) {
+      // Düz objeyi ayrı parametreler olarak gönder — URL kısa kalır, redirect olmaz
+      for (const [k,v] of Object.entries(inner)) {
+        url += `&${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`;
+      }
+    } else {
+      // Array veya yoksa — data parametresi olarak gönder
+      const safe = {};
+      for (const [k,v] of Object.entries(body)) {
+        safe[k] = typeof v === 'object' ? JSON.stringify(v) : String(v);
+      }
+      url += `&data=${encodeURIComponent(JSON.stringify(safe))}`;
     }
-    const data = encodeURIComponent(JSON.stringify(safe));
-    return await fdJsonp(`${FINDASH_API}?action=${encodeURIComponent(body.action)}&data=${data}`);
+    return await fdJsonp(url);
   } catch(e) { console.error('fdApiSave error:', e); return null; }
 }
 // ─── YETKİ KONTROL ────────────────────────────────────────────
