@@ -1838,7 +1838,7 @@ function upParse(file){
   reader.readAsBinaryString(file);
 }
 
-document.getElementById('up-send-btn').addEventListener('click',function(){
+document.getElementById('up-send-btn').addEventListener('click',async function(){
   var btn=this;
   if(!UP_PARSED.length)return;
   var co=document.getElementById('up-company').value;
@@ -1847,19 +1847,34 @@ document.getElementById('up-send-btn').addEventListener('click',function(){
   var coLabel={iwa:'IWA',citi:'Citi',serkan:'Serkan',sebah:'Sebah'}[co]||co;
   var donemKey=UP_PARSED[0].tarih.slice(0,7);
   btn.textContent='Kaydediliyor...';btn.disabled=true;
-  fdApiSave({action:'setBanktrEkstre',sirket:coLabel,banka:bk,hesap:ac,doviz:ac,donemKey:donemKey,islemler:UP_PARSED})
-  .then(function(res){
-    if(res&&res.ok){
-      document.getElementById('upload-status').innerHTML='<span style="color:var(--green)">'+UP_PARSED.length+' islem kaydedildi</span>';
-      btn.textContent='Kaydedildi';
-    } else {
-      document.getElementById('upload-status').innerHTML='<span style="color:var(--red)">Hata: '+(res&&res.error||'Bilinmeyen')+'</span>';
-      btn.textContent='Kaydet';btn.disabled=false;
-    }
-  }).catch(function(err){
-    document.getElementById('upload-status').innerHTML='<span style="color:var(--red)">Baglanti hatasi</span>';
+
+  // Önce mevcut dönemi temizle
+  try{
+    await fdApiSave({action:'clearBanktrEkstre',data:{sirket:coLabel,banka:bk,hesap:ac,donemKey:donemKey}});
+  }catch(e){}
+
+  // 20'şer işlem batch'lerle gönder
+  var BATCH=20;
+  var hatalar=0;
+  var st=document.getElementById('upload-status');
+  for(var i=0;i<UP_PARSED.length;i+=BATCH){
+    var batch=UP_PARSED.slice(i,i+BATCH);
+    st.innerHTML='<span style="color:var(--amber)">'+(i+batch.length)+'/'+UP_PARSED.length+' gönderiliyor...</span>';
+    try{
+      var res=await fdApiSave({action:'appendBanktrEkstre',data:{
+        sirket:coLabel,banka:bk,hesap:ac,doviz:ac,donemKey:donemKey,islemler:JSON.stringify(batch)
+      }});
+      if(!res||!res.ok)hatalar++;
+    }catch(e){hatalar++;}
+  }
+
+  if(hatalar===0){
+    st.innerHTML='<span style="color:var(--green)">'+UP_PARSED.length+' işlem kaydedildi</span>';
+    btn.textContent='Kaydedildi';
+  } else {
+    st.innerHTML='<span style="color:var(--red)">'+hatalar+' batch hata aldı</span>';
     btn.textContent='Kaydet';btn.disabled=false;
-  });
+  }
 });
 
 })();
