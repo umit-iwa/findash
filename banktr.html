@@ -824,6 +824,82 @@ function fdOnGiris() {
   document.documentElement.setAttribute('data-theme', savedTheme);
   var tbtn = document.getElementById('theme-toggle');
   if(tbtn) tbtn.textContent = savedTheme === 'dark' ? '☀ Aydınlık' : '☽ Karanlık';
+
+  // BanktrEkstre'den dinamik veri yükle — hardcode'u override et
+  ekstreYukleVeRender();
+}
+
+async function ekstreYukleVeRender() {
+  try {
+    var res = await fdApiGet('getBanktrEkstre');
+    if (!res || !res.data || !res.data.length) return;
+
+    // Ekstre verilerini şirket+ay bazında grupla
+    var eksGrup = {}; // key: "IWA_2026-6"
+    res.data.forEach(function(r) {
+      var donem = r.tarih.slice(0,7); // "2026-06"
+      var parts = donem.split('-');
+      var y = parseInt(parts[0]);
+      var m = parseInt(parts[1]);
+      var key = r.sirket + '_' + y + '_' + m;
+      if (!eksGrup[key]) eksGrup[key] = {y:y, m:m, sirket:r.sirket, income:{}, expense:{}};
+      var grp = eksGrup[key];
+      if (r.tur === 'G') grp.income[r.kategori] = (grp.income[r.kategori]||0) + r.tutar;
+      else grp.expense[r.kategori] = (grp.expense[r.kategori]||0) + r.tutar;
+    });
+
+    // Her grup için ilgili array'i güncelle
+    Object.values(eksGrup).forEach(function(grp) {
+      var arr = null;
+      if (grp.sirket === 'IWA') arr = TL;
+      else if (grp.sirket === 'Citi') arr = CTL;
+      else if (grp.sirket === 'Serkan') arr = STL;
+      else if (grp.sirket === 'Sebah') arr = SBL;
+      if (!arr) return;
+
+      // Mevcut ayı bul
+      var idx = arr.findIndex(function(d){return d.y===grp.y && d.m===grp.m;});
+      if (idx >= 0) {
+        // Mevcut hardcode'un income/expense'ini ekstre ile değiştir
+        arr[idx] = Object.assign({}, arr[idx], {
+          income: grp.income,
+          expense: grp.expense
+        });
+      } else {
+        // Yeni ay ekle
+        var prev = arr[arr.length-1];
+        arr.push({
+          y: grp.y, m: grp.m,
+          opening: prev ? prev.closing : 0,
+          closing: 0,
+          income: grp.income,
+          expense: grp.expense,
+          ic_in: 0, ic_out: 0, saglama: 0, fark: 0
+        });
+        arr.sort(function(a,b){ return (a.y*100+a.m)-(b.y*100+b.m); });
+      }
+
+      // TXNS'ten bu ay+şirkete ait eski işlemleri sil, ekstre verisiyle yenile
+      var d1 = grp.y + '-' + (grp.m<10?'0':'') + grp.m + '-01';
+      var lastDay = new Date(grp.y, grp.m, 0).getDate();
+      var d2 = grp.y + '-' + (grp.m<10?'0':'') + grp.m + '-' + lastDay;
+      TXNS = TXNS.filter(function(t){
+        return !(t.s === grp.sirket && t.d >= d1 && t.d <= d2);
+      });
+      // Ekstre işlemlerini TXNS'e ekle
+      res.data.filter(function(r){
+        return r.sirket === grp.sirket && r.tarih.slice(0,7) === (grp.y+'-'+(grp.m<10?'0':'')+grp.m);
+      }).forEach(function(r){
+        TXNS.push({d:r.tarih, a:r.tutar, t:r.tur, k:r.kategori, s:grp.sirket});
+      });
+    });
+
+    // Render'ı yenile
+    if (typeof renderOzet === 'function') renderOzet();
+
+  } catch(e) {
+    console.warn('Ekstre yükleme hatası:', e);
+  }
 }
 
 // Standalone fallback (auth.js yoksa)
@@ -1838,7 +1914,7 @@ function upParse(file){
   reader.readAsBinaryString(file);
 }
 
-document.getElementById('up-send-btn').addEventListener('click',async function(){
+document.getElementById('up-send-btn').addEventListener('click',function(){
   var btn=this;
   if(!UP_PARSED.length)return;
   var co=document.getElementById('up-company').value;
@@ -1847,34 +1923,19 @@ document.getElementById('up-send-btn').addEventListener('click',async function()
   var coLabel={iwa:'IWA',citi:'Citi',serkan:'Serkan',sebah:'Sebah'}[co]||co;
   var donemKey=UP_PARSED[0].tarih.slice(0,7);
   btn.textContent='Kaydediliyor...';btn.disabled=true;
-
-  // Önce mevcut dönemi temizle
-  try{
-    await fdApiSave({action:'clearBanktrEkstre',data:{sirket:coLabel,banka:bk,hesap:ac,donemKey:donemKey}});
-  }catch(e){}
-
-  // 20'şer işlem batch'lerle gönder
-  var BATCH=20;
-  var hatalar=0;
-  var st=document.getElementById('upload-status');
-  for(var i=0;i<UP_PARSED.length;i+=BATCH){
-    var batch=UP_PARSED.slice(i,i+BATCH);
-    st.innerHTML='<span style="color:var(--amber)">'+(i+batch.length)+'/'+UP_PARSED.length+' gönderiliyor...</span>';
-    try{
-      var res=await fdApiSave({action:'appendBanktrEkstre',data:{
-        sirket:coLabel,banka:bk,hesap:ac,doviz:ac,donemKey:donemKey,islemler:JSON.stringify(batch)
-      }});
-      if(!res||!res.ok)hatalar++;
-    }catch(e){hatalar++;}
-  }
-
-  if(hatalar===0){
-    st.innerHTML='<span style="color:var(--green)">'+UP_PARSED.length+' işlem kaydedildi</span>';
-    btn.textContent='Kaydedildi';
-  } else {
-    st.innerHTML='<span style="color:var(--red)">'+hatalar+' batch hata aldı</span>';
+  fdApiSave({action:'setBanktrEkstre',sirket:coLabel,banka:bk,hesap:ac,doviz:ac,donemKey:donemKey,islemler:UP_PARSED})
+  .then(function(res){
+    if(res&&res.ok){
+      document.getElementById('upload-status').innerHTML='<span style="color:var(--green)">'+UP_PARSED.length+' islem kaydedildi</span>';
+      btn.textContent='Kaydedildi';
+    } else {
+      document.getElementById('upload-status').innerHTML='<span style="color:var(--red)">Hata: '+(res&&res.error||'Bilinmeyen')+'</span>';
+      btn.textContent='Kaydet';btn.disabled=false;
+    }
+  }).catch(function(err){
+    document.getElementById('upload-status').innerHTML='<span style="color:var(--red)">Baglanti hatasi</span>';
     btn.textContent='Kaydet';btn.disabled=false;
-  }
+  });
 });
 
 })();
