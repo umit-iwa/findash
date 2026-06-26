@@ -1635,8 +1635,13 @@ async function yatKaydet(){
   var doviz=document.getElementById('yat-doviz').value;
   if(!sirket||!ad||!miktar){alert('Tüm alanları doldurun');return;}
   var tarih=new Date().toISOString().slice(0,10);
-  YAT_DATA.push({sirket:sirket,ad:ad,miktar:miktar,doviz:doviz,tarih:tarih,kaydeden:(window.FD_SESSION&&window.FD_SESSION.kadi)||'sistem'});
-  try{await fdApiSave({action:'setBanktrYatirim',data:YAT_DATA});if(typeof fdToast==='function')fdToast('Yatırım kaydedildi');}catch(e){}
+  var yeniKayit={sirket:sirket,ad:ad,miktar:miktar,doviz:doviz,tarih:tarih,kaydeden:(window.FD_SESSION&&window.FD_SESSION.kadi)||'sistem'};
+  YAT_DATA.push(yeniKayit);
+  try{
+    var res=await fdApiSave({action:'addBanktrYatirim',data:yeniKayit});
+    if(res&&res.ok){if(typeof fdToast==='function')fdToast('Yatırım kaydedildi');}
+    else{if(typeof fdToast==='function')fdToast('Kayıt hatası','err');}
+  }catch(e){if(typeof fdToast==='function')fdToast('Bağlantı hatası','err');}
   document.getElementById('yat-sirket').value='';
   document.getElementById('yat-ad').value='';
   document.getElementById('yat-miktar').value='';
@@ -1648,7 +1653,7 @@ async function yatSil(idx){
   var sorted=YAT_DATA.slice().sort(function(a,b){return (b.tarih||'').localeCompare(a.tarih||'');});
   var kayit=sorted[idx];
   YAT_DATA=YAT_DATA.filter(function(r){return r!==kayit;});
-  try{await fdApiSave({action:'setBanktrYatirim',data:YAT_DATA});if(typeof fdToast==='function')fdToast('Silindi');}catch(e){}
+  try{await fdApiSave({action:'delBanktrYatirim',data:kayit});if(typeof fdToast==='function')fdToast('Silindi');}catch(e){}
   yatRender();
 }
 document.querySelectorAll('.tab-btn').forEach(function(btn){
